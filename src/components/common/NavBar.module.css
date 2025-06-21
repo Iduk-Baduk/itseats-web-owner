@@ -1,3 +1,13 @@
+.logo {
+  padding: 36px 24px 60px;
+}
+.logo>h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--theme-color);
+  
+}
+
 .navItem {
   list-style: none;
 }
@@ -9,9 +19,16 @@
   padding: 18px 24px;
   text-decoration: none;
   color: #000;
-  font-weight: 500;
   border-radius: 6px;
+  box-sizing: border-box;
   transition: background-color 0.2s;
+}
+.active {
+  border-left: 4px solid var(--theme-color);
+}
+.active .link {
+  color: var(--theme-color);
+  font-weight: 600;;
 }
 
 .link:hover {

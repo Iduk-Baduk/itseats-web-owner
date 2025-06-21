@@ -1,9 +1,12 @@
+import { useLocation } from "react-router-dom";
 import styles from "./NavBar.module.css";
 
 export default function NavBar() {
   return (
     <ul>
-      <div></div>
+      <div className={styles.logo}>
+        <h1>잇츠잇츠 Portal</h1>
+      </div>
       <NavButton
         href="/pos"
         icon={<GetIcon name="pos" />}
@@ -44,8 +47,11 @@ export default function NavBar() {
 }
 
 function NavButton({ href, icon, label }) {
+  const location = useLocation();
+  const isActive = location.pathname.startsWith(href);
+
   return (
-    <li className={styles.navItem}>
+    <li className={`${styles.navItem} ${isActive ? styles.active : ""}`}>
       <a href={href} className={styles.link}>
         <span className={styles.icon}>{icon}</span>
         <span className={styles.label}>{label}</span>
@@ -123,9 +129,9 @@ function GetIcon({ name }) {
           <path
             fill="none"
             stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="4"
             d="M19 20a7 7 0 1 0 0-14a7 7 0 0 0 0 14m25-9l-6 6l6 6M4 40.8V42h30v-1.2c0-4.48 0-6.72-.872-8.432a8 8 0 0 0-3.496-3.496C27.92 28 25.68 28 21.2 28h-4.4c-4.48 0-6.72 0-8.432.872a8 8 0 0 0-3.496 3.496C4 34.08 4 36.32 4 40.8"
           />
         </svg>
