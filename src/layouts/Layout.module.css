@@ -1,0 +1,15 @@
+.app {
+  display: flex;
+  flex-direction: row;
+  height: 100vh; /* fallback */
+  height: 100dvh;
+}
+.app>nav {
+  flex: 0 0 260px;
+  background-color: #f0f0f0;
+  box-sizing: border-box;
+  box-shadow: 3px 0 4px rgba(0, 0, 0, 0.15);
+}
+.app>main {
+  flex: 1;
+}

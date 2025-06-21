@@ -1,0 +1,29 @@
+.navItem {
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 24px;
+  text-decoration: none;
+  color: #000;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.link:hover {
+  background-color: #f0f0f0;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label {
+  font-size: 16px;
+}
