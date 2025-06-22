@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layouts/Layout";
+import PosLayout from "./layouts/PosLayout";
 import Pos from "./pages/pos/Pos";
+import PosOrders from "./pages/pos/PosOrders";
 import Sales from "./pages/sales/Sales";
 import Settlements from "./pages/settlements/Settlements";
 import Stores from "./pages/stores/Stores";
 import Accounts from "./pages/accounts/Accounts";
 import Menus from "./pages/menus/Menus";
 import Reviews from "./pages/reviews/Reviews";
+import Login from "./pages/users/Login";
+import Register from "./pages/users/Register";
 
 
 function App() {
   return <BrowserRouter>
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/sale-manage" replace />} />
-        <Route path="/pos" element={<Pos />} />
+        <Route index element={<Navigate to="/login" replace />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/settlements" element={<Settlements />} />
         <Route path="/stores" element={<Stores />} />
@@ -23,6 +26,12 @@ function App() {
         <Route path="/menus" element={<Menus />} />
         <Route path="/reviews" element={<Reviews />} />
       </Route>
+      <Route path="/" element={<PosLayout />}>
+        <Route path="/pos" element={<Pos />} />
+        <Route path="/pos/orders" element={<PosOrders />} />
+      </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   </BrowserRouter>;
 }

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 
 export default function Header({
@@ -6,6 +7,8 @@ export default function Header({
   showBackButton = true,
   onLeftClick,
 }) {
+  const navigate = useNavigate();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -79,6 +82,7 @@ export default function Header({
               onClick={() => {
                 setMenuOpen(false);
                 alert("로그아웃"); // 실제 로그아웃 함수로 교체
+                navigate("/login");
               }}
             >
               로그아웃
