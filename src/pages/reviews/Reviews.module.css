@@ -1,3 +1,13 @@
 .container {
-  padding-top: 80px;
+  padding: 80px 40px 0;
+}
+
+.samples {
+  margin: 20px 0;
+}
+.samples>*:not(:last-child) {
+  margin-right: 20px;
+}
+.textInput, .comboBox {
+  max-width: 400px;
 }

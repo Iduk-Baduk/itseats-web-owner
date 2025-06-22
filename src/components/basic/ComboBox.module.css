@@ -1,0 +1,37 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 0;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.wrapper:focus-within {
+  border-color: var(--focus-color);
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  padding: 16px;
+  font-size: 15px;
+  color: #000;
+  cursor: pointer;
+}
+
+.icon {
+  position: absolute;
+  right: 16px;
+  pointer-events: none;
+  color: var(--theme-color);
+  font-size: 12px;
+}
