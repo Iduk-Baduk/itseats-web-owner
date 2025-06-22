@@ -1,4 +1,10 @@
 :root {
     /* Global */
-    
+    --theme-color: #478B63;
+    --border-color: #E7EAED;
+    --focus-color: #478B63;
+
+    /* POS */
+    --pos-theme-color: #017CC9;
+    --pos-theme-color-active: #00568C;
 }
