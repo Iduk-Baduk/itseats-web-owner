@@ -2,7 +2,7 @@
 name: "[\U0001F527Refactor] 이슈"
 about: 리펙토링
 title: "[\U0001F527Refactor] 이슈"
-labels: ''
+labels: refactor
 assignees: ''
 
 ---
