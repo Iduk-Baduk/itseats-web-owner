@@ -1,12 +1,20 @@
-import { Link } from "react-router-dom";
+import PostMetricItem from "../../components/pos/PosMetricItem";
 
 export default function Pos() {
-    return (
-        <div>
-        <h1 style={{height: "1200px"}}>
-            <p>POS</p>
-            <Link to="/sales">돌아가기 (임시)</Link>
-        </h1>
-        </div>
-    );
+  return (
+    <div>
+      <PostMetricItem metricName={dummyData.storeName} metricValue={dummyData.metrics} />
+    </div>
+  );
 }
+
+const dummyData = {
+  storeName: "스타벅스 커피",
+  metrics: {
+    customerRating: 2.0,
+    avgCookTime: "20분",
+    cookTimeAccuracy: "98%",
+    pickupTime: "43초",
+    orderAcceptanceRate: "100%",
+  },
+};
