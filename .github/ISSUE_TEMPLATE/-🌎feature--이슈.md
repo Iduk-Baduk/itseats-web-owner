@@ -1,7 +1,7 @@
 ---
 name: "[\U0001F30EFeature] 이슈"
 about: Feature 이슈입니다.
-title: ''
+title: "[\U0001F30EFeature] 이슈"
 labels: ''
 assignees: ''
 
