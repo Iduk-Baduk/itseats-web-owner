@@ -1,9 +1,17 @@
 import PostMetricItem from "../../components/pos/PosMetricItem";
+import PosQuickAccess from "../../components/pos/PosQuickAccess";
+
+import styles from "./Pos.module.css";
 
 export default function Pos() {
   return (
     <div>
-      <PostMetricItem metricName={dummyData.storeName} metricValue={dummyData.metrics} />
+      <PostMetricItem
+        metricName={dummyData.storeName}
+        metricValue={dummyData.metrics}
+        className={styles.posMetricItem}
+      />
+      <PosQuickAccess className={styles.posQuickAccess} />
     </div>
   );
 }
