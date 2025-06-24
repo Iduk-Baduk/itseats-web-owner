@@ -34,9 +34,9 @@ const SalesIcon = () => {
       <path
         d="M19.7275 8.83508V18.6368H16.6689V8.83508H19.7275ZM12.9834 2.09094V18.6368H9.92578V2.09094H12.9834ZM6.23926 12.2062V18.6368H3.18164V12.2062H6.23926Z"
         stroke="black"
-        stroke-width="2"
+        strokeWidth="2"
       />
-      <line x1="0.799805" y1="21.4" x2="21.5271" y2="21.4" stroke="black" stroke-width="2" />
+      <line x1="0.799805" y1="21.4" x2="21.5271" y2="21.4" stroke="black" strokeWidth="2" />
     </svg>
   );
 };
