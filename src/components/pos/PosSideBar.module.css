@@ -1,0 +1,36 @@
+.menuWrapper {
+  width: 120px;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 96px); 
+  position: fixed;
+  top: 96px; 
+  left: 0;
+  background: #e0e0e0;
+  z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  border-bottom: 1px solid #b0b0b0;
+  font-size: 1.2rem;
+}
+
+.tab:last-child {
+  border-bottom: none;
+}
+.tab:hover {
+  background-color: #d3d3d3;
+}
+
+.active {
+  background-color: #aaa;
+  color: white;
+}
