@@ -1,0 +1,102 @@
+.backdrop {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  min-width: 500px;
+  max-width: 90vw;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem 1rem 2rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+.title {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
+.body {
+  padding: 2rem;
+}
+.orderInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.time {
+  color: #aaa;
+  font-size: 1rem;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+.table th,
+.table td {
+  border-bottom: 1px solid #eee;
+  padding: 0.7rem 0.5rem;
+  text-align: left;
+}
+.options {
+  color: #bbb;
+  font-size: 0.95rem;
+  margin-top: 0.2rem;
+}
+.totalRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+.totalPrice {
+  margin-left: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.footer {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+.reject,
+.accept {
+  flex: 1;
+  padding: 1.2rem 0;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+}
+.reject {
+  background: #fff;
+  color: #222;
+}
+.accept {
+  background: #2d7be5;
+  color: #fff;
+}
