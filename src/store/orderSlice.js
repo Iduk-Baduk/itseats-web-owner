@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = [
   {
+    orderId: 1,
     orderNumber: "GRMT0N",
     orderTime: "2025-06-13T12:00:02",
     menuCount: 2,
@@ -18,6 +19,7 @@ const initialState = [
     riderPhone: null,
   },
   {
+    orderId: 2,
     orderNumber: "B9103A",
     orderTime: "2025-06-13T11:39:00",
     menuCount: 3,
@@ -39,6 +41,7 @@ const initialState = [
     riderPhone: "010-1234-5678",
   },
   {
+    orderId: 3,
     orderNumber: "K2642F",
     orderTime: "2025-06-13T11:39:00",
     menuCount: 5,
