@@ -1,0 +1,89 @@
+.card {
+  display: flex;
+  padding: 1rem;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.leftSection {
+  width: 100px;
+  font-size: 0.875rem;
+  color: gray;
+}
+
+.rightSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 4.5rem;
+}
+
+.number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.time {
+  font-weight: bold;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.menuSummary {
+  font-weight: bold;
+  color: #555;
+}
+
+.status {
+  margin-left: auto;
+  font-weight: bold;
+}
+
+.menuItems {
+  color: #777;
+  font-weight: 500;
+}
+
+.menuItem {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.partner {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.partnerBtn {
+  padding: 0.2rem 0.5rem;
+  border: none;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  background: var(--border-color-light);
+}
+
+.callBtn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+}
+
+.request {
+  padding: 0.5rem;
+  background: #f8d7da;
+  color: #c0392b;
+  border-radius: 4px;
+}
