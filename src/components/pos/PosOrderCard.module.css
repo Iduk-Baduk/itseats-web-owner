@@ -5,6 +5,11 @@
   border-bottom: 1px solid #eee;
 }
 
+.card:hover {
+  background: var(--background-hover-color);
+  cursor: pointer;
+}
+
 .leftSection {
   width: 100px;
   font-size: 0.875rem;

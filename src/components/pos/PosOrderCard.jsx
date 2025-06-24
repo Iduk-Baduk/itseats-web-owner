@@ -1,8 +1,8 @@
 import styles from "./PosOrderCard.module.css";
 
-export default function PosOrderCard({ order }) {
+export default function PosOrderCard({ order, onClick }) {
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={onClick}>
       <div className={styles.leftSection}>
         <span className={styles.left}>
           <strong className={styles.number}>{order.orderNumber}</strong>
