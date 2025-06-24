@@ -1,8 +1,15 @@
 // PauseOrderModal.jsx
-import styles from "./PosOrderModal.module.css";
+import styles from "./PosSelectModal.module.css";
 
-export default function PosOrderModal({ onSelect, onClose }) {
-  const pauseButton = [15, 30, 60];
+export default function PosSelectModal({
+  title,
+  description,
+  subDescription,
+  options = [],
+  optionUnit,
+  onSelect,
+  onClose,
+}) {
   return (
     <div className={styles.modalBackdrop}>
       <div className={styles.modal}>
@@ -10,15 +17,15 @@ export default function PosOrderModal({ onSelect, onClose }) {
           <button onClick={onClose} className={styles.closeButton}>
             <CloseIcon className={styles.closeIcon} />
           </button>
-          <span style={{ marginLeft: "1rem" }}>주문 일시 정지</span>
+          <span style={{ marginLeft: "1rem" }}>{title}</span>
         </div>
         <div style={{ marginTop: "80px" }}>
-          <p>일시 정지할 시간을 선택해 주세요</p>
-          <p style={{ fontSize: "14px", color: "gray" }}>일시 정지는 언제든지 해체할 수 있어요</p>
+          <p>{description}</p>
+          {subDescription && <p style={{ fontSize: "14px", color: "gray" }}>{subDescription}</p>}
           <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
-            {pauseButton.map((min) => (
+            {options.map((min) => (
               <button key={min} className={styles.modalButton} onClick={() => onSelect(min)}>
-                {min}분
+                {`${min}${optionUnit}`}
               </button>
             ))}
           </div>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import PosHeader from "../components/common/PosHeader";
-import PosOrderModal from "../components/pos/PosOrderModal";
 import { Outlet } from "react-router-dom";
+
+import PosHeader from "../components/common/PosHeader";
+import PosSelectModal from "../components/common/PosSelectModal";
 
 export default function PosLayout() {
   const [isReceivingOrders, setIsReceivingOrders] = useState(true);
@@ -28,7 +29,15 @@ export default function PosLayout() {
       <PosHeader isReceivingOrders={isReceivingOrders} onToggle={handleToggle} />
       <Outlet />
       {showPauseModal && (
-        <PosOrderModal onSelect={handlePause} onClose={() => setShowPauseModal(false)} />
+        <PosSelectModal
+          title="주문 일시 정지"
+          description="일시 정지할 시간을 선택해 주세요"
+          subDescription="일시 정지는 언제든지 해체할 수 있어요"
+          options={[5, 10, 15]}
+          optionUnit="분"
+          onSelect={handlePause}
+          onClose={() => setShowPauseModal(false)}
+        />
       )}
     </>
   );
