@@ -41,13 +41,19 @@ export default function PosOrders() {
     <div className={styles.container}>
       <PosSideBar currentTab={currentTab} onSelect={setCurrentTab} />
       <div className={styles.content}>
-        {filteredOrders.map((order) => (
-          <PosOrderItem
-            key={order.orderNumber}
-            order={order}
-            onClick={() => handleOrderClick(order.orderId)}
-          />
-        ))}
+        {filteredOrders.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>현재 {currentTab} 주문이 없습니다.</p>
+          </div>
+        ) : (
+          filteredOrders.map((order) => (
+            <PosOrderItem
+              key={order.orderNumber}
+              order={order}
+              onClick={() => handleOrderClick(order.orderId)}
+            />
+          ))
+        )}
       </div>
       {selectedOrderId && (
         <PosOrderDetailModal
