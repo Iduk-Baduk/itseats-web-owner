@@ -1,6 +1,14 @@
 import styles from "./PosOrderCard.module.css";
 
+const STATUS_CONFIG = {
+  COOKING: { color: "orange", text: "진행중" },
+  DELIVERING: { color: "red", text: "배달중" },
+  COMPLETED: { color: "rgb(25, 193, 77)", text: "배달완료", showIcon: true },
+};
+
 export default function PosOrderCard({ order, onClick }) {
+  const getStatusConfig = (status) => STATUS_CONFIG[status] || { color: "inherit", text: status };
+
   return (
     <div className={styles.card} onClick={onClick}>
       <div className={styles.leftSection}>
@@ -22,32 +30,15 @@ export default function PosOrderCard({ order, onClick }) {
           </span>
           <span
             className={styles.status}
-            style={{
-              color:
-                order.deliveryStatus === "COOKING"
-                  ? "orange"
-                  : order.deliveryStatus === "DELIVERING"
-                  ? "red"
-                  : order.deliveryStatus === "COMPLETED"
-                  ? "green"
-                  : "inherit",
-            }}
+            style={{ color: getStatusConfig(order.deliveryStatus).color }}
           >
-            {order.deliveryStatus === "COOKING" && "진행중"}
-            {order.deliveryStatus === "DELIVERING" && "배달중"}
-            {order.deliveryStatus === "COMPLETED" && (
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  fontWeight: "bold",
-                  gap: 4,
-                  color: "rgb(25, 193, 77)",
-                }}
-              >
-                <DeliveryCompletedIcon style={{ fontSize: 32, color: "rgb(25, 193, 77)" }} />
-                배달완료
+            {getStatusConfig(order.deliveryStatus).showIcon ? (
+              <span className={styles.completedStatus}>
+                <DeliveryCompletedIcon />
+                {getStatusConfig(order.deliveryStatus).text}
               </span>
+            ) : (
+              getStatusConfig(order.deliveryStatus).text
             )}
           </span>
         </div>
