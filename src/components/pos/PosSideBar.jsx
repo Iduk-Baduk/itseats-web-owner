@@ -1,7 +1,9 @@
 import styles from "./PosSideBar.module.css";
 
+const TABS = ["접수대기", "진행중", "주문내역"];
+
 export default function PosSideBar({ currentTab, onSelect }) {
-  const tabs = ["접수대기", "진행중", "주문내역"];
+  const tabs = TABS;
 
   return (
     <div className={styles.menuWrapper}>
