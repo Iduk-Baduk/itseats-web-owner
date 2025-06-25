@@ -13,7 +13,7 @@
 .modal {
   background: #fff;
   border-radius: 8px;
-  min-width: 500px;
+  min-width: 700px;
   max-width: 90vw;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -34,8 +34,13 @@
 .closeButton {
   background: none;
   border: none;
-  font-size: 2rem;
+  font-size: 1.3rem;
   cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: var(--background-hover-color);
+  border-radius: 50%;
 }
 .body {
   padding: 2rem;
@@ -47,6 +52,11 @@
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
 }
+
+.orderNumber {
+  font-weight: bold;
+}
+
 .time {
   color: #aaa;
   font-size: 1rem;
@@ -65,7 +75,10 @@
 .options {
   color: #bbb;
   font-size: 0.95rem;
-  margin-top: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
 }
 .totalRow {
   display: flex;
@@ -84,6 +97,7 @@
   display: flex;
   border-top: 1px solid #ddd;
 }
+
 .reject,
 .accept {
   flex: 1;
@@ -92,6 +106,15 @@
   border: none;
   cursor: pointer;
 }
+
+.reject:hover {
+  background: var(--background-hover-color);
+}
+
+.accept:hover {
+  background: var(--pos-theme-color-active);
+}
+
 .reject {
   background: #fff;
   color: #222;
@@ -99,4 +122,33 @@
 .accept {
   background: #2d7be5;
   color: #fff;
+}
+
+.memo {
+  padding: 0.5rem;
+  background: #f8d7da;
+  color: #c0392b;
+  border-radius: 4px;
+}
+
+.tableHeader {
+  text-align: center;
+  font-weight: bold;
+  color: #666;
+  background: #e5e5e5;
+}
+
+.table {
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.mainTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.option {
+  gap: 10px;
 }

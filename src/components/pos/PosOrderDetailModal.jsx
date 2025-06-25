@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
+import PosSelectModal from "../common/PosSelectModal";
+
 import styles from "./PosOrderDetailModal.module.css";
 
 export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReject }) {
   const [order, setOrder] = useState(null);
+  const [showCookTimeModal, setShowCookTimeModal] = useState(false);
+
+  // 예상 조리시간 선택 시
+  const handleCookTimeSelect = (minute) => {
+    setShowCookTimeModal(false);
+    console.log("🕰️ 선택된 조리 시간:", minute, "분");
+    onAccept(minute); // 실제 주문 수락 처리
+  };
 
   // TODO: 실제 API 호출로 주문 상세 정보 가져오기
   useEffect(() => {
@@ -41,6 +51,8 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
     return <div>로딩중..</div>;
   }
 
+  console.log("주문 상세 정보:", order);
+
   return (
     <div className={styles.backdrop}>
       <div className={styles.modal}>
@@ -52,7 +64,10 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
         </div>
         <div className={styles.body}>
           <div className={styles.orderInfo}>
-            <b>{order.orderNumber}</b> {order.customerName}
+            <div className={styles.orderNumber}>
+              <span style={{ fontSize: "1.4rem", marginRight: "0.5rem" }}>{order.orderNumber}</span>
+              {order.customerName}
+            </div>
             <span className={styles.time}>
               {new Date(order.time).toLocaleTimeString("ko-KR", {
                 hour: "2-digit",
@@ -62,7 +77,7 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
           </div>
           {order.memo && <div className={styles.memo}>{order.memo}</div>}
           <table className={styles.table}>
-            <thead>
+            <thead className={styles.tableHeader}>
               <tr>
                 <th>메뉴</th>
                 <th>수량</th>
@@ -74,14 +89,18 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
                 order.items.map((item, idx) => (
                   <tr key={idx}>
                     <td>
-                      {item.name}
-                      {item.options && (
-                        <div className={styles.options}>
-                          {item.options.map((opt, i) => (
-                            <div key={i}>{opt}</div>
-                          ))}
-                        </div>
-                      )}
+                      <span className={styles.mainTitle}>
+                        {item.name}
+                        {item.options && (
+                          <div className={styles.options}>
+                            {item.options.map((opt, i) => (
+                              <div className={styles.option} key={i}>
+                                {opt}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </span>
                     </td>
                     <td>{item.qty}</td>
                     <td>{item.price.toLocaleString()}원</td>
@@ -96,15 +115,28 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
                 order.items.reduce((sum, i) => sum + i.price * i.qty, 0).toLocaleString()}
               원
             </b>
+            <span style={{ marginLeft: "1rem", fontWeight: 400, color: "#888" }}>
+              ({order.items ? order.items.reduce((sum, i) => sum + i.qty, 0) : 0}개)
+            </span>
           </div>
         </div>
         <div className={styles.footer}>
           <button className={styles.reject} onClick={onReject}>
             주문 거절
           </button>
-          <button className={styles.accept} onClick={onAccept}>
+          <button className={styles.accept} onClick={() => setShowCookTimeModal(true)}>
             주문 수락
           </button>
+          {showCookTimeModal && (
+            <PosSelectModal
+              title="예상 조리 시간"
+              description="‘최대한 짧고 정확한’ 조리시간을 선택해 주세요."
+              options={[5, 10, 15]}
+              optionUnit="분"
+              onSelect={handleCookTimeSelect}
+              onClose={() => setShowCookTimeModal(false)}
+            />
+          )}
         </div>
       </div>
     </div>
