@@ -1,0 +1,15 @@
+.button {
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  background-color: var(--theme-color);
+  width: 100%;
+  border: none;
+  height: 3.5rem;
+  border-radius: 5px;
+}
+
+.button:hover {
+  background-color: var(--theme-color-hover);
+}
