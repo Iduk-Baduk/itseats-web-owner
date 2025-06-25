@@ -10,7 +10,12 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
           <div className={styles.ratingContainer}>
             <p className={styles.title}>고객 별점</p>
             <div>{checkRating(metricValue.customerRating)}</div>
-            <p className={styles.subTitle}>{Number(metricValue.customerRating).toFixed(1)}</p>
+            <p className={styles.subTitle}>
+              {(() => {
+                const rating = Number(metricValue.customerRating);
+                return isNaN(rating) ? "N/A" : rating.toFixed(1);
+              })()}
+            </p>
           </div>
         </div>
 
@@ -74,9 +79,16 @@ const checkRating = (rating) => {
     return;
   }
 
-  if (rating >= 4.0) {
+  const numericRating = typeof rating === "string" ? parseFloat(rating) : rating;
+
+  if (isNaN(numericRating)) {
+    console.warn("Invalid rating value:", rating);
+    return;
+  }
+
+  if (numericRating >= 4.0) {
     return goodCheckIcon();
-  } else if (rating >= 3.0) {
+  } else if (numericRating >= 3.0) {
     return midCheckIcon();
   } else {
     return badCheckIcon();
