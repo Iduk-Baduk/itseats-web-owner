@@ -24,7 +24,7 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
       orderId: 3,
       orderNumber: "GRMT0N",
       customerName: "구름톤",
-      orderStatus: "wating",
+      orderStatus: "waiting",
       time: "2025-05-05T00:00:00",
       totalPrice: 34000,
       items: [

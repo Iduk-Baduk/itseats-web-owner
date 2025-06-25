@@ -1,4 +1,3 @@
-// PauseOrderModal.jsx
 import styles from "./PosSelectModal.module.css";
 
 export default function PosSelectModal({

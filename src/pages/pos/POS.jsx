@@ -1,4 +1,4 @@
-import PostMetricItem from "../../components/pos/PosMetricItem";
+import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
 
 import styles from "./Pos.module.css";
@@ -6,7 +6,7 @@ import styles from "./Pos.module.css";
 export default function Pos() {
   return (
     <div>
-      <PostMetricItem
+      <PosMetricItem
         metricName={dummyData.storeName}
         metricValue={dummyData.metrics}
         className={styles.posMetricItem}

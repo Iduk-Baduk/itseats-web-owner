@@ -14,7 +14,7 @@ const initialState = [
         options: ["샷추가", "샷추가", "사이즈업"],
       },
     ],
-    deliveryStatus: "COKING",
+    deliveryStatus: "COOKING",
     customerRequest: "아메리카노 더블샷추가, 사이즈업 입니다.",
     riderPhone: null,
   },

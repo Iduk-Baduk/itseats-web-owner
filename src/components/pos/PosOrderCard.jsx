@@ -24,7 +24,7 @@ export default function PosOrderCard({ order, onClick }) {
             className={styles.status}
             style={{
               color:
-                order.deliveryStatus === "COKING"
+                order.deliveryStatus === "COOKING"
                   ? "orange"
                   : order.deliveryStatus === "DELIVERING"
                   ? "red"
@@ -33,7 +33,7 @@ export default function PosOrderCard({ order, onClick }) {
                   : "inherit",
             }}
           >
-            {order.deliveryStatus === "COKING" && "진행중"}
+            {order.deliveryStatus === "COOKING" && "진행중"}
             {order.deliveryStatus === "DELIVERING" && "배달중"}
             {order.deliveryStatus === "COMPLETED" && (
               <span

@@ -1,6 +1,6 @@
 import styles from "./PosSideBar.module.css";
 
-export default function PostSideBar({ currentTab, onSelect }) {
+export default function PosSideBar({ currentTab, onSelect }) {
   const tabs = ["접수대기", "진행중", "주문내역"];
 
   return (
