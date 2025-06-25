@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  background-color: #e0e0e0;
+  background-color: var(--background-color);
   cursor: pointer;
   border-bottom: 1px solid #b0b0b0;
   font-size: 1.2rem;
@@ -26,7 +26,7 @@
   border-bottom: none;
 }
 .tab:hover {
-  background-color: #d3d3d3;
+  background-color: var(--border-color);
 }
 
 .active {
