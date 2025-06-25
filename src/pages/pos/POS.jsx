@@ -1,12 +1,28 @@
-import { Link } from "react-router-dom";
+import PosMetricItem from "../../components/pos/PosMetricItem";
+import PosQuickAccess from "../../components/pos/PosQuickAccess";
+
+import styles from "./Pos.module.css";
 
 export default function Pos() {
-    return (
-        <div>
-        <h1 style={{height: "1200px"}}>
-            <p>POS</p>
-            <Link to="/sales">돌아가기 (임시)</Link>
-        </h1>
-        </div>
-    );
+  return (
+    <div>
+      <PosMetricItem
+        metricName={dummyData.storeName}
+        metricValue={dummyData.metrics}
+        className={styles.posMetricItem}
+      />
+      <PosQuickAccess className={styles.posQuickAccess} />
+    </div>
+  );
 }
+
+const dummyData = {
+  storeName: "스타벅스 커피",
+  metrics: {
+    customerRating: 2.0,
+    avgCookTime: "20분",
+    cookTimeAccuracy: "98%",
+    pickupTime: "43초",
+    orderAcceptanceRate: "100%",
+  },
+};

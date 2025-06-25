@@ -1,0 +1,81 @@
+.storeName {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding-left: 4.5rem;
+  padding-bottom: 10px;
+}
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 4.5rem;
+  margin: 0 4.5rem;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.subTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 1rem;
+}
+
+/* 항목 오른쪽에 선 추가 */
+.itemWithDivider {
+  border-right: 1px solid #e0e0e0;
+}
+
+/* 마지막 항목은 border 제거 */
+.item:last-child {
+  border-right: none;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .storeName {
+    justify-content: center;
+    padding-left: 0;
+    text-align: center;
+  }
+
+  .itemWithDivider {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .item:last-child {
+    border-bottom: none;
+  }
+}
