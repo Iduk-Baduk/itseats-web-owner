@@ -51,8 +51,6 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
     return <div>로딩중..</div>;
   }
 
-  console.log("주문 상세 정보:", order);
-
   return (
     <div className={styles.backdrop}>
       <div className={styles.modal}>
@@ -85,36 +83,31 @@ export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReje
               </tr>
             </thead>
             <tbody>
-              {order.items &&
-                order.items.map((item, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <span className={styles.mainTitle}>
-                        {item.name}
-                        {item.options && (
-                          <div className={styles.options}>
-                            {item.options.map((opt, i) => (
-                              <div className={styles.option} key={i}>
-                                {opt}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </span>
-                    </td>
-                    <td>{item.qty}</td>
-                    <td>{item.price.toLocaleString()}원</td>
-                  </tr>
-                ))}
+              {order.items?.map((item, idx) => (
+                <tr key={idx}>
+                  <td>
+                    <span className={styles.mainTitle}>
+                      {item.name}
+                      {item.options && (
+                        <div className={styles.options}>
+                          {item.options.map((opt, i) => (
+                            <div className={styles.option} key={i}>
+                              {opt}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </span>
+                  </td>
+                  <td>{item.qty}</td>
+                  <td>{item.price.toLocaleString()}원</td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className={styles.total}>
             합계{" "}
-            <b>
-              {order.items &&
-                order.items.reduce((sum, i) => sum + i.price * i.qty, 0).toLocaleString()}
-              원
-            </b>
+            <b>{order.items?.reduce((sum, i) => sum + i.price * i.qty, 0).toLocaleString()}원</b>
             <span style={{ marginLeft: "1rem", fontWeight: 400, color: "#888" }}>
               ({order.items ? order.items.reduce((sum, i) => sum + i.qty, 0) : 0}개)
             </span>

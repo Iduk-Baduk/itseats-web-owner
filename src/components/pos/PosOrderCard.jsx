@@ -44,7 +44,7 @@ export default function PosOrderCard({ order, onClick }) {
         </div>
 
         <div className={styles.menuItems}>
-          {order.menuItems.map((item, index) => (
+          {order.menuItems?.map((item, index) => (
             <span key={index} className={styles.menuItem}>
               {item.menuName}
               {item.options.length > 0 && `[${item.options.join(", ")}]`}x{item.quantity}
