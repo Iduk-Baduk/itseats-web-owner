@@ -51,7 +51,7 @@ export default function PosOrders() {
       </div>
       {selectedOrderId && (
         <PosOrderDetailModal
-          order={orders.orderId}
+          order={selectedOrderId}
           onClose={handleCloseModal}
           onAccept={handleAccept}
           onReject={handleReject}
