@@ -38,11 +38,12 @@ export default function Login() {
         </div>
 
         <Button
-          children="로그인"
           onClick={() => {
             alert("구현 필요");
           }}
-        ></Button>
+        >
+          로그인
+        </Button>
       </div>
     </>
   );
