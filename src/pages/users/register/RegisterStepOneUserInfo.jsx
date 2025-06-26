@@ -22,6 +22,12 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
 
     const field = data[index];
 
+    if (field.type === "email") {
+      setEmailError(emailRegEx.test(value) ? "" : "올바른 이메일 형식이 아닙니다.");
+    } else {
+      setEmailError("");
+    }
+
     if (field.info === "password") {
       setPasswordError(
         passwordRegEx.test(value) ? "" : "비밀번호는 8~20자의 영문·숫자 조합이어야 합니다."
