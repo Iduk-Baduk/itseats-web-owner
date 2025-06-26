@@ -7,14 +7,44 @@ import styles from "./RegisterStepOneUserInfo.module.css";
 
 export default function RegisterStepOneUserInfo({ step, data, onNext }) {
   const [values, setValues] = useState(Array(data.length).fill(""));
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordConfirmError, setPasswordConfirmError] = useState("");
+
+  const emailRegEx =
+    /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/i;
+  const passwordRegEx = /^[A-Za-z0-9]{8,20}$/;
 
   const handleChange = (index, value) => {
     const newValues = [...values];
     newValues[index] = value;
     setValues(newValues);
+
+    const field = data[index];
+
+    if (field.info === "password") {
+      setPasswordError(
+        passwordRegEx.test(value) ? "" : "비밀번호는 8~20자의 영문·숫자 조합이어야 합니다."
+      );
+      // 입력값이 바뀌면 확인칸 일치도 다시 확인
+      const confirmIndex = data.findIndex((f) => f.info === "passwordConfirm");
+      if (values[confirmIndex] && values[confirmIndex] !== value) {
+        setPasswordConfirmError("비밀번호가 일치하지 않습니다.");
+      } else {
+        setPasswordConfirmError("");
+      }
+    }
+
+    if (field.info === "passwordConfirm") {
+      const passwordIndex = data.findIndex((f) => f.info === "password");
+      setPasswordConfirmError(
+        value === values[passwordIndex] ? "" : "비밀번호가 일치하지 않습니다."
+      );
+    }
   };
 
   const allFilled = values.every((v) => v && v.trim() !== "");
+  const allValid = allFilled && !emailError && !passwordError && !passwordConfirmError;
 
   return (
     <div className={styles.registerContainer}>
@@ -28,12 +58,24 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
         회원가입은 쿠팡이츠 <strong>파트너센터(1234-1234)</strong>를 통해서도 가능합니다.
       </div>
       {data?.map((field, idx) => (
-        <TextInput
-          key={idx}
-          value={values[idx]}
-          placeholder={field.placeholder}
-          onChange={(e) => handleChange(idx, e.target.value)}
-        />
+        <>
+          <TextInput
+            key={idx}
+            value={values[idx]}
+            type={field.type}
+            placeholder={field.placeholder}
+            onChange={(e) => handleChange(idx, e.target.value)}
+          />
+          {field.type === "email" && emailError && (
+            <div style={{ color: "red", fontSize: "0.9rem" }}>{emailError}</div>
+          )}
+          {field.info === "password" && passwordError && (
+            <div style={{ color: "red", fontSize: "0.9rem" }}>{passwordError}</div>
+          )}
+          {field.info === "passwordConfirm" && passwordConfirmError && (
+            <div style={{ color: "red", fontSize: "0.9rem" }}>{passwordConfirmError}</div>
+          )}
+        </>
       ))}
       <Button children="다음" onClick={() => onNext(values)} disabled={!allFilled} />
     </div>
