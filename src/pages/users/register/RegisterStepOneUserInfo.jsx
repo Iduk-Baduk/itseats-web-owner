@@ -83,7 +83,7 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
           )}
         </>
       ))}
-      <Button children="다음" onClick={() => onNext(values)} disabled={!allFilled} />
+      <Button children="다음" onClick={() => onNext(values)} disabled={!allFilled || !allValid} />
     </div>
   );
 }
