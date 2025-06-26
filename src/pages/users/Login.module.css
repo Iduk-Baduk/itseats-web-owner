@@ -4,8 +4,10 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  padding: 0 15rem;
+  padding: 0 1.5rem; /* 양쪽 여백을 상대값으로 설정 */
   gap: 6rem;
+  max-width: 480px; /* 로그인 박스 최대 너비 제한 */
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 .title {
