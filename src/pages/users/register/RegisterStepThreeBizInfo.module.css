@@ -2,14 +2,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 0 1.5rem; /* 양쪽 여백을 상대값으로 설정 */
-  gap: 0.3rem;
-  max-width: 480px; /* 로그인 박스 최대 너비 제한 */
-  margin: 0 auto; /* 중앙 정렬 */
+  justify-content: flex-start; /* ✅ 상단 정렬로 변경 */
+  padding: 2rem 1.5rem;
+  gap: 1rem;
+  max-width: 720px; /* ✅ 더 넓게 */
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
+/* 제목 스타일은 그대로 유지 */
 .registerContainer h1 {
   color: var(--black-700);
   font-size: 1.6rem;

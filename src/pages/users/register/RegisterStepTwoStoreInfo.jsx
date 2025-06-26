@@ -36,6 +36,7 @@ export default function RegisterStepTwoStoreInfo({ step, data, onNext }) {
         ) : (
           <TextInput
             key={idx}
+            type={field.type}
             value={values[idx]}
             placeholder={field.placeholder}
             onChange={(e) => handleChange(idx, e.target.value)}

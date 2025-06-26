@@ -36,3 +36,23 @@
   outline: none;
   border-color: var(--focus-color);
 }
+
+@media (max-width: 1261px) {
+  .registerContainer {
+    padding: 0 1rem;
+    gap: 1rem;
+    max-width: 720px;
+  }
+
+  .description {
+    padding: 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  button {
+    width: 100%;
+    min-width: 280px;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+  }
+}
