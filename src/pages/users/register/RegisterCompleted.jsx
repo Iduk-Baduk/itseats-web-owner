@@ -16,12 +16,13 @@ export default function RegisterCompleted({ step, onNext }) {
       </h1>
 
       <Button
-        children="로그인 하기"
         onClick={() => {
           if (onNext) onNext();
           navigate("/login");
         }}
-      />
+      >
+        로그인 하기
+      </Button>
     </div>
   );
 }
