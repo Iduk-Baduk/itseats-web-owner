@@ -43,7 +43,9 @@ export default function RegisterStepThreeBizInfo({ step, data, onSubmit }) {
           />
         )
       )}
-      <Button children="다음" onClick={() => onSubmit(values)} disabled={!allFilled} />
+      <Button onClick={() => onSubmit(values)} disabled={!allFilled}>
+        다음
+      </Button>
     </div>
   );
 }

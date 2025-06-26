@@ -43,7 +43,9 @@ export default function RegisterStepTwoStoreInfo({ step, data, onNext }) {
           />
         )
       )}
-      <Button children="다음" onClick={() => onNext(values)} disabled={!allFilled} />
+      <Button onClick={() => onNext(values)} disabled={!allFilled}>
+        다음
+      </Button>
     </div>
   );
 }
