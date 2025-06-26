@@ -28,7 +28,7 @@ export default function RegisterContainer() {
     <>
       {step === 1 && (
         <RegisterStepOneUserInfo
-          step={0}
+          step={step - 1}
           data={USER_INFO}
           onNext={(values) => {
             setFormData((prev) => ({
@@ -41,7 +41,7 @@ export default function RegisterContainer() {
       )}
       {step === 2 && (
         <RegisterStepTwoStoreInfo
-          step={1}
+          step={step - 1}
           data={STORE_INFO}
           onNext={(values) => {
             setFormData((prev) => ({
@@ -55,7 +55,7 @@ export default function RegisterContainer() {
       )}
       {step === 3 && (
         <RegisterStepThreeBizInfo
-          step={2}
+          step={step - 1}
           data={BUSINESS_REGISTRATION}
           onSubmit={(values) => {
             const finalData = {
