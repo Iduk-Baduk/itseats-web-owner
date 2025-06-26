@@ -58,14 +58,12 @@ export default function RegisterContainer() {
           step={step - 1}
           data={BUSINESS_REGISTRATION}
           onSubmit={(values) => {
+            const businessInfo = mapValuesToInfo(values, BUSINESS_REGISTRATION);
             const finalData = {
               ...formData,
-              businessInfo: mapValuesToInfo(values, BUSINESS_REGISTRATION),
+              businessInfo,
             };
-            setFormData((prev) => ({
-              ...prev,
-              businessInfo: mapValuesToInfo(values, BUSINESS_REGISTRATION),
-            }));
+            setFormData(finalData);
             console.log(finalData);
             goNext();
           }}
