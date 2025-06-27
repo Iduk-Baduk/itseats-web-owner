@@ -2,13 +2,15 @@ import Header from "../../components/common/Header";
 import useFetchMenus from "../../hooks/useFetchMenus";
 import MenuStore from "../../components/menu/MenuStore";
 import MenusSummaryCard from "../../components/menu/MenuSummaryCard";
-
 import MenuList from "../../components/menu/MenuList";
+import MenuActions from "../../components/menu/MenuActions";
 
 import styles from "./Menus.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Menus() {
   const { menu, status, error } = useFetchMenus();
+  const navigate = useNavigate();
 
   if (status === "loading") {
     return <div>메뉴를 불러오는 중...</div>;
@@ -17,8 +19,6 @@ export default function Menus() {
   if (error) {
     return <p> 에러 발생: {error}</p>;
   }
-
-  console.log("menu 값:", menu);
 
   return (
     <div className={styles.container}>
@@ -31,14 +31,21 @@ export default function Menus() {
       />
 
       <h1 className={styles.title}>메뉴 관리</h1>
-
       {/* 매장 선택 */}
       <MenuStore />
       {/* 요약 카드 */}
       <MenusSummaryCard menu={menu} />
-
       {/* 메뉴 리스트 */}
       <MenuList menu={menu} />
+      {/* 메뉴 추가 및 관리 버튼 */}
+      <MenuActions
+        handleAddMenu={() => {
+          console.log("메뉴 추가 클릭됨");
+        }}
+        handleManageMenuGroup={() => {
+          console.log("메뉴 그룹 관리 클릭됨");
+        }}
+      />
     </div>
   );
 }
