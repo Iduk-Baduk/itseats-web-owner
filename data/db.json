@@ -1,0 +1,34 @@
+{
+  "menuList": {
+    "totalMenuCount": 7,
+    "orderableMenuCount": 4,
+    "outOfStockTodayCount": 1,
+    "hiddenMenuCount": 2,
+    "menus": [
+      {
+        "menuId": 11,
+        "menuName": "아메리카노",
+        "menuPrice": "2000",
+        "menuStatus": "ONSALE",
+        "menuGroupName": "음료",
+        "menuPriority": 1
+      },
+      {
+        "menuId": 13,
+        "menuName": "초코라떼",
+        "menuPrice": "2000",
+        "menuStatus": "OUT_OF_STOCK",
+        "menuGroupName": "음료",
+        "menuPriority": 2
+      },
+      {
+        "menuId": 25,
+        "menuName": "커피번",
+        "menuPrice": "3500",
+        "menuStatus": "HIDDEN",
+        "menuGroupName": "베이커리",
+        "menuPriority": 3
+      }
+    ]
+  }
+}
