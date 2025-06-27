@@ -8,74 +8,8 @@
   margin: 1rem 1rem 0px 1.4rem;
 }
 
-.storeSelector {
-  margin: 0 1.2rem;
-}
 
-.storeSelector select {
-  margin: 5px 0;
-  width: 100%;
-  font-weight: bold;
-  font-size: 1.5rem;
-  padding: 1rem;
-}
 
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 가로 중앙 정렬 */
-  justify-content: center; /* 세로 중앙 정렬 */
-  text-align: center; /* 텍스트 중앙 정렬 */
-  /* 필요하다면 높이/여백도 추가 */
-}
 
-.card span {
-  margin-left: 0.5rem; /* 숫자와 텍스트 사이 간격 */
-  font-weight: bold;
-}
 
-.summaryCard {
-  padding: 1.5rem 2rem;
-  background-color: var(--white-green);
-  border-radius: 2px;
-  margin: 0 1.2rem;
-  display: flex;
-  justify-content: space-around;
-  gap: 1.2rem;
-}
 
-.menuList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  gap: 12px;
-}
-
-.imageBox {
-  width: 40px;
-  height: 40px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-}
-
-.menuName {
-  flex: 1;
-  font-size: 16px;
-}
-
-.statusSelect {
-  width: 110px;
-  padding: 4px;
-}
-.groupTitle {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 1.5rem 1rem 0.5rem;
-}
