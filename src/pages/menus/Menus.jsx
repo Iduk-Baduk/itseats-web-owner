@@ -1,24 +1,18 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchMenuByIdAsync } from "../../store/menuSlice";
-
 import Header from "../../components/common/Header";
-import styles from "./Menus.module.css";
+import useFetchMenus from "../../hooks/useFetchMenus";
 
 export default function Menus() {
-  const dispatch = useDispatch();
-  const menuList = useSelector((state) => state.menu.menu); // menuSlice에서 가져옴
+  const { menu, status, error } = useFetchMenus();
 
-  // ✅ mount 시 메뉴 요청
-  useEffect(() => {
-    dispatch(fetchMenuByIdAsync());
-  }, [dispatch]);
+  if (status === "loading") {
+    return <div>메뉴를 불러오는 중...</div>;
+  }
 
-  const handleFetchMenu = () => {
-    dispatch(fetchMenuByIdAsync(storeId));
-  };
+  if (error) {
+    return <p> 에러 발생: {error}</p>;
+  }
 
-  console.log("메뉴 데이터", menuList);
+  console.log("메뉴", menu);
 
   return (
     <>
@@ -29,10 +23,6 @@ export default function Menus() {
           console.log("뒤로가기 클릭됨");
         }}
       />
-      <div>
-        <button onClick={handleFetchMenu}>메뉴 불러오기</button>
-        <pre>{JSON.stringify(menuList, null, 2)}</pre>
-      </div>
     </>
   );
 }
