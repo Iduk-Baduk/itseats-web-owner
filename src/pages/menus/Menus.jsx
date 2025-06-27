@@ -32,7 +32,7 @@ export default function Menus() {
 
       <h1 className={styles.title}>메뉴 관리</h1>
       {/* 매장 선택 */}
-      <MenuStore />
+      <MenuStore menu={menu} />
       {/* 요약 카드 */}
       <MenusSummaryCard menu={menu} />
       {/* 메뉴 리스트 */}
@@ -40,7 +40,7 @@ export default function Menus() {
       {/* 메뉴 추가 및 관리 버튼 */}
       <MenuActions
         handleAddMenu={() => {
-          console.log("메뉴 추가 클릭됨");
+          navigate("/menus/add");
         }}
         handleManageMenuGroup={() => {
           console.log("메뉴 그룹 관리 클릭됨");

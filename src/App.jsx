@@ -9,6 +9,7 @@ import Settlements from "./pages/settlements/Settlements";
 import Stores from "./pages/stores/Stores";
 import Accounts from "./pages/accounts/Accounts";
 import Menus from "./pages/menus/Menus";
+import MenusAdd from "./pages/menus/MenusAdd";
 import Reviews from "./pages/reviews/Reviews";
 import Login from "./pages/users/Login";
 import RegisterContainer from "./pages/users/register/RegisterContainer";
@@ -24,6 +25,7 @@ function App() {
           <Route path="/stores" element={<Stores />} />
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/menus" element={<Menus />} />
+          <Route path="/menus/add" element={<MenusAdd />} />
           <Route path="/reviews" element={<Reviews />} />
         </Route>
         <Route path="/" element={<PosLayout />}>

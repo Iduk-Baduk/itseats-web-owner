@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { menuAPI } from "../services/menuAPI";
+import { getGroupNames } from "../utils/groupMenus";
 
 export const fetchMenuByIdAsync = createAsyncThunk(
   "menu/fetchMenuById", // 액션 타입
@@ -12,6 +13,7 @@ export const menuSlice = createSlice({
   name: "menu",
   initialState: {
     menu: [],
+    groupNames: [],
     status: "idle",
     error: null,
   },
@@ -27,6 +29,7 @@ export const menuSlice = createSlice({
         console.log("🔥 메뉴 응답:", action.payload);
         state.status = "succeeded";
         state.menu = action.payload;
+        state.groupNames = getGroupNames(action.payload.menus);
       })
       .addCase(fetchMenuByIdAsync.rejected, (state, action) => {
         // 에러 처리
