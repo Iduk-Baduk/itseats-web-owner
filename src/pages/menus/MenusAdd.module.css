@@ -2,38 +2,6 @@
   padding-top: 80px;
 }
 
-.sidebar {
-  width: 240px;
-  background-color: white;
-  border-right: 1px solid #ddd;
-  padding: 1rem;
-}
-
-.portalTitle {
-  font-size: 20px;
-  font-weight: bold;
-  color: #16a34a;
-  margin-bottom: 1rem;
-}
-
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.navItem {
-  padding: 0.5rem;
-  cursor: pointer;
-  color: black;
-  font-size: 15px;
-}
-
-.active {
-  font-weight: bold;
-  color: #16a34a;
-}
-
 .main {
   flex: 1;
   padding: 2rem;
@@ -47,127 +15,80 @@
   margin-bottom: 1.5rem;
 }
 
-.backButton {
-  font-size: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.user {
-  font-size: 16px;
-  font-weight: bold;
-}
-
 .title {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 1rem;
 }
 
-.form {
-  max-width: 600px;
-}
-
-.formGroup {
-  margin-bottom: 1rem;
-}
-
-.input {
+.table {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.editOption {
-  color: #16a34a;
-  font-size: 13px;
-  margin-top: 0.25rem;
-  cursor: pointer;
-}
-
-.buttonGroup {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.grayButton {
-  background-color: #e5e7eb;
-  border: none;
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.greenButton {
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.textarea {
-  width: 100%;
-  padding: 0.5rem;
-  resize: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.charCount {
-  text-align: right;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.helpBox {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
-  font-size: 14px;
   margin-top: 1rem;
-  border-radius: 6px;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
-.helpTitle {
+.table th,
+.table td {
   font-weight: bold;
-  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-left: none;
+  padding: 0.5rem;
+  text-align: left;
 }
 
 .actionButtons {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
   margin-top: 1.5rem;
 }
 
 .cancelButton {
-  padding: 0.5rem 1.5rem;
+  padding: 0.6rem 3rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   background-color: white;
   cursor: pointer;
 }
 
+.cancelButton:hover {
+  background-color: var(--background-hover-color);
+}
+
 .addButton {
-  padding: 0.5rem 1.5rem;
+  padding: 0.6rem 3rem;
   border: none;
-  background-color: #16a34a;
+  background-color: var(--theme-color);
   color: white;
   border-radius: 4px;
   cursor: pointer;
 }
 
+.addButton:hover {
+  background-color: var(--theme-color-hover);
+}
+
 .deleteText {
   text-align: center;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--border-color);
   text-decoration: underline;
   cursor: pointer;
   margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+  .addButton,
+  .cancelButton {
+    padding: 0.4rem 1.5rem;
+    font-size: 14px;
+    flex: 1; /* ✅ 버튼을 같은 너비로 채움 */
+    text-align: center;
+  }
 }
