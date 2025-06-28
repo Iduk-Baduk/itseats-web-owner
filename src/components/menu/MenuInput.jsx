@@ -1,10 +1,28 @@
+import { useState } from "react";
 import styles from "./MenuInput.module.css";
+import MenuGroupModal from "./MenuGroupModal";
 
-export default function MenuInput({ groupNames }) {
+export default function MenuInput({ groupNames, onChange, selectedState, onSelectState }) {
+  const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
+
   return (
     <div className={styles.form}>
       <div className={styles.formGroup}>
-        <select defaultValue="선택" className={styles.select}>
+        <div className={styles.menuGroupController} onClick={() => setMenuGroupModal(true)}>
+          메뉴 그룹 관리
+        </div>
+        <MenuGroupModal
+          groupNames={groupNames}
+          modalState={menuGroupModal}
+          setModalState={setMenuGroupModal}
+        />
+
+        {/* 1. 그룹 선택 */}
+        <select
+          defaultValue="선택"
+          className={styles.select}
+          onClick={(e) => onChange("menuGroupName", e.target.value)}
+        >
           <option value="선택">선택</option>
           {groupNames.map((groupName, index) => (
             <option key={index} value={groupName}>
@@ -15,27 +33,69 @@ export default function MenuInput({ groupNames }) {
         </select>
       </div>
 
+      {/* 2. 메뉴명 선택 */}
       <div className={styles.formGroup}>
-        <label>메뉴명</label>
-        <input className={styles.input} placeholder="메뉴명 입력" />
+        <input
+          placeholder="메뉴명"
+          onChange={(e) => onChange("menuName", e.target.value)}
+          className={styles.input}
+        />
       </div>
 
+      {/* 3. 가격 */}
       <div className={styles.formGroup}>
-        <label>가격(원)</label>
-        <input type="number" className={styles.input} defaultValue={0} />
+        <input
+          placeholder="가격(원)"
+          onChange={(e) => onChange("menuPrice", e.target.value)}
+          type="number"
+          className={styles.input}
+          defaultValue={0}
+        />
       </div>
 
+      {/* 4. 상태 선택 */}
       <div className={styles.buttonGroup}>
-        <button className={styles.grayButton}>판매중</button>
-        <button className={styles.grayButton}>오늘만 품절</button>
-        <button className={styles.grayButton}>메뉴 숨김</button>
+        <button
+          onClick={(e) => {
+            onChange("menuStatus", e.currentTarget.value);
+            onSelectState(e.currentTarget.value);
+          }}
+          value="ONSALE"
+          className={`${styles.grayButton} ${selectedState === "ONSALE" ? styles.selected : ""}`}
+        >
+          판매중
+        </button>
+        <button
+          onClick={(e) => {
+            onChange("menuStatus", e.currentTarget.value);
+            onSelectState(e.currentTarget.value);
+          }}
+          value="OUT_OF_STOCK"
+          className={`${styles.grayButton} ${
+            selectedState === "OUT_OF_STOCK" ? styles.selected : ""
+          }`}
+        >
+          오늘만 품절
+        </button>
+        <button
+          onClick={(e) => {
+            onChange("menuStatus", e.currentTarget.value);
+            onSelectState(e.currentTarget.value);
+          }}
+          value="HIDDEN"
+          className={`${styles.grayButton} ${selectedState === "HIDDEN" ? styles.selected : ""}`}
+        >
+          메뉴 숨김
+        </button>
       </div>
 
+      {/* 4. 설명 입력(선택) */}
       <div className={styles.formGroup}>
         <textarea
           maxLength={60}
           className={styles.textarea}
           placeholder="메뉴 구성 또는 설명글 입력 (선택사항)"
+          onChange={(e) => onChange("menuDescription", e.target.value)}
         />
         <div className={styles.charCount}>0/60</div>
       </div>

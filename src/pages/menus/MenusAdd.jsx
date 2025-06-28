@@ -1,8 +1,8 @@
 import Header from "../../components/common/Header";
 import MenuInput from "../../components/menu/MenuInput";
 
+import { use, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
 import { fetchMenuByIdAsync } from "../../store/menuSlice";
 
 import styles from "./MenusAdd.module.css";
@@ -11,6 +11,14 @@ export default function MenusAdd() {
   const dispatch = useDispatch();
   const groupNames = useSelector((state) => state.menu.groupNames);
   const status = useSelector((state) => state.menu.status);
+  const [menuData, setMenuData] = useState({
+    menuGroupName: "",
+    menuName: "",
+    menuPrice: 0,
+    menuStatus: "",
+    menuDescription: "",
+    // menuPriority
+  });
 
   useEffect(() => {
     // 처음 로딩 시 메뉴 데이터를 가져옵니다.
@@ -29,6 +37,13 @@ export default function MenusAdd() {
     return <div>데이터 로드 실패</div>;
   }
 
+  const handleMenuInputChange = (field, value) => {
+    setMenuData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   return (
     <div className={styles.container}>
       <Header
@@ -45,15 +60,21 @@ export default function MenusAdd() {
           <thead>
             <tr>
               <th>메뉴 정보</th>
-              <label>
-                <input type="checkbox" /> 전체 선택
-              </label>
+              <th>
+                <input type="checkbox" id="selectAll" />
+                <label htmlFor="selectAll">전체 선택</label>
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <MenuInput groupNames={groupNames} className={styles.MenuInput} />
+                <MenuInput
+                  groupNames={groupNames}
+                  onChange={handleMenuInputChange}
+                  selectedState={menuData.state}
+                  onSelectState={(value) => setMenuData((prev) => ({ ...prev, state: value }))}
+                />
               </td>
               <td style={{ color: "green" }}>옵션 그룹 관리</td>
             </tr>
@@ -63,8 +84,22 @@ export default function MenusAdd() {
         {/* 하단 */}
         <footer>
           <div className={styles.actionButtons}>
-            <button className={styles.cancelButton}>취소</button>
-            <button className={styles.addButton}>추가</button>
+            <button
+              onClick={() => {
+                console.log(menuData);
+              }}
+              className={styles.cancelButton}
+            >
+              취소
+            </button>
+            <button
+              onClick={() => {
+                console.log(menuData);
+              }}
+              className={styles.addButton}
+            >
+              추가
+            </button>
           </div>
           <div className={styles.deleteText}>삭제하기</div>
         </footer>
