@@ -6,7 +6,11 @@
 .formGroup {
   margin-bottom: 1rem;
 }
-
+.menuGroupController {
+  margin: 0.5rem 0;
+  cursor: pointer;
+  color: var(--theme-color);
+}
 .select {
   width: 100%;
   padding-top: 0.8rem;
@@ -86,4 +90,8 @@
 .helpTitle {
   font-weight: bold;
   margin-bottom: 0.5rem;
+}
+
+.selected {
+  background-color: var(--theme-color);
 }

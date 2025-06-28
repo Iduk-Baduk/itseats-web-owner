@@ -1,0 +1,92 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  position: relative;
+}
+
+.modalClose {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.groupList {
+  margin: 20px 0;
+}
+
+.groupItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f6f6f6;
+  margin-bottom: 8px;
+  border-radius: 5px;
+}
+
+.groupText {
+  margin-top: 5px;
+}
+
+.groupCloseButton {
+  font-size: 20px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  color: var(--black-500);
+  cursor: pointer;
+}
+
+.addGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.addGroup input {
+  padding: 0.8rem;
+  flex: 1;
+}
+
+.addGroup button {
+  font-size: 1rem;
+  padding: 1rem 1.4rem;
+  background-color: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.modalActions {
+  display: flex;
+  margin: 2rem 2rem 0px 2rem;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button.cancelButton {
+  background-color: var(--border-color);
+}
+
+button.cancelButton:hover {
+  background-color: var(--black-500);
+}
