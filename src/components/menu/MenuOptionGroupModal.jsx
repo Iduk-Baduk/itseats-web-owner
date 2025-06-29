@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./MenuOptionGroupModal.module.css";
 
-export default function MenuOptionGroupModal({ onClose }) {
+export default function MenuOptionGroupModal({ onClose, onSave }) {
   const [optionGroups, setOptionGroups] = useState([]);
   const [optionGroupName, setOptionGroupName] = useState("");
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
@@ -78,11 +78,10 @@ export default function MenuOptionGroupModal({ onClose }) {
             <div className={styles.formGroup}>
               {/* 그룹명 선택 */}
               <select
-                defaultValue="옵션 그룹"
                 value={selectedGroupIndex}
                 onChange={(e) => setSelectedGroupIndex(Number(e.target.value))}
               >
-                <option value="옵션 그룹">옵션 그룹</option>
+                <option value="">옵션 그룹</option>
                 {optionGroups.map((group, index) => (
                   <option key={index} value={index}>
                     {group.groupName}
@@ -189,23 +188,9 @@ export default function MenuOptionGroupModal({ onClose }) {
           </button>
           <button
             onClick={() => {
-              console.log(
-                JSON.stringify(
-                  {
-                    isRequired,
-                    optionGroups: optionGroups.map((group) => ({
-                      groupName: group.groupName,
-                      isRequired: group.isRequired,
-                      options: group.options.map((opt) => ({
-                        name: opt.name,
-                        price: opt.price,
-                      })),
-                    })),
-                  },
-                  null,
-                  2
-                )
-              );
+              console.log("저장할 옵션 그룹:", optionGroups);
+              onSave(optionGroups); // 부모에게 저장
+              onClose();
             }}
             className={styles.addBtn}
           >
