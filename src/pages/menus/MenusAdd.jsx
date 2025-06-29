@@ -113,7 +113,7 @@ export default function MenusAdd() {
           <div className={styles.deleteText}>삭제하기</div>
         </footer>
       </div>
-      {optionGroupModal && <MenuOptionGroupModal onClose={() => setIsModalOpen(false)} />}
+      {optionGroupModal && <MenuOptionGroupModal onClose={() => setMenuGroupModal(false)} />}
     </div>
   );
 }
