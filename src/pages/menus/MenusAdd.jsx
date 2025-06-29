@@ -1,10 +1,11 @@
 import Header from "../../components/common/Header";
 import MenuInput from "../../components/menu/MenuInput";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMenuByIdAsync } from "../../store/menuSlice";
 
+import MenuOptionGroupModal from "../../components/menu/MenuOptionGroupModal";
 import styles from "./MenusAdd.module.css";
 
 export default function MenusAdd() {
@@ -19,6 +20,7 @@ export default function MenusAdd() {
     menuDescription: "",
     // menuPriority
   });
+  const [optionGroupModal, setMenuGroupModal] = useState(false);
 
   useEffect(() => {
     // 처음 로딩 시 메뉴 데이터를 가져옵니다.
@@ -76,7 +78,14 @@ export default function MenusAdd() {
                   onSelectState={(value) => setMenuData((prev) => ({ ...prev, state: value }))}
                 />
               </td>
-              <td style={{ color: "green" }}>옵션 그룹 관리</td>
+              <td
+                style={{ color: "green" }}
+                onClick={() => {
+                  setMenuGroupModal(true);
+                }}
+              >
+                옵션 그룹 관리
+              </td>
             </tr>
           </tbody>
         </table>
@@ -104,6 +113,7 @@ export default function MenusAdd() {
           <div className={styles.deleteText}>삭제하기</div>
         </footer>
       </div>
+      {optionGroupModal && <MenuOptionGroupModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 }
