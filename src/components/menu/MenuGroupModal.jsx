@@ -40,6 +40,7 @@ export default function MenuGroupModal({
 
   // 적용 핸들러
   const handleApply = () => {
+    // 만약 임시 그룹과 기존 그룹이 동일하다면 아무 작업도 하지 않습니다.
     const areEqual =
       tempGroups.length === groupNames.length &&
       tempGroups.every((group, index) => group === groupNames[index]);

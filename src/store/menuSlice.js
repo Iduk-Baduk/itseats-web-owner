@@ -17,7 +17,17 @@ export const menuSlice = createSlice({
     status: "idle",
     error: null,
   },
-  reducers: {},
+  reducers: {
+    addGroupName: (state, action) => {
+      if (!state.groupNames.includes(action.payload)) {
+        state.groupNames.push(action.payload);
+      }
+    },
+    setAllGroupNames: (state, action) => {
+      // action.payload로 받은 배열로 groupNames 상태를 완전히 교체
+      state.groupNames = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMenuByIdAsync.pending, (state) => {
@@ -39,3 +49,4 @@ export const menuSlice = createSlice({
 });
 
 export default menuSlice.reducer;
+export const { addGroupName, setAllGroupNames } = menuSlice.actions;
