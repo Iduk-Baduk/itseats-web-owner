@@ -1,13 +1,28 @@
-import { useState } from "react";
-import styles from "./MenuGroupModal.module.css";
 import Button from "../basic/Button";
+import { useEffect, useState } from "react";
+import { addGroupName, setAllGroupNames } from "../../store/menuSlice";
+import styles from "./MenuGroupModal.module.css";
+import { useDispatch } from "react-redux";
 
-export default function MenuGroupModal({ groupNames, modalState, setModalState }) {
-  const [tempGroups, setTempGroups] = useState(groupNames); // 그룹 임시 편집 상태
+// TODO: - button이 css를 안 먹는 버그가 있음
+// 추후 해결 필요
+export default function MenuGroupModal({
+  groupNames,
+  modalState,
+  setModalState,
+  setGroupNames,
+  onclose,
+}) {
+  const [tempGroups, setTempGroups] = useState([]); // 그룹 임시 편집 상태
   const [newGroup, setNewGroup] = useState(""); // 새로 추가 될 그룹
 
+  const dispatch = useDispatch();
+
+  // 추가 핸들러
   const handleAddGroup = () => {
-    if (!newGroup.trim()) return;
+    if (!newGroup.trim()) {
+      return;
+    }
     setTempGroups([...tempGroups, newGroup.trim()]);
     setNewGroup("");
   };
@@ -20,31 +35,55 @@ export default function MenuGroupModal({ groupNames, modalState, setModalState }
 
   const handleCancel = () => {
     setTempGroups(groupNames);
-    setModalState(false);
+    onclose();
   };
 
+  // 적용 핸들러
   const handleApply = () => {
-    // 실제 부모에 적용
-    onChange("groupNames", tempGroups);
+    const areEqual =
+      tempGroups.length === groupNames.length &&
+      tempGroups.every((group, index) => group === groupNames[index]);
+
+    if (areEqual) {
+      return;
+    }
+
+    // 목록 전체를 교체하는 올바른 액션을 사용합니다.
+    dispatch(setAllGroupNames(tempGroups));
+    setGroupNames(tempGroups);
+    alert("메뉴 그룹이 업데이트 되었습니다.");
     setModalState(false);
+    onclose();
   };
+
+  useEffect(() => {
+    setTempGroups(groupNames);
+  }, [groupNames]);
 
   return (
     <>
       {modalState && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
-            <h2>메뉴 그룹 관리</h2>
+            <div className={styles.modalHeader}>
+              <h2>메뉴 그룹 관리</h2>
+              {/* TODO: 버튼으로 교체해야됨 */}
+              <div className={styles.modalClose} onClick={() => setModalState(false)}>
+                ✕
+              </div>
+            </div>
             <div className={styles.groupList}>
               {tempGroups.map((group, index) => (
                 <div key={index} className={styles.groupItem}>
-                  <span className={styles.groupText}>{group}</span>
-                  <button
-                    className={styles.groupCloseButton}
-                    onClick={() => handleDeleteGroup(index)}
-                  >
-                    ✕
-                  </button>
+                  <div className={styles.groupTextContainer}>
+                    <span className={styles.groupText}>{group}</span>
+                    <div
+                      className={styles.groupCloseButton}
+                      onClick={() => handleDeleteGroup(index)}
+                    >
+                      ✕
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -56,21 +95,20 @@ export default function MenuGroupModal({ groupNames, modalState, setModalState }
                 value={newGroup}
                 onChange={(e) => setNewGroup(e.target.value)}
               />
-              <button onClick={handleAddGroup}>추가</button>
+              <div className={styles.addGroupButton} onClick={handleAddGroup}>
+                추가
+              </div>
             </div>
 
             <div className={styles.modalActions}>
-              <Button className={styles.cancelButton} onClick={handleCancel}>
+              {/* TODO: 버튼으로 교체해야됨 */}
+              <div className={styles.cancelButton} onClick={handleCancel}>
                 취소
-              </Button>
-              <Button className={styles.applyButton} onClick={handleApply}>
+              </div>
+              <div className={styles.applyButton} onClick={handleApply}>
                 적용
-              </Button>
+              </div>
             </div>
-
-            <button className={styles.modalClose} onClick={() => setModalState(false)}>
-              ✕
-            </button>
           </div>
         </div>
       )}

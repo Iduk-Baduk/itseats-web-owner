@@ -13,80 +13,92 @@
 
 .modal {
   background: white;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 400px;
-  position: relative;
 }
 
-.modalClose {
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 1rem 0; /* 상: 0, 우: 0, 하: 1rem, 좌: 0 */
 }
 
 .groupList {
-  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .groupItem {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  background: #f6f6f6;
-  margin-bottom: 8px;
+  padding: 0.8rem;
   border-radius: 5px;
+  background-color: var(--background-hover-color);
 }
 
-.groupText {
-  margin-top: 5px;
+.groupTextContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .groupCloseButton {
-  font-size: 20px;
-  font-weight: bold;
-  background: none;
-  border: none;
   color: var(--black-500);
   cursor: pointer;
+  font-size: 1.2rem;
 }
 
 .addGroup {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  gap: 1rem;
 }
 
 .addGroup input {
-  padding: 0.8rem;
   flex: 1;
+  padding: 0.8rem;
 }
 
-.addGroup button {
-  font-size: 1rem;
-  padding: 1rem 1.4rem;
+.addGroupButton {
+  padding: 0.9rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
   background-color: var(--theme-color);
   color: white;
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
+}
+
+.addGroupButton:hover {
+  background-color: var(--theme-color-hover);
 }
 
 .modalActions {
   display: flex;
-  margin: 2rem 2rem 0px 2rem;
   justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
+  margin-top: 1rem;
+  gap: 1rem;
 }
 
-button.cancelButton {
-  background-color: var(--border-color);
+.cancelButton {
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--black-500);
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
 }
 
-button.cancelButton:hover {
-  background-color: var(--black-500);
+.cancelButton:hover {
+  background-color: var(--background-hover-color);
+}
+
+.applyButton {
+  padding: 0.7rem 1.5rem;
+  border-radius: 4px;
+  background-color: var(--focus-color);
+  cursor: pointer;
+  color: white;
 }

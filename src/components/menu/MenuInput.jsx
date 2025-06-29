@@ -15,6 +15,8 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           groupNames={groupNames}
           modalState={menuGroupModal}
           setModalState={setMenuGroupModal}
+          setGroupNames={(newGroups) => onChange("groupNames", newGroups)}
+          onclose={() => setMenuGroupModal(false)}
         />
 
         {/* 1. 그룹 선택 */}
