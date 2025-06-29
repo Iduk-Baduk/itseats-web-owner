@@ -24,30 +24,26 @@
   display: flex;
   flex-direction: column;
   max-height: 95vh;
-  /* overflow-y: auto;  <-- 1. 이 줄을 제거하거나 주석 처리합니다. 모달 전체가 아닌 Body만 스크롤되도록 합니다. */
 }
 
 .modalHeader {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--background-hover-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
 }
 
-/* ... (중략) ... */
-
 .modalBody {
   display: flex;
   padding: 1.5rem;
   gap: 1.5rem;
-  overflow-y: auto; /* 이 부분은 유지합니다 (바디만 스크롤되도록) */
+  overflow-y: auto;
   flex-grow: 1;
-  min-height: 0; /* <-- 2. 추가: flex 아이템의 스크롤 문제를 해결하는 핵심 속성 */
+  min-height: 0;
 }
 
-/* ... (파일 하단은 이전과 동일) ... */
 .leftPanel,
 .rightPanel {
   flex: 1;
@@ -58,38 +54,49 @@
 }
 
 .rightPanel {
-  border-left: 1px solid #eee;
+  border-left: 1px solid var(--background-hover-color);
   padding-left: 1.5rem;
+}
+
+.headerTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--black-700);
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
 }
+
 .formGroup label {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
   color: #555;
 }
+
 .formGroup input,
 .formGroup select {
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--background-hover-color);
   border-radius: 4px;
 }
+
 .buttonGroup {
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
 }
+
 .cancelBtn {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--background-hover-color);
   background-color: white;
   border-radius: 4px;
   cursor: pointer;
 }
+
 .addBtn {
   flex: 1;
   padding: 0.75rem;
@@ -99,50 +106,72 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
 .requiredOption {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
+
 .optionGroupList {
-  border: 1px solid #eee;
+  border: 1px solid var(--background-hover-color);
   border-radius: 4px;
   padding: 1rem;
   flex-grow: 1;
 }
-.optionGroupItem,
+
+.optionGroupItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid white;
+}
+
+.optionGroupItemHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .subOptionItem {
   display: flex;
   align-items: center;
   padding: 0.5rem 0;
   gap: 0.75rem;
 }
+
 .subOptionItem {
   padding-left: 2rem;
   font-size: 0.9rem;
 }
+
 .subOptionItem span:nth-child(2) {
   margin-left: auto;
 }
+
 .itemActions {
   margin-left: auto;
   display: flex;
   gap: 0.5rem;
 }
+
 .itemActions button {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 1rem;
 }
+
 .addGroup {
   display: flex;
   gap: 0.5rem;
 }
+
 .addGroup input {
   flex-grow: 1;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--background-hover-color);
   border-radius: 4px;
 }
 
@@ -151,8 +180,50 @@
   display: flex;
   justify-content: center;
   gap: 1rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--background-hover-color);
   flex-shrink: 0;
+}
+
+.scrollableGroupList {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--background-hover-color);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.groupName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.checkBox {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  background-color: var(--focus-color);
+}
+
+.deleteButton {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
+.subOptionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 2rem;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.subOptionItem span:nth-child(2) {
+  margin-left: 0.5rem;
 }
 
 @media (max-width: 1261px) {
@@ -164,7 +235,7 @@
     border-left: none;
     padding-left: 0;
 
-    border-top: 1px solid #eee;
+    border-top: 1px solid white;
     padding-top: 1.5rem;
   }
 

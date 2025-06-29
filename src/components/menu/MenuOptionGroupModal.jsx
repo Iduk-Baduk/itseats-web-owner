@@ -2,108 +2,180 @@ import { useState } from "react";
 import styles from "./MenuOptionGroupModal.module.css";
 
 export default function MenuOptionGroupModal({ onClose }) {
-  // 모달 뒷 배경 클릭 시 닫히게 하는 함수
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
+  const [optionGroups, setOptionGroups] = useState([]);
+  const [optionGroupName, setOptionGroupName] = useState("");
+  const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+  const [optionName, setOptionName] = useState("");
+  const [optionPrice, setOptionPrice] = useState(0);
+  const [isRequired, setIsRequired] = useState(false);
+
+  const addOptionGroup = () => {
+    if (!optionGroupName.trim()) {
+      return;
     }
+    setOptionGroups((prev) => [
+      ...prev,
+      {
+        groupName: optionGroupName,
+        isOpen: true,
+        isRequired: false, // 그룹별로 저장
+        options: [],
+      },
+    ]);
+
+    setOptionGroupName("");
+    setSelectedGroupIndex(optionGroups.length); // 새 그룹 선택
   };
 
-  const [optionGroupNames, setOptionGroupNames] = useState([]);
-  const [optionName, setOptionName] = useState("");
-
-  const optionGroupNameChangeHandler = () => {
+  const addOptionToGroup = () => {
     if (!optionName.trim()) {
       return;
     }
 
-    setOptionGroupNames((prev) => [...prev, optionName]);
+    const updatedGroups = [...optionGroups];
+    const targetGroup = updatedGroups[selectedGroupIndex];
+
+    if (!targetGroup) {
+      return;
+    }
+
+    targetGroup.options.push({ name: optionName, price: Number(optionPrice) });
+
+    setOptionGroups(updatedGroups);
     setOptionName("");
+    setOptionPrice(0);
+  };
+
+  const toggleGroup = (index) => {
+    const updated = [...optionGroups];
+    updated[index].isOpen = !updated[index].isOpen;
+    setOptionGroups(updated);
+  };
+
+  const deleteOptionGroup = (index) => {
+    const updatedGroups = optionGroups.filter((_, i) => i !== index);
+    setOptionGroups(updatedGroups);
+
+    if (selectedGroupIndex === index) {
+      setSelectedGroupIndex(0); // 선택된 그룹이 삭제되면 첫 번째 그룹
+    } else if (selectedGroupIndex > index) {
+      setSelectedGroupIndex((prev) => prev - 1); // 삭제된 그룹 이후의 그룹이 선택되면 인덱스 조정
+    }
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
+    <div className={styles.modalOverlay}>
       <div className={styles.modalContainer}>
         {/* 헤더 */}
         <div className={styles.modalHeader}>
-          <h2>옵션 그룹 관리</h2>
-          <button onClick={onClose} className={styles.closeButton}>
-            &times;
-          </button>
+          <div onClick={onClose} className={styles.headerTitle}>
+            옵션 그룹 관리
+          </div>
         </div>
 
-        {/* 바디 (2단 레이아웃) */}
         <div className={styles.modalBody}>
-          {/* 왼쪽 패널: 옵션 추가 */}
           <div className={styles.leftPanel}>
             <div className={styles.formGroup}>
-              <select defaultValue="옵션그룹">
-                {optionGroupNames.map((groupName, index) => (
-                  <option key={index} value={groupName}>
-                    {groupName}
+              {/* 그룹명 선택 */}
+              <select
+                defaultValue="옵션 그룹"
+                value={selectedGroupIndex}
+                onChange={(e) => setSelectedGroupIndex(Number(e.target.value))}
+              >
+                <option value="옵션 그룹">옵션 그룹</option>
+                {optionGroups.map((group, index) => (
+                  <option key={index} value={index}>
+                    {group.groupName}
                   </option>
                 ))}
-                <option value="기타">기타</option>
-                <option>옵션 그룹</option>
               </select>
             </div>
             <div className={styles.formGroup}>
-              <input placeholder="옵션 명" type="text" />
+              <input
+                placeholder="옵션 명"
+                type="text"
+                value={optionName}
+                onChange={(e) => setOptionName(e.currentTarget.value)}
+              />
             </div>
             <div className={styles.formGroup}>
-              <input placeholder="가격(원)" type="number" defaultValue="0" />
+              <input
+                placeholder="가격(원)"
+                type="number"
+                value={optionPrice}
+                onChange={(e) => setOptionPrice(e.currentTarget.value)}
+              />
             </div>
             <div className={styles.buttonGroup}>
               <button className={styles.cancelBtn} onClick={onClose}>
                 취소
               </button>
-              <button className={styles.addBtn}>추가</button>
+              <button className={styles.addBtn} onClick={addOptionToGroup}>
+                추가
+              </button>
             </div>
           </div>
 
-          {/* 오른쪽 패널: 그룹 관리 */}
           <div className={styles.rightPanel}>
             <div className={styles.requiredOption}>
-              <input type="checkbox" id="required" />
+              <input type="checkbox" id="required" className={styles.checkBox} />
               <label htmlFor="required">표시 시 필수 옵션으로 변환됩니다.</label>
             </div>
-            {/* 옵션 그룹 목록 (예시) */}
+
             <div className={styles.optionGroupList}>
-              <div className={styles.optionGroupItem}>
-                <input type="checkbox" />
-                <>
-                  {optionGroupNames.map((groupName, index) => (
-                    <>
-                      <span index={index}>{groupName}</span>
-                      <div className={styles.itemActions}>
-                        <button>×</button>
-                        <button>≡</button>
+              {optionGroups.map((group, index) => (
+                <div key={index} className={styles.optionGroupItem}>
+                  <div
+                    className={styles.optionGroupItemHeader}
+                    onClick={() => toggleGroup(index)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={group.isRequired}
+                        onChange={(e) => {
+                          const updatedGroups = [...optionGroups];
+                          updatedGroups[index].isRequired = e.target.checked;
+                          setOptionGroups(updatedGroups);
+                        }}
+                        className={styles.checkBox}
+                      />
+                    </div>
+                    <span className={styles.groupName}>{group.groupName}</span>
+                    <div className={styles.itemActions}>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteOptionGroup(index);
+                        }}
+                      >
+                        <DeleteIcon className={styles.deleteButton} />
                       </div>
-                    </>
-                  ))}
-                </>
-              </div>
-              {/* 하위 옵션 예시 */}
-              <div className={styles.subOptionItem}>
-                <span>HOT</span>
-                <span>1,000원</span>
-                <button>≡</button>
-              </div>
-              <div className={styles.subOptionItem}>
-                <span>ICE</span>
-                <span>1,000원</span>
-                <button>≡</button>
-              </div>
+
+                      <button>{group.isOpen ? <UpArrayIcon /> : <DownArrayIcon />}</button>
+                    </div>
+                  </div>
+
+                  {group.isOpen &&
+                    group.options.map((opt, i) => (
+                      <div key={i} className={styles.subOptionItem}>
+                        <span>{opt.name}</span>
+                        <span>{opt.price.toLocaleString()}원</span>
+                      </div>
+                    ))}
+                </div>
+              ))}
             </div>
+
             <div className={styles.addGroup}>
               <input
                 type="text"
                 placeholder="옵션 그룹명"
-                onChange={(e) => {
-                  setOptionName(e.target.value);
-                }}
+                value={optionGroupName}
+                onChange={(e) => setOptionGroupName(e.target.value)}
               />
-              <button className={styles.addBtn} onClick={optionGroupNameChangeHandler}>
+              <button className={styles.addBtn} onClick={addOptionGroup}>
                 추가
               </button>
             </div>
@@ -115,7 +187,28 @@ export default function MenuOptionGroupModal({ onClose }) {
           <button onClick={onClose} className={styles.cancelBtn}>
             취소
           </button>
-          <button onClick={onClose} className={styles.addBtn}>
+          <button
+            onClick={() => {
+              console.log(
+                JSON.stringify(
+                  {
+                    isRequired,
+                    optionGroups: optionGroups.map((group) => ({
+                      groupName: group.groupName,
+                      isRequired: group.isRequired,
+                      options: group.options.map((opt) => ({
+                        name: opt.name,
+                        price: opt.price,
+                      })),
+                    })),
+                  },
+                  null,
+                  2
+                )
+              );
+            }}
+            className={styles.addBtn}
+          >
             저장
           </button>
         </div>
@@ -123,3 +216,54 @@ export default function MenuOptionGroupModal({ onClose }) {
     </div>
   );
 }
+
+const UpArrayIcon = ({ className }) => {
+  return (
+    <svg
+      className={className}
+      width="12"
+      height="8"
+      viewBox="0 0 12 8"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M1.41 8L6 3.42L10.59 8L12 6.59L6 0.59L0 6.59L1.41 8Z" fill="#349367" />
+    </svg>
+  );
+};
+
+const DownArrayIcon = ({ className }) => {
+  return (
+    <svg
+      className={className}
+      width="12"
+      height="8"
+      viewBox="0 0 12 8"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10.59 0.589844L6 5.16984L1.41 0.589844L0 1.99984L6 7.99984L12 1.99984L10.59 0.589844Z"
+        fill="#349367"
+      />
+    </svg>
+  );
+};
+
+const DeleteIcon = ({ className }) => {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M17.1666 2.4785L15.5216 0.833496L8.99992 7.35516L2.47825 0.833496L0.833252 2.4785L7.35492 9.00016L0.833252 15.5218L2.47825 17.1668L8.99992 10.6452L15.5216 17.1668L17.1666 15.5218L10.6449 9.00016L17.1666 2.4785Z"
+        fill="#B6B6B6"
+      />
+    </svg>
+  );
+};
