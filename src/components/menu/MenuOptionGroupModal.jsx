@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./MenuOptionGroupModal.module.css";
 
 export default function MenuOptionGroupModal({ onClose }) {
@@ -6,6 +7,18 @@ export default function MenuOptionGroupModal({ onClose }) {
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  const [optionGroupNames, setOptionGroupNames] = useState([]);
+  const [optionName, setOptionName] = useState("");
+
+  const optionGroupNameChangeHandler = () => {
+    if (!optionName.trim()) {
+      return;
+    }
+
+    setOptionGroupNames((prev) => [...prev, optionName]);
+    setOptionName("");
   };
 
   return (
@@ -24,19 +37,21 @@ export default function MenuOptionGroupModal({ onClose }) {
           {/* 왼쪽 패널: 옵션 추가 */}
           <div className={styles.leftPanel}>
             <div className={styles.formGroup}>
-              <label>옵션 그룹</label>
-              <select>
-                <option>사이즈</option>
-                <option>HOT / ICE</option>
+              <select defaultValue="옵션그룹">
+                {optionGroupNames.map((groupName, index) => (
+                  <option key={index} value={groupName}>
+                    {groupName}
+                  </option>
+                ))}
+                <option value="기타">기타</option>
+                <option>옵션 그룹</option>
               </select>
             </div>
             <div className={styles.formGroup}>
-              <label>옵션 명</label>
-              <input type="text" />
+              <input placeholder="옵션 명" type="text" />
             </div>
             <div className={styles.formGroup}>
-              <label>가격(원)</label>
-              <input type="number" defaultValue="0" />
+              <input placeholder="가격(원)" type="number" defaultValue="0" />
             </div>
             <div className={styles.buttonGroup}>
               <button className={styles.cancelBtn} onClick={onClose}>
@@ -56,19 +71,17 @@ export default function MenuOptionGroupModal({ onClose }) {
             <div className={styles.optionGroupList}>
               <div className={styles.optionGroupItem}>
                 <input type="checkbox" />
-                <span>사이즈</span>
-                <div className={styles.itemActions}>
-                  <button>×</button>
-                  <button>≡</button>
-                </div>
-              </div>
-              <div className={styles.optionGroupItem}>
-                <input type="checkbox" />
-                <span>HOT / ICE</span>
-                <div className={styles.itemActions}>
-                  <button>×</button>
-                  <button>≡</button>
-                </div>
+                <>
+                  {optionGroupNames.map((groupName, index) => (
+                    <>
+                      <span index={index}>{groupName}</span>
+                      <div className={styles.itemActions}>
+                        <button>×</button>
+                        <button>≡</button>
+                      </div>
+                    </>
+                  ))}
+                </>
               </div>
               {/* 하위 옵션 예시 */}
               <div className={styles.subOptionItem}>
@@ -83,8 +96,16 @@ export default function MenuOptionGroupModal({ onClose }) {
               </div>
             </div>
             <div className={styles.addGroup}>
-              <input type="text" placeholder="옵션 그룹명" />
-              <button className={styles.addBtn}>추가</button>
+              <input
+                type="text"
+                placeholder="옵션 그룹명"
+                onChange={(e) => {
+                  setOptionName(e.target.value);
+                }}
+              />
+              <button className={styles.addBtn} onClick={optionGroupNameChangeHandler}>
+                추가
+              </button>
             </div>
           </div>
         </div>
