@@ -30,5 +30,62 @@
         "menuPriority": 3
       }
     ]
+  },
+
+  "owner": {
+    "menuId": 11,
+    "menuName": "아메리카노",
+    "menuDescription": "평범한 아메리카노입니다.",
+    "menuPrice": "2000",
+    "menuStatus": "ONSALE",
+    "menuRating": 4.43,
+    "menuGroupName": "음료",
+
+    "optionGroups": [
+      {
+        "optionGroupName": "사이즈",
+        "isRequired": true,
+        "minSelect": 1,
+        "maxSelect": 1,
+        "priority": 1,
+
+        "options": [
+          {
+            "optionName": "톨(Tall)",
+            "optionPrice": 0,
+            "optionStatus": "ONSALE",
+            "optionPriority": 1
+          },
+          {
+            "optionName": "벤티(Venti)",
+            "optionPrice": 1000,
+            "optionStatus": "HIDDEN",
+            "optionPriority": 2
+          }
+        ]
+      },
+      {
+        "optionGroupName": "샷 추가",
+        "isRequired": false,
+        "minSelect": 0,
+        "maxSelect": 1,
+        "priority": 2,
+
+        "options": [
+          {
+            "optionName": "1번 샷 추가",
+            "optionPrice": 500,
+            "optionStatus": "ONSALE",
+            "optionPriority": 1
+          },
+          {
+            "optionName": "2번 샷 추가",
+            "optionPrice": 1000,
+            "optionStatus": "OUT_OF_STOCK",
+            "optionPriority": 2
+          }
+        ]
+      }
+    ]
   }
 }

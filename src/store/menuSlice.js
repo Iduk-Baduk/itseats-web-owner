@@ -2,6 +2,14 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { menuAPI } from "../services/menuAPI";
 import { getGroupNames } from "../utils/groupMenus";
 
+export const fetchOwnerDataAsync = createAsyncThunk(
+  "menu/fetchOwnerData", // 액션 타입
+  async () => {
+    // services/menuAPI.js 파일에 정의한 getOwnerData 함수를 호출합니다.
+    return await menuAPI.getOwnerData();
+  }
+);
+
 export const fetchMenuByIdAsync = createAsyncThunk(
   "menu/fetchMenuById", // 액션 타입
   async () => {
