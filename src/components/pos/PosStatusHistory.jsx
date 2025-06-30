@@ -90,9 +90,13 @@ const PosStatusHistory = ({ history }) => {
       <div className={styles.historyList}>
         {paginatedHistory.map((item, index) => (
           <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
-            <div className={styles.timestamp} role="timestamp">
+            <time
+              className={styles.timestamp}
+              dateTime={item.timestamp}
+              aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
+            >
               {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-            </div>
+            </time>
             <PosStatusBadge status={item.status} />
           </div>
         ))}

@@ -71,11 +71,15 @@ const longHistory = Array(15).fill(null).map((_, index) => ({
   </div>
 </div>
 
-// 수정 후
+// 수정 후 (시맨틱 HTML 사용)
 <div className={styles.historyItem}>
-  <div className={styles.timestamp} role="timestamp">
+  <time
+    className={styles.timestamp}
+    dateTime={item.timestamp}
+    aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
+  >
     {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-  </div>
+  </time>
   <PosStatusBadge status={item.status} />  // ✅ 직접 사용
 </div>
 ```
@@ -156,6 +160,8 @@ Tests  5 passed (5)
 ### 1. 접근성 속성 중복 주의
 - 컴포넌트를 감쌀 때는 내부 컴포넌트의 `role`, `aria-*` 속성을 확인
 - 중복된 접근성 속성은 테스트뿐만 아니라 스크린 리더 사용자에게도 혼란을 줄 수 있음
+- **시맨틱 HTML 사용**: `role="timestamp"` 같은 잘못된 ARIA 역할 대신 `<time>` 요소 사용
+- ARIA 스펙에 없는 역할을 사용하면 보조 기술이 요소를 인식하지 못해 접근성이 저하됨
 
 ### 2. 날짜/시간 계산 주의사항
 - JavaScript Date 생성자의 파라미터 순서: `new Date(year, month, date, hours, minutes, seconds)`

@@ -74,7 +74,7 @@ describe('PosStatusHistory', () => {
 
   test('sorts history items by time in descending order', () => {
     render(<PosStatusHistory history={mockHistory} />);
-    const timestamps = screen.getAllByRole('timestamp').map(item => item.textContent);
+    const timestamps = screen.getAllByRole('time').map(item => item.textContent);
     const sortedTimestamps = [...timestamps].sort((a, b) => b.localeCompare(a));
     expect(timestamps).toEqual(sortedTimestamps);
   });
