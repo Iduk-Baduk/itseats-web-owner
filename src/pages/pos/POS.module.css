@@ -36,3 +36,21 @@
   font-size: 14px;
   color: #666;
 }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #FFEBEE;
+  border-radius: 4px;
+  color: #D32F2F;
+  font-size: 14px;
+}
