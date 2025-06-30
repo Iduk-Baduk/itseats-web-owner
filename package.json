@@ -7,10 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "mock": "json-server --watch ./data/db.json --port 3001",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "mock-server": "json-server --watch data/db.json --port 3001"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@reduxjs/toolkit": "^2.8.2",
     "axios": "^1.10.0",
     "react": "^19.1.0",
