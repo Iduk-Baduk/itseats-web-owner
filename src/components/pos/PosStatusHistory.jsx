@@ -140,12 +140,13 @@ const PosStatusHistory = ({ history }) => {
 
       <div className={styles.historyList} role="list">
         {paginatedHistory.map((item, index) => {
-          const isExpanded = expandedItems.has(item.id);
+          const itemKey = generateHistoryItemKey(item, index);
+          const isExpanded = expandedItems.has(itemKey);
           const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
 
           return (
             <div 
-              key={generateHistoryItemKey(item, index)} 
+              key={itemKey} 
               className={styles.historyItem}
               role="listitem"
             >
@@ -161,7 +162,7 @@ const PosStatusHistory = ({ history }) => {
                 {hasMetadata && (
                   <button
                     className={styles.expandButton}
-                    onClick={() => toggleItemExpansion(item.id)}
+                    onClick={() => toggleItemExpansion(itemKey)}
                     aria-label={isExpanded ? '접기' : '펼치기'}
                   >
                     {isExpanded ? '▼' : '▶'}
