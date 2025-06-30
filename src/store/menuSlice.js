@@ -16,6 +16,17 @@ export const fetchMenuByIdAsync = createAsyncThunk(
   }
 );
 
+export const updateMenuPriorityAsync = createAsyncThunk(
+  "menu/updateMenuPriority",
+  async ({ groupName, menus }) => {
+    const updates = menus.map(menu => 
+      menuAPI.updateMenu(menu.id || menu.menuId, { menuPriority: menu.menuPriority })
+    );
+    await Promise.all(updates);
+    return { groupName, menus };
+  }
+);
+
 export const menuSlice = createSlice({
   name: "menu",
   initialState: {
@@ -26,6 +37,17 @@ export const menuSlice = createSlice({
     error: null,
   },
   reducers: {
+    updateMenuPriority: (state, action) => {
+      const { groupName, menus } = action.payload;
+      const updatedMenus = state.menu.menus.map(menu => {
+        if (menu.menuGroupName === groupName) {
+          const updatedMenu = menus.find(m => m.id === menu.id || m.menuId === menu.menuId);
+          return updatedMenu || menu;
+        }
+        return menu;
+      });
+      state.menu.menus = updatedMenus;
+    },
     addGroupName: (state, action) => {
       if (!state.groupNames.includes(action.payload)) {
         state.groupNames.push(action.payload);
@@ -33,51 +55,38 @@ export const menuSlice = createSlice({
     },
     setAllGroupNames: (state, action) => {
       state.groupNames = action.payload;
-      
-      const newMenus = [];
-      action.payload.forEach(groupName => {
-        const menusInGroup = state.menu.menus.filter(menu => menu.group === groupName);
-        newMenus.push(...menusInGroup);
-      });
-      
-      const ungroupedMenus = state.menu.menus.filter(menu => !action.payload.includes(menu.group));
-      newMenus.push(...ungroupedMenus);
-      
-      state.menu.menus = newMenus;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMenuByIdAsync.pending, (state) => {
         state.status = "loading";
-        console.log("메뉴 로딩 중...");
       })
       .addCase(fetchMenuByIdAsync.fulfilled, (state, action) => {
-        console.log("🔥 메뉴 응답:", action.payload);
         state.status = "succeeded";
         state.menu = { menus: action.payload.menus };
         state.stats = action.payload.stats;
         
-        const currentGroups = new Set(state.groupNames);
-        const newGroups = getGroupNames(action.payload.menus);
-        
-        newGroups.forEach(group => {
-          if (!currentGroups.has(group)) {
-            state.groupNames.push(group);
-          }
-        });
-        
-        state.groupNames = state.groupNames.filter(group => 
-          newGroups.includes(group)
-        );
+        // 그룹 이름 업데이트
+        state.groupNames = getGroupNames(action.payload.menus);
       })
       .addCase(fetchMenuByIdAsync.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
-        console.error("메뉴 로딩 실패:", action.error.message);
+      })
+      .addCase(updateMenuPriorityAsync.fulfilled, (state, action) => {
+        const { groupName, menus } = action.payload;
+        const updatedMenus = state.menu.menus.map(menu => {
+          if (menu.menuGroupName === groupName) {
+            const updatedMenu = menus.find(m => m.id === menu.id || m.menuId === menu.menuId);
+            return updatedMenu || menu;
+          }
+          return menu;
+        });
+        state.menu.menus = updatedMenus;
       });
   },
 });
 
 export default menuSlice.reducer;
-export const { addGroupName, setAllGroupNames } = menuSlice.actions;
+export const { updateMenuPriority, addGroupName, setAllGroupNames } = menuSlice.actions;

@@ -13,6 +13,16 @@ export const menuAPI = {
     }
   },
 
+  getMenu: async (id) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.GET_MENU(id));
+      return response.data;
+    } catch (e) {
+      console.error("API Error: getMenu", e);
+      throw e;
+    }
+  },
+
   getMenuStats: async () => {
     try {
       const response = await apiClient.get("/menuStats");
@@ -41,6 +51,16 @@ export const menuAPI = {
       return response.data;
     } catch (e) {
       console.error("API Error: addMenu", e);
+      throw e;
+    }
+  },
+
+  updateMenu: async (id, menuData) => {
+    try {
+      const response = await apiClient.patch(API_ENDPOINTS.UPDATE_MENU(id), menuData);
+      return response.data;
+    } catch (e) {
+      console.error("API Error: updateMenu", e);
       throw e;
     }
   },
