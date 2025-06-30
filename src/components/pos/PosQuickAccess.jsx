@@ -1,13 +1,24 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./PosQuickAccess.module.css";
 
 export default function PosQuickAccess({ className }) {
+  const navigate = useNavigate();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
+
   return (
     <div className={className}>
       <div className={styles.container}>
         <div className={styles.title}>서비스 바로가기</div>
         <div className={styles.accessList}>
-          {accessList.map(({ name, label, icon }) => (
-            <button key={name} className={styles.accessButton}>
+          {accessList.map(({ name, label, icon, path }) => (
+            <button
+              key={name}
+              className={styles.accessButton}
+              onClick={() => handleNavigate(path)}
+            >
               <div className={styles.accessItem}>
                 <span className={styles.iconWrapper}>{icon}</span>
                 <span>{label}</span>
@@ -91,7 +102,7 @@ const MenuIcon = () => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M1 22C1 22.54 1.45 23 2 23H15C15.56 23 16 22.54 16 22V21H1V22ZM8.5 9C4.75 9 1 11 1 15H16C16 11 12.25 9 8.5 9ZM3.62 13C4.73 11.45 7.09 11 8.5 11C9.91 11 12.27 11.45 13.38 13H3.62ZM1 17H16V19H1V17ZM18 5V1H16V5H11L11.23 7H20.79L19.39 21H18V23H19.72C20.56 23 21.25 22.35 21.35 21.53L23 5H18Z"
+        d="M1 22C1 22.54 1.45 23 2 23H15C15.56 23 16 22.54 16 22V21H1V22ZM8.5 9C4.75 9 1 11 1 15H16C16 11 12.25 9 8.5 9ZM3.62 13C4.73 11.45 7.09 11 8.5 11C9.91 11 12.27 11.45 13.38 13H3.62ZM1 17H16V19H1V17ZM18 5V1H16V5H11L11.23 7H20.79L19.39 21H18Z"
         fill="black"
       />
     </svg>
@@ -119,9 +130,9 @@ const ReviewIcon = () => {
 
 // 서비스 바로가기 아이콘 목록
 const accessList = [
-  { name: "Sales Management", label: "매출 관리", icon: <SalesIcon /> },
-  { name: "Settlement Management", label: "정산 관리", icon: <SettlementIcon /> },
-  { name: "Store Management", label: "매장 관리", icon: <StoreIcon /> },
-  { name: "Menu Management", label: "메뉴 관리", icon: <MenuIcon /> },
-  { name: "Review Management", label: "리뷰 관리", icon: <ReviewIcon /> },
+  { name: "Sales Management", label: "매출 관리", icon: <SalesIcon />, path: "/sales" },
+  { name: "Settlement Management", label: "정산 관리", icon: <SettlementIcon />, path: "/settlements" },
+  { name: "Store Management", label: "매장 관리", icon: <StoreIcon />, path: "/stores" },
+  { name: "Menu Management", label: "메뉴 관리", icon: <MenuIcon />, path: "/menus" },
+  { name: "Review Management", label: "리뷰 관리", icon: <ReviewIcon />, path: "/reviews" },
 ];

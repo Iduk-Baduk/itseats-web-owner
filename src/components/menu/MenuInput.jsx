@@ -48,11 +48,11 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       {/* 3. 가격 */}
       <div className={styles.formGroup}>
         <input
-          placeholder="가격(원)"
+          placeholder="금액 입력"
           onChange={(e) => onChange("menuPrice", e.target.value)}
           type="number"
           className={styles.input}
-          defaultValue={0}
+          min="0"
         />
       </div>
 

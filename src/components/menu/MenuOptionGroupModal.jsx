@@ -104,8 +104,9 @@ export default function MenuOptionGroupModal({ onClose, onSave }) {
             </div>
             <div className={styles.formGroup}>
               <input
-                placeholder="가격(원)"
+                placeholder="추가금액"
                 type="number"
+                min="0"
                 value={optionPrice}
                 onChange={(e) => setOptionPrice(e.currentTarget.value)}
               />
