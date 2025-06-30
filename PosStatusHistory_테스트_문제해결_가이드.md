@@ -126,7 +126,7 @@ test('filters history by date', () => {
   fireEvent.change(dateSelect, { target: { value: '2024-03-20' } });
   
   // 변경된 날짜의 데이터만 표시되는지 확인 (2024-03-20의 데이터는 2개)
-  const statusBadges = screen.getAllByRole('status');
++ const statusBadges = screen.getAllByRole('img');
   expect(statusBadges).toHaveLength(2);
 });
 
@@ -172,9 +172,10 @@ Tests  5 passed (5)
 - 컴포넌트를 감쌀 때는 내부 컴포넌트의 `role`, `aria-*` 속성을 확인
 - 중복된 접근성 속성은 테스트뿐만 아니라 스크린 리더 사용자에게도 혼란을 줄 수 있음
 - **시맨틱 HTML 사용**: `role="timestamp"` 같은 잘못된 ARIA 역할 대신 `<time>` 요소 사용
-- **적절한 ARIA 역할 선택**: 
-  - `role="status"` → 라이브 리전용, 즉시 알림이 필요한 동적 상태에만 사용
-  - `role="img"` → 정적 상태 표시용, 반복되는 시각적 요소에 적합
++ **ARIA 역할 중복 제거**: 
++   - 컴포넌트 조합 시 내부 컴포넌트의 기존 역할을 확인
++   - 불필요한 래퍼 요소의 역할 속성 제거
++   - 컴포넌트가 이미 적절한 의미론적 역할을 가지고 있다면 추가 역할 부여 불필요
 - ARIA 스펙에 없는 역할을 사용하면 보조 기술이 요소를 인식하지 못해 접근성이 저하됨
 
 ### 2. 날짜/시간 계산 주의사항
