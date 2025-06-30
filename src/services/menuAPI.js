@@ -4,13 +4,18 @@ import apiClient from "./apiClient";
 // 메뉴 API 서비스
 export const menuAPI = {
   getMenus: async () => {
-    const response = await apiClient.get(API_ENDPOINTS.MENUS_BY_ID());
-    return response.data;
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.MENU_LIST());
+      return response.data;
+    } catch (e) {
+      console.error("API Error: getMenus", e);
+      throw e;
+    }
   },
 
   getOwnerData: async () => {
     try {
-      const response = await apiClient.get("/owner");
+      const response = await apiClient.get(API_ENDPOINTS.OWNER);
       // 성공 시 받아온 데이터를 반환합니다.
       return response.data;
     } catch (e) {

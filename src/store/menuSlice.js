@@ -51,6 +51,8 @@ export const menuSlice = createSlice({
       })
       .addCase(fetchMenuByIdAsync.rejected, (state, action) => {
         // 에러 처리
+        state.status = "failed";
+        state.error = action.error.message;
         console.error("메뉴 로딩 실패:", action.error.message);
       });
   },

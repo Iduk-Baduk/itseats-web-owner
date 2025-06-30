@@ -83,6 +83,51 @@
   margin-top: 1rem;
 }
 
+.optionGroup {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 1rem;
+}
+
+.optionGroupHeader {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.optionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.optionItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optionItemRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.optionStatus {
+  padding: 4px 8px;
+  border: 1px solid #aaa;
+}
+
+.optionManageButton {
+  color: green;
+  cursor: pointer;
+}
+
 @media (max-width: 480px) {
   .addButton,
   .cancelButton {

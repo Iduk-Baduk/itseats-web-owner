@@ -4,6 +4,7 @@ import MenuGroupModal from "./MenuGroupModal";
 
 export default function MenuInput({ groupNames, onChange, selectedState, onSelectState }) {
   const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
+  const [descriptionLength, setDescriptionLength] = useState(0);
 
   return (
     <div className={styles.form}>
@@ -23,7 +24,7 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
         <select
           defaultValue="선택"
           className={styles.select}
-          onClick={(e) => onChange("menuGroupName", e.target.value)}
+          onChange={(e) => onChange("menuGroupName", e.target.value)}
         >
           <option value="선택">선택</option>
           {groupNames.map((groupName, index) => (
@@ -97,9 +98,12 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           maxLength={60}
           className={styles.textarea}
           placeholder="메뉴 구성 또는 설명글 입력 (선택사항)"
-          onChange={(e) => onChange("menuDescription", e.target.value)}
+          onChange={(e) => {
+            onChange("menuDescription", e.target.value);
+            setDescriptionLength(e.target.value.length);
+          }}
         />
-        <div className={styles.charCount}>0/60</div>
+        <div className={styles.charCount}>{descriptionLength}/60</div>
       </div>
 
       <div className={styles.helpBox}>

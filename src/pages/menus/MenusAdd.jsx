@@ -1,6 +1,7 @@
 import Header from "../../components/common/Header";
 import MenuInput from "../../components/menu/MenuInput";
 import MenuOptionGroupModal from "../../components/menu/MenuOptionGroupModal";
+import { UpArrayIcon, DownArrayIcon } from "../../components/common/Icons";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -87,8 +88,8 @@ export default function MenusAdd() {
                 <MenuInput
                   groupNames={groupNames}
                   onChange={handleMenuInputChange}
-                  selectedState={menuData.state}
-                  onSelectState={(value) => setMenuData((prev) => ({ ...prev, state: value }))}
+                  selectedState={menuData.menuStatus}
+                  onSelectState={(value) => setMenuData((prev) => ({ ...prev, menuStatus: value }))}
                 />
               </td>
               <td>
@@ -97,17 +98,10 @@ export default function MenusAdd() {
                   return (
                     <div
                       key={groupIndex}
-                      style={{ borderBottom: "1px solid #ccc", marginBottom: "1rem" }}
+                      className={styles.optionGroup}
                     >
                       <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          backgroundColor: "#f9f9f9",
-                          padding: "1rem",
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                        }}
+                        className={styles.optionGroupHeader}
                         onClick={() => toggleGroupOpen(groupIndex)}
                       >
                         <span>
@@ -120,23 +114,16 @@ export default function MenusAdd() {
                         group.options.map((option, optionIndex) => (
                           <div
                             key={optionIndex}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "1rem 1rem",
-                              backgroundColor: "#fff",
-                              borderBottom: "1px solid #eee",
-                            }}
+                            className={styles.optionItem}
                           >
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div className={styles.optionItemLeft}>
                               <span>{option.name}</span>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div className={styles.optionItemRight}>
                               <span>{option.price.toLocaleString()}원</span>
                               <select
                                 value={option.optionStatus}
-                                style={{ padding: "4px 8px", border: "1px solid #aaa" }}
+                                className={styles.optionStatus}
                               >
                                 <option value="ONSALE">판매중</option>
                                 <option value="OUT_OF_STOCK">오늘만 품절</option>
@@ -149,7 +136,7 @@ export default function MenusAdd() {
                   );
                 })}
                 <div
-                  style={{ color: "green" }}
+                  className={styles.optionManageButton}
                   onClick={() => {
                     setMenuGroupModal(true);
                   }}
@@ -178,7 +165,7 @@ export default function MenusAdd() {
                   menuName: menuData.menuName,
                   menuDescription: menuData.menuDescription,
                   menuPrice: String(menuData.menuPrice),
-                  menuStatus: menuData.state,
+                  menuStatus: menuData.menuStatus,
                   menuGroupName: menuData.menuGroupName,
                   optionGroups: optionGroups.map((group, groupIndex) => ({
                     optionGroupName: group.groupName,
@@ -211,35 +198,4 @@ export default function MenusAdd() {
   );
 }
 
-const UpArrayIcon = ({ className }) => {
-  return (
-    <svg
-      className={className}
-      width="12"
-      height="8"
-      viewBox="0 0 12 8"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M1.41 8L6 3.42L10.59 8L12 6.59L6 0.59L0 6.59L1.41 8Z" fill="#349367" />
-    </svg>
-  );
-};
 
-const DownArrayIcon = ({ className }) => {
-  return (
-    <svg
-      className={className}
-      width="12"
-      height="8"
-      viewBox="0 0 12 8"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M10.59 0.589844L6 5.16984L1.41 0.589844L0 1.99984L6 7.99984L12 1.99984L10.59 0.589844Z"
-        fill="#349367"
-      />
-    </svg>
-  );
-};
