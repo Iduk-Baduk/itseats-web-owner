@@ -7,6 +7,19 @@ const RETRY_DELAY = 1000; // 1초
 // 고유 ID 생성 헬퍼
 const generateId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
+// 타임스탬프 형식 검증 및 수정 헬퍼
+const formatTimestamp = (timestamp) => {
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return new Date().toISOString();
+    }
+    return date.toISOString();
+  } catch (error) {
+    return new Date().toISOString();
+  }
+};
+
 const posAPI = {
   // POS 상태 조회
   getPosStatus: withErrorHandling(async () => {
@@ -18,7 +31,7 @@ const posAPI = {
   updatePosStatus: withErrorHandling(async (status, metadata = {}) => {
     // 전체 데이터 조회 후 상태만 업데이트
     const currentData = await apiClient.get('/pos');
-    const timestamp = new Date().toISOString();
+    const timestamp = formatTimestamp(new Date().toISOString());
     
     // 새로운 히스토리 항목 생성
     const newHistoryItem = {
@@ -34,8 +47,15 @@ const posAPI = {
       category: metadata.category || 'MANUAL',
       requiresApproval: metadata.requiresApproval || false,
       approvedBy: metadata.approvedBy || null,
-      approvedAt: metadata.approvedAt || null
+      approvedAt: metadata.approvedAt ? formatTimestamp(metadata.approvedAt) : null
     };
+
+    // 기존 히스토리의 타임스탬프 형식 수정
+    const updatedHistory = currentData.data.statusHistory.map(item => ({
+      ...item,
+      timestamp: formatTimestamp(item.timestamp),
+      approvedAt: item.approvedAt ? formatTimestamp(item.approvedAt) : null
+    }));
 
     const updatedData = {
       ...currentData.data,
@@ -43,7 +63,7 @@ const posAPI = {
       lastUpdated: timestamp,
       statusHistory: [
         newHistoryItem,
-        ...currentData.data.statusHistory
+        ...updatedHistory
       ]
     };
     
@@ -182,7 +202,7 @@ const posAPI = {
       type: notificationData.type,
       title: notificationData.title,
       message: notificationData.message,
-      timestamp: new Date().toISOString(),
+      timestamp: formatTimestamp(new Date().toISOString()),
       isRead: false,
       severity: notificationData.severity || 'INFO',
       relatedStatusChangeId: notificationData.relatedStatusChangeId || null
@@ -191,26 +211,21 @@ const posAPI = {
     // 현재 알림 목록 조회
     const currentData = await apiClient.get('/pos');
     
+    // 기존 알림의 타임스탬프 형식 수정
+    const updatedNotifications = currentData.data.notifications 
+      ? currentData.data.notifications.map(notification => ({
+          ...notification,
+          timestamp: formatTimestamp(notification.timestamp)
+        }))
+      : [];
+    
     // notifications 배열이 없으면 새로 생성
-    if (!currentData.data.notifications) {
-      const updatedData = {
-        ...currentData.data,
-        notifications: [newNotification]
-      };
-      await apiClient.put('/pos', updatedData);
-    } else {
-      // 기존 알림과 합치기 (최대 50개 유지)
-      const updatedNotifications = [
-        newNotification,
-        ...currentData.data.notifications
-      ].slice(0, 50);
-
-      const updatedData = {
-        ...currentData.data,
-        notifications: updatedNotifications
-      };
-      await apiClient.put('/pos', updatedData);
-    }
+    const updatedData = {
+      ...currentData.data,
+      notifications: [newNotification, ...updatedNotifications]
+    };
+    
+    await apiClient.put('/pos', updatedData);
 
     return newNotification;
   }, 'createNotification'),
