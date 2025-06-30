@@ -1,85 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './PosAutoSettings.module.css';
-import { validateAutoSettings } from '../../utils/posAutoScheduler';
-import CheckBox from '../basic/CheckBox';
-import TextInput from '../basic/TextInput';
 
 const PosAutoSettings = ({ settings, onSettingsChange }) => {
-  const [errors, setErrors] = useState([]);
-  const [localSettings, setLocalSettings] = useState(settings);
-
-  useEffect(() => {
-    setLocalSettings(settings);
-  }, [settings]);
-
-  const handleSettingChange = (key, value) => {
-    const newSettings = { ...localSettings, [key]: value };
-    const validation = validateAutoSettings(newSettings);
-    
-    setErrors(validation.errors);
-    if (validation.isValid) {
-      onSettingsChange(newSettings);
-    }
+  const handleAutoOpenChange = (e) => {
+    onSettingsChange({
+      ...settings,
+      autoOpen: e.target.checked
+    });
   };
 
-  const handleTimeChange = (key, value) => {
-    // 숫자와 콜론만 허용
-    const sanitizedValue = value.replace(/[^0-9:]/g, '');
-    handleSettingChange(key, sanitizedValue);
+  const handleAutoCloseChange = (e) => {
+    onSettingsChange({
+      ...settings,
+      autoClose: e.target.checked
+    });
+  };
+
+  const handleTimeChange = (field) => (e) => {
+    onSettingsChange({
+      ...settings,
+      [field]: e.target.value
+    });
   };
 
   return (
     <div className={styles.container}>
       <h3 className={styles.title}>자동화 설정</h3>
-      
-      {errors.length > 0 && (
-        <div className={styles.errorContainer}>
-          {errors.map((error, index) => (
-            <p key={index} className={styles.errorMessage}>{error}</p>
-          ))}
-        </div>
-      )}
-
       <div className={styles.settingGroup}>
-        <div className={styles.settingRow}>
-          <CheckBox
-            id="autoOpen"
-            label="자동 오픈"
-            checked={localSettings.autoOpen}
-            onChange={(checked) => handleSettingChange('autoOpen', checked)}
-          />
-          <TextInput
-            value={localSettings.autoOpenTime || ''}
-            onChange={(e) => handleTimeChange('autoOpenTime', e.target.value)}
-            placeholder="HH:mm"
-            disabled={!localSettings.autoOpen}
-            maxLength={5}
+        <div className={styles.settingItem}>
+          <label className={styles.label}>
+            <input
+              type="checkbox"
+              checked={settings.autoOpen}
+              onChange={handleAutoOpenChange}
+              aria-label="자동 오픈"
+            />
+            자동 오픈
+          </label>
+          <input
+            type="time"
+            value={settings.autoOpenTime || ''}
+            onChange={handleTimeChange('autoOpenTime')}
+            disabled={!settings.autoOpen}
+            className={styles.timeInput}
             aria-label="자동 오픈 시간"
           />
         </div>
-        
-        <div className={styles.settingRow}>
-          <CheckBox
-            id="autoClose"
-            label="자동 마감"
-            checked={localSettings.autoClose}
-            onChange={(checked) => handleSettingChange('autoClose', checked)}
-          />
-          <TextInput
-            value={localSettings.autoCloseTime || ''}
-            onChange={(e) => handleTimeChange('autoCloseTime', e.target.value)}
-            placeholder="HH:mm"
-            disabled={!localSettings.autoClose}
-            maxLength={5}
+        <div className={styles.settingItem}>
+          <label className={styles.label}>
+            <input
+              type="checkbox"
+              checked={settings.autoClose}
+              onChange={handleAutoCloseChange}
+              aria-label="자동 마감"
+            />
+            자동 마감
+          </label>
+          <input
+            type="time"
+            value={settings.autoCloseTime || ''}
+            onChange={handleTimeChange('autoCloseTime')}
+            disabled={!settings.autoClose}
+            className={styles.timeInput}
             aria-label="자동 마감 시간"
           />
         </div>
-      </div>
-
-      <div className={styles.description}>
-        <p>* 시간 형식: HH:mm (예: 09:00)</p>
-        <p>* 자정을 넘어가는 영업시간 설정 가능 (예: 22:00 ~ 02:00)</p>
       </div>
     </div>
   );

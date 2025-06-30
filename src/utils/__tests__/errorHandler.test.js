@@ -61,15 +61,17 @@ describe('errorHandler', () => {
       const originalNodeEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';
       
+      const consoleErrorSpy = vi.spyOn(console, 'error');
       logError(error, context);
       
-      expect(console.error).toHaveBeenCalledWith('[Error]', expect.objectContaining({
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[Error]', expect.objectContaining({
         context,
         message: error.message,
         stack: error.stack
       }));
       
       process.env.NODE_ENV = originalNodeEnv;
+      consoleErrorSpy.mockRestore();
     });
   });
 

@@ -2,61 +2,37 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../constants/posStatus';
 import styles from './PosStatusControl.module.css';
-import POS_API from '../../services/posAPI';
-import { retryApiCall, ERROR_MESSAGES } from '../../utils/errorHandler';
+import posAPI from '../../services/posAPI';
+import { toast } from 'react-hot-toast';
 
-const PosStatusControl = ({ currentStatus, onStatusChange, disabled = false }) => {
-  const handleStatusChange = async (nextStatus) => {
+const PosStatusControl = ({ currentStatus, onStatusChange, disabled }) => {
+  const handleStatusChange = async (newStatus) => {
     try {
-      await retryApiCall(
-        () => POS_API.updatePosStatus(nextStatus),
-        {
-          errorMessage: ERROR_MESSAGES.POS_STATUS_UPDATE,
-          onError: (message) => {
-            // TODO: 실제 알림 컴포넌트로 교체
-            alert(message);
-          }
-        }
-      );
-      onStatusChange(nextStatus);
+      await posAPI.updatePosStatus(newStatus);
+      onStatusChange(newStatus);
+      toast.success(`POS 상태가 ${POS_STATUS_LABEL[newStatus]}로 변경되었습니다.`);
     } catch (error) {
-      console.error('Failed to update POS status after retries:', error);
+      console.error('Failed to update POS status:', error);
+      toast.error('POS 상태 변경에 실패했습니다.');
     }
   };
 
   return (
     <div className={styles.container}>
-      <button
-        className={styles.openButton}
-        onClick={() => handleStatusChange(POS_STATUS.OPEN)}
-        disabled={disabled || currentStatus === POS_STATUS.OPEN}
-      >
-        {POS_STATUS_LABEL[POS_STATUS.OPEN]}
-      </button>
-      
-      <button
-        className={styles.breakButton}
-        onClick={() => handleStatusChange(POS_STATUS.BREAK)}
-        disabled={disabled || currentStatus === POS_STATUS.BREAK}
-      >
-        {POS_STATUS_LABEL[POS_STATUS.BREAK]}
-      </button>
-      
-      <button
-        className={styles.preparingButton}
-        onClick={() => handleStatusChange(POS_STATUS.PREPARING)}
-        disabled={disabled || currentStatus === POS_STATUS.PREPARING}
-      >
-        {POS_STATUS_LABEL[POS_STATUS.PREPARING]}
-      </button>
-      
-      <button
-        className={styles.closeButton}
-        onClick={() => handleStatusChange(POS_STATUS.CLOSED)}
-        disabled={disabled || currentStatus === POS_STATUS.CLOSED}
-      >
-        {POS_STATUS_LABEL[POS_STATUS.CLOSED]}
-      </button>
+      <h3 className={styles.title}>POS 상태 관리</h3>
+      <div className={styles.buttonGroup}>
+        {Object.values(POS_STATUS).map(status => (
+          <button
+            key={status}
+            className={`${styles.button} ${currentStatus === status ? styles.active : ''}`}
+            onClick={() => handleStatusChange(status)}
+            disabled={disabled || currentStatus === status}
+            aria-label={POS_STATUS_LABEL[status]}
+          >
+            {POS_STATUS_LABEL[status]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

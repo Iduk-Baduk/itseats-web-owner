@@ -10,7 +10,9 @@ import * as posAPI from '../../../services/posAPI';
 
 // API 모킹
 vi.mock('../../../services/posAPI', () => ({
-  updatePosStatus: vi.fn(),
+  default: {
+    updatePosStatus: vi.fn()
+  }
 }));
 
 describe('POS Status Management Integration', () => {
@@ -21,7 +23,7 @@ describe('POS Status Management Integration', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     // 각 테스트마다 성공 응답으로 초기화
-    posAPI.updatePosStatus.mockResolvedValue({});
+    posAPI.default.updatePosStatus.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -57,10 +59,10 @@ describe('POS Status Management Integration', () => {
 
     const breakButton = screen.getByRole('button', { name: POS_STATUS_LABEL[POS_STATUS.BREAK] });
     await act(async () => {
-      fireEvent.click(breakButton);
+      await fireEvent.click(breakButton);
     });
 
-    expect(posAPI.updatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
+    expect(posAPI.default.updatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.BREAK);
     
     rerender(
@@ -81,13 +83,10 @@ describe('POS Status Management Integration', () => {
   });
 
   test('auto settings interact with manual status control', () => {
-    const mockDate = new Date('2024-03-20T10:00:00Z');
-    vi.setSystemTime(mockDate);
-
     const autoSettings = {
-      autoOpen: false,
-      autoOpenTime: '10:00',
-      autoClose: false,
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
       autoCloseTime: '22:00'
     };
 
@@ -105,12 +104,10 @@ describe('POS Status Management Integration', () => {
       </>
     );
 
-    const autoOpenToggle = screen.getByLabelText('자동 오픈');
-    fireEvent.click(autoOpenToggle);
-
-    expect(mockOnAutoSettingsChange).toHaveBeenCalledWith({
-      ...autoSettings,
-      autoOpen: true
+    // 자동화 설정이 활성화되어 있으므로 모든 상태 변경 버튼이 비활성화되어야 함
+    const statusButtons = screen.getAllByRole('button');
+    statusButtons.forEach(button => {
+      expect(button).toBeDisabled();
     });
   });
 

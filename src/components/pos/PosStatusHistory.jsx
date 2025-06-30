@@ -6,14 +6,24 @@ import styles from './PosStatusHistory.module.css';
 
 const ITEMS_PER_PAGE = 10;
 
-const PosStatusHistory = ({ history }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState('');
+const getDateString = (timestamp) => {
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
-  const filteredAndSortedHistory = useMemo(() => {
+const formatDateForDisplay = (dateString) => {
+  const [year, month, day] = dateString.split('-');
+  return `${year}년 ${month}월 ${day}일`;
+};
+
+const PosStatusHistory = ({ history }) => {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { filteredHistory, availableDates } = useMemo(() => {
     // 날짜별로 그룹화
     const groupedHistory = history.reduce((acc, item) => {
-      const date = new Date(item.timestamp).toLocaleDateString();
+      const date = getDateString(item.timestamp);
       if (!acc[date]) {
         acc[date] = [];
       }
@@ -21,48 +31,42 @@ const PosStatusHistory = ({ history }) => {
       return acc;
     }, {});
 
-    // 날짜 필터링
-    const dates = Object.keys(groupedHistory);
-    const targetDate = selectedDate || dates[0];
-    const filteredHistory = targetDate ? groupedHistory[targetDate] || [] : [];
+    // 날짜 목록 생성 및 정렬
+    const dates = Object.keys(groupedHistory).sort((a, b) => b.localeCompare(a));
 
-    // 시간순 정렬 (최신순)
-    return filteredHistory.sort((a, b) => 
-      new Date(b.timestamp) - new Date(a.timestamp)
-    );
+    // 선택된 날짜 또는 가장 최근 날짜의 기록 필터링
+    const targetDate = selectedDate || dates[0];
+    const filtered = targetDate ? groupedHistory[targetDate] || [] : [];
+
+    // 시간순 정렬 (내림차순)
+    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    return {
+      filteredHistory: filtered,
+      availableDates: dates,
+    };
   }, [history, selectedDate]);
 
-  const totalPages = Math.ceil(filteredAndSortedHistory.length / ITEMS_PER_PAGE);
-  const currentItems = filteredAndSortedHistory.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // 현재 페이지의 아이템만 선택
+  const paginatedHistory = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredHistory.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredHistory, currentPage]);
 
-  const availableDates = useMemo(() => {
-    const dates = new Set(
-      history.map(item => 
-        new Date(item.timestamp).toLocaleDateString()
-      )
-    );
-    return Array.from(dates).sort().reverse();
-  }, [history]);
+  const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE);
+
+  const handleDateChange = (event) => {
+    const newDate = event.target.value;
+    setSelectedDate(newDate);
+    setCurrentPage(1); // 날짜가 변경되면 첫 페이지로 이동
+  };
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setCurrentPage(1); // 날짜 변경시 첫 페이지로 이동
-  };
-
   if (history.length === 0) {
-    return (
-      <div className={styles.container}>
-        <h3 className={styles.title}>상태 변경 기록</h3>
-        <p className={styles.emptyMessage}>상태 변경 기록이 없습니다.</p>
-      </div>
-    );
+    return <div className={styles.emptyState}>상태 변경 기록이 없습니다.</div>;
   }
 
   return (
@@ -71,23 +75,23 @@ const PosStatusHistory = ({ history }) => {
         <h3 className={styles.title}>상태 변경 기록</h3>
         <select
           className={styles.dateSelect}
-          value={selectedDate}
-          onChange={(e) => handleDateChange(e.target.value)}
+          value={selectedDate || availableDates[0] || ''}
+          onChange={handleDateChange}
           aria-label="날짜 선택"
         >
           {availableDates.map(date => (
             <option key={date} value={date}>
-              {date}
+              {formatDateForDisplay(date)}
             </option>
           ))}
         </select>
       </div>
 
       <div className={styles.historyList}>
-        {currentItems.map((item, index) => (
-          <div key={index} className={styles.historyItem}>
-            <div className={styles.timestamp}>
-              {new Date(item.timestamp).toLocaleTimeString()}
+        {paginatedHistory.map((item, index) => (
+          <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
+            <div className={styles.timestamp} role="timestamp">
+              {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
             </div>
             <PosStatusBadge status={item.status} />
           </div>
@@ -96,25 +100,16 @@ const PosStatusHistory = ({ history }) => {
 
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={styles.pageButton}
-            aria-label="이전 페이지"
-          >
-            &lt;
-          </button>
-          <span className={styles.pageInfo}>
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={styles.pageButton}
-            aria-label="다음 페이지"
-          >
-            &gt;
-          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              className={`${styles.pageButton} ${page === currentPage ? styles.active : ''}`}
+              onClick={() => handlePageChange(page)}
+              disabled={page === currentPage}
+            >
+              {page}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -122,12 +117,10 @@ const PosStatusHistory = ({ history }) => {
 };
 
 PosStatusHistory.propTypes = {
-  history: PropTypes.arrayOf(
-    PropTypes.shape({
-      status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
-      timestamp: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  history: PropTypes.arrayOf(PropTypes.shape({
+    status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
+    timestamp: PropTypes.string.isRequired
+  })).isRequired
 };
 
 export default PosStatusHistory; 

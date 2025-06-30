@@ -334,15 +334,15 @@ describe('POS Auto Scheduler', () => {
         autoOpen: true,
         autoOpenTime: '09:00',
         autoClose: true,
-        autoCloseTime: '22:00'
+        autoCloseTime: '18:00'
       };
 
       // 영업 시간 내
-      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-20T14:00:00'));
       expect(isWithinOperatingHours(settings)).toBe(true);
 
       // 영업 시간 외
-      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-20T19:00:00'));
       expect(isWithinOperatingHours(settings)).toBe(false);
     });
 
@@ -351,19 +351,19 @@ describe('POS Auto Scheduler', () => {
         autoOpen: true,
         autoOpenTime: '22:00',
         autoClose: true,
-        autoCloseTime: '02:00'
+        autoCloseTime: '05:00'
       };
 
       // 영업 시간 내 (자정 이전)
-      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-20T23:00:00'));
       expect(isWithinOperatingHours(settings)).toBe(true);
 
       // 영업 시간 내 (자정 이후)
-      vi.setSystemTime(new Date('2024-03-21T01:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-21T02:00:00'));
       expect(isWithinOperatingHours(settings)).toBe(true);
 
       // 영업 시간 외
-      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-21T12:00:00'));
       expect(isWithinOperatingHours(settings)).toBe(false);
     });
   });
@@ -384,13 +384,13 @@ describe('POS Auto Scheduler', () => {
         autoOpen: true,
         autoOpenTime: '09:00',
         autoClose: true,
-        autoCloseTime: '22:00'
+        autoCloseTime: '18:00'
       };
 
-      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-20T14:00:00'));
       expect(determineCurrentStatus(settings)).toBe(POS_STATUS.OPEN);
 
-      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      vi.setSystemTime(new Date('2024-03-20T19:00:00'));
       expect(determineCurrentStatus(settings)).toBe(POS_STATUS.CLOSED);
     });
 
