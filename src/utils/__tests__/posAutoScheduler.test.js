@@ -12,8 +12,25 @@ import {
 } from '../posAutoScheduler';
 import { scheduleStatusChange, cancelScheduledChange } from '../posAutoScheduler';
 import * as posAPI from '../../services/posAPI';
+import { scheduleNextStatusChange } from '../posAutoScheduler';
 
-vi.mock('../../services/posAPI');
+vi.mock('../../services/posAPI', () => ({
+  default: {
+    updatePosStatus: vi.fn(),
+    updatePosStatusWithNotification: vi.fn()
+  }
+}));
+
+// 테스트용 mock 데이터
+const mockDate = new Date(2024, 0, 1, 10, 0, 0);
+const mockPosId = 'test-pos-id';
+const mockScheduleTime = '14:00';
+const mockSettings = {
+  autoOpen: true,
+  autoClose: true,
+  autoOpenTime: '09:00',
+  autoCloseTime: '22:00'
+};
 
 describe('posAutoScheduler utilities', () => {
   beforeEach(() => {
@@ -256,63 +273,121 @@ describe('usePosAutoScheduler', () => {
 
 describe('POS Auto Scheduler', () => {
   const mockPosId = 'pos1';
-  const mockCurrentTime = new Date('2024-03-20T10:00:00.000Z');
-  const mockScheduleTime = new Date('2024-03-20T18:00:00.000Z');
-
+  
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    vi.setSystemTime(mockCurrentTime);
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('schedules status change correctly', () => {
-    const schedule = {
-      targetStatus: POS_STATUS.CLOSED,
-      scheduledTime: mockScheduleTime,
-      reason: '자동 영업 종료'
+  it('determines operating hours correctly', () => {
+    const settings = {
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
+      autoCloseTime: '22:00'
     };
 
-    const timeoutId = scheduleStatusChange(mockPosId, schedule);
+    // 영업 시간 내
+    vi.setSystemTime(new Date('2024-03-20T10:00:00Z'));
+    expect(isWithinOperatingHours(settings)).toBe(true);
+
+    // 영업 시간 외
+    vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+    expect(isWithinOperatingHours(settings)).toBe(false);
+  });
+
+  it('determines current status correctly', () => {
+    const settings = {
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
+      autoCloseTime: '22:00'
+    };
+
+    // 영업 시간 내
+    vi.setSystemTime(new Date('2024-03-20T10:00:00Z'));
+    expect(determineCurrentStatus(settings)).toBe(POS_STATUS.OPEN);
+
+    // 영업 시간 외
+    vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+    expect(determineCurrentStatus(settings)).toBe(POS_STATUS.CLOSED);
+  });
+
+  it('schedules next status change correctly', () => {
+    const settings = {
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
+      autoCloseTime: '22:00'
+    };
+
+    const mockDate = new Date('2024-03-20T08:00:00Z');
+    vi.setSystemTime(mockDate);
+
+    const timeoutId = scheduleNextStatusChange(mockPosId, settings);
     expect(timeoutId).toBeDefined();
+
+    // 예약된 시간으로 이동
+    vi.advanceTimersByTime(3600000); // 1시간 후
+
+    expect(posAPI.updatePosStatusWithNotification).toHaveBeenCalledWith(
+      mockPosId,
+      expect.objectContaining({
+        status: POS_STATUS.OPEN,
+        reason: '자동 영업 시작',
+        category: 'AUTO'
+      })
+    );
   });
 
   it('executes scheduled change at correct time', () => {
-    const schedule = {
-      targetStatus: POS_STATUS.CLOSED,
-      scheduledTime: mockScheduleTime,
-      reason: '자동 영업 종료'
+    const settings = {
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
+      autoCloseTime: '22:00'
     };
 
-    scheduleStatusChange(mockPosId, schedule);
+    const mockDate = new Date('2024-03-20T08:00:00Z');
+    vi.setSystemTime(mockDate);
+
+    scheduleNextStatusChange(mockPosId, settings);
 
     // 예약된 시간으로 이동
-    vi.advanceTimersByTime(8 * 60 * 60 * 1000); // 8시간
+    vi.advanceTimersByTime(3600000); // 1시간 후
 
-    expect(posAPI.updatePosStatus).toHaveBeenCalledWith(mockPosId, {
-      status: POS_STATUS.CLOSED,
-      reason: '자동 영업 종료',
-      isAutomatic: true
-    });
+    expect(posAPI.updatePosStatusWithNotification).toHaveBeenCalledWith(
+      mockPosId,
+      expect.objectContaining({
+        status: POS_STATUS.OPEN,
+        reason: '자동 영업 시작',
+        category: 'AUTO'
+      })
+    );
   });
 
   it('cancels scheduled change correctly', () => {
-    const schedule = {
-      targetStatus: POS_STATUS.CLOSED,
-      scheduledTime: mockScheduleTime,
-      reason: '자동 영업 종료'
+    const settings = {
+      autoOpen: true,
+      autoOpenTime: '09:00',
+      autoClose: true,
+      autoCloseTime: '22:00'
     };
 
-    const timeoutId = scheduleStatusChange(mockPosId, schedule);
-    cancelScheduledChange(timeoutId);
+    const mockDate = new Date('2024-03-20T08:00:00Z');
+    vi.setSystemTime(mockDate);
+
+    const timeoutId = scheduleNextStatusChange(mockPosId, settings);
+    clearTimeout(timeoutId);
 
     // 예약된 시간으로 이동
-    vi.advanceTimersByTime(8 * 60 * 60 * 1000);
+    vi.advanceTimersByTime(3600000); // 1시간 후
 
-    expect(posAPI.updatePosStatus).not.toHaveBeenCalled();
+    expect(posAPI.updatePosStatusWithNotification).not.toHaveBeenCalled();
   });
 
   it('handles invalid schedule time', () => {
