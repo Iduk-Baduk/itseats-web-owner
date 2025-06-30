@@ -1,36 +1,21 @@
 import apiClient from './apiClient';
 import { withErrorHandling, retryApiCall, handleError } from '../utils/errorHandler';
+import { toISOString } from '../utils/dateUtils';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1초
 
+// ISO 8601 형식 검증을 위한 정규식
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+
+// 타임스탬프 정규화 함수
+const normalizeTimestamp = (timestamp) => {
+  if (!timestamp) return new Date().toISOString();
+  return ISO_DATE_REGEX.test(timestamp) ? timestamp : new Date(timestamp).toISOString();
+};
+
 // 고유 ID 생성 헬퍼
 const generateId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-// 타임스탬프 형식 검증 및 수정 헬퍼
-const formatTimestamp = (timestamp) => {
-  try {
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) {
-      return new Date().toISOString();
-    }
-    // 밀리초를 3자리로 표준화
-    const isoString = date.toISOString();
-    const [datePart, timePart] = isoString.split('T');
-    const [timePart1, timezone] = timePart.split('Z');
-    const [hours, minutes, seconds] = timePart1.split(':');
-    const [secondsPart, milliseconds] = seconds.split('.');
-    
-    // 밀리초가 3자리가 아닌 경우 3자리로 패딩
-    const paddedMilliseconds = milliseconds 
-      ? milliseconds.padEnd(3, '0').slice(0, 3)
-      : '000';
-    
-    return `${datePart}T${hours}:${minutes}:${secondsPart}.${paddedMilliseconds}Z`;
-  } catch (error) {
-    return new Date().toISOString();
-  }
-};
 
 // 데이터베이스 타임스탬프 형식 수정 함수
 const fixDatabaseTimestamps = async () => {
@@ -40,7 +25,7 @@ const fixDatabaseTimestamps = async () => {
 
     // lastUpdated 필드 검증
     if (currentData.data.lastUpdated) {
-      const fixedLastUpdated = formatTimestamp(currentData.data.lastUpdated);
+      const fixedLastUpdated = normalizeTimestamp(currentData.data.lastUpdated);
       if (fixedLastUpdated !== currentData.data.lastUpdated) {
         currentData.data.lastUpdated = fixedLastUpdated;
         needsUpdate = true;
@@ -50,8 +35,8 @@ const fixDatabaseTimestamps = async () => {
     // statusHistory 타임스탬프 검증
     if (currentData.data.statusHistory) {
       currentData.data.statusHistory = currentData.data.statusHistory.map(item => {
-        const fixedTimestamp = formatTimestamp(item.timestamp);
-        const fixedApprovedAt = item.approvedAt ? formatTimestamp(item.approvedAt) : null;
+        const fixedTimestamp = normalizeTimestamp(item.timestamp);
+        const fixedApprovedAt = item.approvedAt ? normalizeTimestamp(item.approvedAt) : null;
         
         if (fixedTimestamp !== item.timestamp || fixedApprovedAt !== item.approvedAt) {
           needsUpdate = true;
@@ -68,7 +53,7 @@ const fixDatabaseTimestamps = async () => {
     // notifications 타임스탬프 검증
     if (currentData.data.notifications) {
       currentData.data.notifications = currentData.data.notifications.map(item => {
-        const fixedTimestamp = formatTimestamp(item.timestamp);
+        const fixedTimestamp = normalizeTimestamp(item.timestamp);
         if (fixedTimestamp !== item.timestamp) {
           needsUpdate = true;
           return {
@@ -148,7 +133,7 @@ const updatePosDataWithTransaction = async (posId, updateFn) => {
     
     const response = await apiClient.post(`/pos/${posId}/transaction`, {
       data: updatedData,
-      timestamp: new Date().toISOString()
+      timestamp: normalizeTimestamp(new Date().toISOString())
     });
     
     return response.data;
@@ -179,7 +164,7 @@ export const updatePosStatus = withErrorHandling(
       status: statusData.status,
       statusMetadata: {
         ...statusData,
-        timestamp: new Date().toISOString()
+        timestamp: toISOString(statusData.timestamp)
       }
     }));
   },
@@ -193,7 +178,7 @@ export const updatePosSettings = withErrorHandling(
       settings: {
         ...currentData.settings,
         ...settings,
-        updatedAt: new Date().toISOString()
+        updatedAt: toISOString(settings.updatedAt)
       }
     }));
   },
@@ -207,7 +192,7 @@ export const updatePosAutoSettings = withErrorHandling(
       autoSettings: {
         ...currentData.autoSettings,
         ...autoSettings,
-        updatedAt: new Date().toISOString()
+        updatedAt: toISOString(autoSettings.updatedAt)
       }
     }));
   },
@@ -242,7 +227,7 @@ const posAPI = {
   updatePosStatus: withErrorHandling(async (status, metadata = {}) => {
     // 전체 데이터 조회 후 상태만 업데이트
     const currentData = await apiClient.get('/pos');
-    const timestamp = formatTimestamp(new Date().toISOString());
+    const timestamp = normalizeTimestamp(new Date().toISOString());
     
     // 새로운 히스토리 항목 생성
     const newHistoryItem = {
@@ -258,14 +243,14 @@ const posAPI = {
       category: metadata.category || 'MANUAL',
       requiresApproval: metadata.requiresApproval || false,
       approvedBy: metadata.approvedBy || null,
-      approvedAt: metadata.approvedAt ? formatTimestamp(metadata.approvedAt) : null
+      approvedAt: metadata.approvedAt ? normalizeTimestamp(metadata.approvedAt) : null
     };
 
     // 기존 히스토리의 타임스탬프 형식 수정
     const updatedHistory = currentData.data.statusHistory.map(item => ({
       ...item,
-      timestamp: formatTimestamp(item.timestamp),
-      approvedAt: item.approvedAt ? formatTimestamp(item.approvedAt) : null
+      timestamp: normalizeTimestamp(item.timestamp),
+      approvedAt: item.approvedAt ? normalizeTimestamp(item.approvedAt) : null
     }));
 
     const updatedData = {
@@ -413,7 +398,7 @@ const posAPI = {
       type: notificationData.type,
       title: notificationData.title,
       message: notificationData.message,
-      timestamp: formatTimestamp(new Date().toISOString()),
+      timestamp: normalizeTimestamp(new Date().toISOString()),
       isRead: false,
       severity: notificationData.severity || 'INFO',
       relatedStatusChangeId: notificationData.relatedStatusChangeId || null
@@ -426,7 +411,7 @@ const posAPI = {
     const updatedNotifications = currentData.data.notifications 
       ? currentData.data.notifications.map(notification => ({
           ...notification,
-          timestamp: formatTimestamp(notification.timestamp)
+          timestamp: normalizeTimestamp(notification.timestamp)
         }))
       : [];
     

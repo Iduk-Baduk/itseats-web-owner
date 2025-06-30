@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { POS_STATUS, STATUS_CHANGE_CATEGORY_LABEL } from '../../constants/posStatus';
 import PosStatusBadge from './PosStatusBadge';
 import styles from './PosStatusHistory.module.css';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { formatRelativeTime, formatDate } from '../../utils/dateUtils';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -134,12 +133,13 @@ const PosStatusHistory = ({ history }) => {
               className={styles.historyItem}
             >
               <div className={styles.historyHeader}>
-                <span className={styles.timestamp}>
-                  {formatDistanceToNow(new Date(item.timestamp), { 
-                    addSuffix: true, 
-                    locale: ko 
-                  })}
-                </span>
+                <time 
+                  className={styles.timestamp}
+                  dateTime={item.timestamp}
+                  title={formatDate(item.timestamp)}
+                >
+                  {formatRelativeTime(item.timestamp)}
+                </time>
                 <PosStatusBadge status={item.status} />
                 {hasMetadata && (
                   <button
