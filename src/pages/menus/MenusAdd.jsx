@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchMenuByIdAsync } from "../../store/menuSlice";
+import { menuAPI } from "../../services/menuAPI";
 
 import styles from "./MenusAdd.module.css";
 
@@ -63,6 +64,54 @@ export default function MenusAdd() {
     }));
   };
 
+  const handleAddMenu = async () => {
+    try {
+      const payload = {
+        menuName: menuData.menuName,
+        menuDescription: menuData.menuDescription,
+        menuPrice: String(menuData.menuPrice),
+        menuStatus: menuData.menuStatus,
+        menuGroupName: menuData.menuGroupName,
+        optionGroups: optionGroups.map((group) => ({
+          optionGroupName: group.groupName,
+          isRequired: group.isRequired,
+          options: group.options.map((opt) => ({
+            optionName: opt.name,
+            optionPrice: opt.price,
+            optionStatus: opt.optionStatus,
+          })),
+        })),
+      };
+
+      // 필수 필드 검증
+      if (!payload.menuName) {
+        alert("메뉴명을 입력해주세요.");
+        return;
+      }
+      if (!payload.menuPrice) {
+        alert("메뉴 가격을 입력해주세요.");
+        return;
+      }
+      if (!payload.menuStatus) {
+        alert("메뉴 상태를 선택해주세요.");
+        return;
+      }
+      if (!payload.menuGroupName || payload.menuGroupName === "선택") {
+        alert("메뉴 그룹을 선택해주세요.");
+        return;
+      }
+
+      // API 호출
+      await menuAPI.addMenu(payload);
+      
+      alert("메뉴가 성공적으로 추가되었습니다.");
+      navigate("/menus");
+    } catch (error) {
+      console.error("메뉴 추가 실패:", error);
+      alert("메뉴 추가에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Header
@@ -86,8 +135,6 @@ export default function MenusAdd() {
                   checked={allSelected}
                   onChange={(e) => {
                     setAllSelected(e.target.checked);
-                    // 전체 선택/해제 로직 구현
-                    // 실제 메뉴 항목들과 연동하여 구현할 수 있습니다
                   }}
                 />
                 <label htmlFor="selectAll">전체 선택</label>
@@ -160,6 +207,19 @@ export default function MenusAdd() {
                 >
                   옵션 그룹 관리
                 </div>
+
+                {/* 옵션 그룹 관리 모달 */}
+                {optionGroupModal && (
+                  <MenuOptionGroupModal
+                    onClose={() => setMenuGroupModal(false)}
+                    onSave={(updatedGroups) => {
+                      setOptionGroups(updatedGroups);
+                      setMenuGroupModal(false);
+                    }}
+                    optionGroups={optionGroups}
+                    setOptionGroups={setOptionGroups}
+                  />
+                )}
               </td>
             </tr>
           </tbody>
@@ -169,49 +229,21 @@ export default function MenusAdd() {
         <footer>
           <div className={styles.actionButtons}>
             <button
-              onClick={() => {
-                // 실제 취소 로직 구현 (이전 페이지로 이동)
-                navigate(-1);
-              }}
+              onClick={() => navigate(-1)}
               className={styles.cancelButton}
             >
               취소
             </button>
             <button
-              onClick={() => {
-                const payload = {
-                  menuName: menuData.menuName,
-                  menuDescription: menuData.menuDescription,
-                  menuPrice: String(menuData.menuPrice),
-                  menuStatus: menuData.menuStatus,
-                  menuGroupName: menuData.menuGroupName,
-                  optionGroups: optionGroups.map((group, groupIndex) => ({
-                    optionGroupName: group.groupName,
-                    isRequired: group.isRequired,
-                    options: group.options.map((opt, optIndex) => ({
-                      optionName: opt.name,
-                      optionPrice: opt.price,
-                      optionStatus: opt.optionStatus,
-                    })),
-                  })),
-                };
-
-                console.log(JSON.stringify(payload, null, 2));
-              }}
-              className={styles.addButton}
+              onClick={handleAddMenu}
+              className={styles.saveButton}
             >
-              추가
+              저장
             </button>
           </div>
           <div className={styles.deleteText}>삭제하기</div>
         </footer>
       </div>
-      {optionGroupModal && (
-        <MenuOptionGroupModal
-          onClose={() => setMenuGroupModal(false)}
-          onSave={(data) => setOptionGroups((prev) => [...prev, ...data])}
-        />
-      )}
     </div>
   );
 }

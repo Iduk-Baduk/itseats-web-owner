@@ -4,13 +4,19 @@ import MenuStore from "../../components/menu/MenuStore";
 import MenusSummaryCard from "../../components/menu/MenuSummaryCard";
 import MenuList from "../../components/menu/MenuList";
 import MenuActions from "../../components/menu/MenuActions";
+import MenuGroupModal from "../../components/menu/MenuGroupModal";
 
 import styles from "./Menus.module.css";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Menus() {
   const { menu, status, error } = useFetchMenus();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [menuGroupModal, setMenuGroupModal] = useState(false);
+  const groupNames = useSelector((state) => state.menu.groupNames);
 
   if (status === "loading") {
     return <div>메뉴를 불러오는 중...</div>;
@@ -43,8 +49,19 @@ export default function Menus() {
           navigate("/menus/add");
         }}
         handleManageMenuGroup={() => {
-          console.log("메뉴 그룹 관리 클릭됨");
+          setMenuGroupModal(true);
         }}
+      />
+
+      {/* 메뉴 그룹 관리 모달 */}
+      <MenuGroupModal
+        groupNames={groupNames}
+        modalState={menuGroupModal}
+        setModalState={setMenuGroupModal}
+        setGroupNames={(newGroups) => {
+          // 메뉴 그룹 업데이트 로직은 모달 내부에서 처리됨
+        }}
+        onclose={() => setMenuGroupModal(false)}
       />
     </div>
   );
