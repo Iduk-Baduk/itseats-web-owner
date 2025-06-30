@@ -57,4 +57,90 @@ export const retryApiCall = async (apiCall, options = {}) => {
   }
   
   throw lastError;
+};
+
+/**
+ * API 에러 메시지를 사용자 친화적인 메시지로 변환
+ * @param {Error} error - 에러 객체
+ * @returns {string} 사용자 친화적인 에러 메시지
+ */
+export const getErrorMessage = (error) => {
+  if (!error) {
+    return '알 수 없는 오류가 발생했습니다.';
+  }
+
+  // API 응답 에러
+  if (error.response) {
+    const { status } = error.response;
+    
+    switch (status) {
+      case 400:
+        return '잘못된 요청입니다. 입력값을 확인해주세요.';
+      case 401:
+        return '인증이 필요합니다. 다시 로그인해주세요.';
+      case 403:
+        return '접근 권한이 없습니다.';
+      case 404:
+        return '요청하신 정보를 찾을 수 없습니다.';
+      case 409:
+        return '요청하신 작업을 처리할 수 없습니다. 다시 시도해주세요.';
+      case 429:
+        return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+      case 500:
+        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      default:
+        return '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    }
+  }
+
+  // 네트워크 에러
+  if (error.request) {
+    return '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.';
+  }
+
+  // 기타 에러
+  return error.message || '알 수 없는 오류가 발생했습니다.';
+};
+
+/**
+ * 에러 로깅
+ * @param {Error} error - 에러 객체
+ * @param {string} context - 에러 발생 컨텍스트
+ */
+export const logError = (error, context = '') => {
+  const timestamp = new Date().toISOString();
+  const errorInfo = {
+    timestamp,
+    context,
+    message: error.message,
+    stack: error.stack,
+    response: error.response?.data,
+  };
+
+  // 개발 환경에서는 콘솔에 출력
+  if (process.env.NODE_ENV === 'development') {
+    console.error('[Error]', errorInfo);
+  }
+
+  // TODO: 프로덕션 환경에서는 에러 모니터링 서비스로 전송
+  // if (process.env.NODE_ENV === 'production') {
+  //   sendErrorToMonitoring(errorInfo);
+  // }
+};
+
+/**
+ * 에러 처리 래퍼 함수
+ * @param {Function} fn - 래핑할 함수
+ * @param {string} context - 에러 발생 컨텍스트
+ * @returns {Function} 에러 처리가 포함된 함수
+ */
+export const withErrorHandling = (fn, context = '') => {
+  return async (...args) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      logError(error, context);
+      throw error;
+    }
+  };
 }; 
