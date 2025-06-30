@@ -3,7 +3,7 @@ import styles from "./MenuInput.module.css";
 import MenuGroupModal from "./MenuGroupModal";
 import { useSelector } from "react-redux";
 
-export default function MenuInput({ groupNames, onChange, selectedState, onSelectState, initialData }) {
+export default function MenuInput({ onChange, selectedState, onSelectState, initialData }) {
   const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
   const [descriptionLength, setDescriptionLength] = useState(0);
   const [formData, setFormData] = useState({

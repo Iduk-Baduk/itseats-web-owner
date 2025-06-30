@@ -25,7 +25,7 @@ export const menuAPI = {
 
   getMenuStats: async () => {
     try {
-      const response = await apiClient.get("/menuStats");
+      const response = await apiClient.get(API_ENDPOINTS.MENU_STATS());
       return response.data;
     } catch (e) {
       console.error("API Error: getMenuStats", e);
@@ -68,7 +68,7 @@ export const menuAPI = {
 
   deleteMenu: async (id) => {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.UPDATE_MENU(String(id)));
+      const response = await apiClient.delete(API_ENDPOINTS.DELETE_MENU(String(id)));
       return response.data;
     } catch (e) {
       console.error("API Error: deleteMenu", e);

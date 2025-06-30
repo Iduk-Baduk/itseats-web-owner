@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
   MENU_LIST: () => `/menus`,  // GET, POST 요청 모두 사용
   ADD_MENU: () => `/menus`,  // POST 요청용
   UPDATE_MENU: (id) => `/menus/${id}`,  // PATCH 요청용
+  DELETE_MENU: (id) => `/menus/${id}`,  // DELETE 요청용
   GET_MENU: (id) => `/menus/${id}`,  // GET 요청용
+  MENU_STATS: () => `/menuStats`,  // GET 요청용
   OWNER: `/owner`,
 };

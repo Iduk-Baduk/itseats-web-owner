@@ -199,7 +199,6 @@ export default function MenusAdd() {
             <tr>
               <td>
                 <MenuInput
-                  groupNames={groupNames}
                   onChange={handleMenuInputChange}
                   selectedState={menuData.menuStatus}
                   onSelectState={(value) => handleMenuInputChange("menuStatus", value)}
