@@ -99,20 +99,12 @@
     ]
   },
   "pos": {
-    "currentStatus": "OPEN",
-    "lastUpdated": "2024-03-21T10:00:00Z",
+    "currentStatus": "CLOSED",
+    "lastUpdated": "2025-06-30T19:35:48.3NZ",
     "statusHistory": [
       {
         "status": "CLOSED",
-        "timestamp": "2024-03-21T00:00:00Z"
-      },
-      {
-        "status": "PREPARING",
-        "timestamp": "2024-03-21T09:30:00Z"
-      },
-      {
-        "status": "OPEN",
-        "timestamp": "2024-03-21T10:00:00Z"
+        "timestamp": "2025-06-30T19:35:48.3NZ"
       }
     ],
     "settings": {
