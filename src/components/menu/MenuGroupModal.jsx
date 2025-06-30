@@ -57,10 +57,15 @@ export default function MenuGroupModal({
 
   // 추가 핸들러
   const handleAddGroup = () => {
-    if (!newGroup.trim()) {
+    const trimmed = newGroup.trim();
+    if (!trimmed) {
       return;
     }
-    setTempGroups([...tempGroups, newGroup.trim()]);
+    if (tempGroups.includes(trimmed)) {
+      alert("이미 존재하는 그룹명입니다.");
+      return;
+    }
+    setTempGroups([...tempGroups, trimmed]);
     setNewGroup("");
   };
 

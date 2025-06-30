@@ -27,6 +27,18 @@ export const updateMenuPriorityAsync = createAsyncThunk(
   }
 );
 
+// 메뉴 우선순위 업데이트를 위한 공통 함수
+const updateMenuPriorityInState = (state, { groupName, menus }) => {
+  const updatedMenus = state.menu.menus.map(menu => {
+    if (menu.menuGroupName === groupName) {
+      const updatedMenu = menus.find(m => m.id === menu.id || m.menuId === menu.menuId);
+      return updatedMenu || menu;
+    }
+    return menu;
+  });
+  state.menu.menus = updatedMenus;
+};
+
 export const menuSlice = createSlice({
   name: "menu",
   initialState: {
@@ -38,15 +50,7 @@ export const menuSlice = createSlice({
   },
   reducers: {
     updateMenuPriority: (state, action) => {
-      const { groupName, menus } = action.payload;
-      const updatedMenus = state.menu.menus.map(menu => {
-        if (menu.menuGroupName === groupName) {
-          const updatedMenu = menus.find(m => m.id === menu.id || m.menuId === menu.menuId);
-          return updatedMenu || menu;
-        }
-        return menu;
-      });
-      state.menu.menus = updatedMenus;
+      updateMenuPriorityInState(state, action.payload);
     },
     addGroupName: (state, action) => {
       if (!state.groupNames.includes(action.payload)) {
@@ -75,15 +79,7 @@ export const menuSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(updateMenuPriorityAsync.fulfilled, (state, action) => {
-        const { groupName, menus } = action.payload;
-        const updatedMenus = state.menu.menus.map(menu => {
-          if (menu.menuGroupName === groupName) {
-            const updatedMenu = menus.find(m => m.id === menu.id || m.menuId === menu.menuId);
-            return updatedMenu || menu;
-          }
-          return menu;
-        });
-        state.menu.menus = updatedMenus;
+        updateMenuPriorityInState(state, action.payload);
       });
   },
 });
