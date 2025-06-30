@@ -6,6 +6,7 @@ export const API_CONFIG = {
 export const API_ENDPOINTS = {
   // 매장 메뉴 관련
   //   MENUS_BY_ID: (id) => `/api/owner/${store_id}/menus`,
-  MENU_LIST: () => `/menuList`,
+  MENU_LIST: () => `/menus`,  // GET, POST 요청 모두 사용
+  ADD_MENU: () => `/menus`,  // POST 요청용
   OWNER: `/owner`,
 };

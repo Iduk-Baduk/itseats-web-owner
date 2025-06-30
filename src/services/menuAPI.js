@@ -13,6 +13,16 @@ export const menuAPI = {
     }
   },
 
+  getMenuStats: async () => {
+    try {
+      const response = await apiClient.get("/menuStats");
+      return response.data;
+    } catch (e) {
+      console.error("API Error: getMenuStats", e);
+      throw e;
+    }
+  },
+
   getOwnerData: async () => {
     try {
       const response = await apiClient.get(API_ENDPOINTS.OWNER);
@@ -21,6 +31,16 @@ export const menuAPI = {
     } catch (e) {
       // 에러 발생 시 콘솔에 출력하고 에러를 다시 던져줍니다.
       console.error("API Error: getOwnerData", e);
+      throw e;
+    }
+  },
+
+  addMenu: async (menuData) => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.ADD_MENU(), menuData);
+      return response.data;
+    } catch (e) {
+      console.error("API Error: addMenu", e);
       throw e;
     }
   },

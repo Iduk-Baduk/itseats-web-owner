@@ -1,37 +1,48 @@
 {
-  "menuList": {
+  "menus": [
+    {
+      "menuId": 11,
+      "menuName": "아메리카노",
+      "menuPrice": "2000",
+      "menuStatus": "ONSALE",
+      "menuGroupName": "음료",
+      "menuPriority": 1,
+      "id": "93cd"
+    },
+    {
+      "menuId": 13,
+      "menuName": "초코라떼",
+      "menuPrice": "2000",
+      "menuStatus": "OUT_OF_STOCK",
+      "menuGroupName": "음료",
+      "menuPriority": 2,
+      "id": "81ac"
+    },
+    {
+      "menuId": 25,
+      "menuName": "커피번",
+      "menuPrice": "3500",
+      "menuStatus": "HIDDEN",
+      "menuGroupName": "베이커리",
+      "menuPriority": 3,
+      "id": "df19"
+    },
+    {
+      "id": "2048",
+      "menuName": "1",
+      "menuDescription": "qwe",
+      "menuPrice": "2",
+      "menuStatus": "ONSALE",
+      "menuGroupName": "음료",
+      "optionGroups": []
+    }
+  ],
+  "menuStats": {
     "totalMenuCount": 7,
     "orderableMenuCount": 4,
     "outOfStockTodayCount": 1,
-    "hiddenMenuCount": 2,
-    "menus": [
-      {
-        "menuId": 11,
-        "menuName": "아메리카노",
-        "menuPrice": "2000",
-        "menuStatus": "ONSALE",
-        "menuGroupName": "음료",
-        "menuPriority": 1
-      },
-      {
-        "menuId": 13,
-        "menuName": "초코라떼",
-        "menuPrice": "2000",
-        "menuStatus": "OUT_OF_STOCK",
-        "menuGroupName": "음료",
-        "menuPriority": 2
-      },
-      {
-        "menuId": 25,
-        "menuName": "커피번",
-        "menuPrice": "3500",
-        "menuStatus": "HIDDEN",
-        "menuGroupName": "베이커리",
-        "menuPriority": 3
-      }
-    ]
+    "hiddenMenuCount": 2
   },
-
   "owner": {
     "menuId": 11,
     "menuName": "아메리카노",
@@ -40,7 +51,6 @@
     "menuStatus": "ONSALE",
     "menuRating": 4.43,
     "menuGroupName": "음료",
-
     "optionGroups": [
       {
         "optionGroupName": "사이즈",
@@ -48,7 +58,6 @@
         "minSelect": 1,
         "maxSelect": 1,
         "priority": 1,
-
         "options": [
           {
             "optionName": "톨(Tall)",
@@ -70,7 +79,6 @@
         "minSelect": 0,
         "maxSelect": 1,
         "priority": 2,
-
         "options": [
           {
             "optionName": "1번 샷 추가",

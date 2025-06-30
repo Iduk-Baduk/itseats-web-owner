@@ -3,9 +3,16 @@ import { menuAPI } from "../services/menuAPI";
 import { getGroupNames } from "../utils/groupMenus";
 
 export const fetchMenuByIdAsync = createAsyncThunk(
-  "menu/fetchMenuById", // 액션 타입
+  "menu/fetchMenuById",
   async () => {
-    return await menuAPI.getMenus(); // API 호출
+    const [menuResponse, statsResponse] = await Promise.all([
+      menuAPI.getMenus(),
+      menuAPI.getMenuStats()
+    ]);
+    return {
+      menus: menuResponse,
+      stats: statsResponse
+    };
   }
 );
 
@@ -13,6 +20,7 @@ export const menuSlice = createSlice({
   name: "menu",
   initialState: {
     menu: { menus: [] },
+    stats: {},
     groupNames: [],
     status: "idle",
     error: null,
@@ -24,25 +32,46 @@ export const menuSlice = createSlice({
       }
     },
     setAllGroupNames: (state, action) => {
-      // action.payload로 받은 배열로 groupNames 상태를 완전히 교체
       state.groupNames = action.payload;
+      
+      const newMenus = [];
+      action.payload.forEach(groupName => {
+        const menusInGroup = state.menu.menus.filter(menu => menu.group === groupName);
+        newMenus.push(...menusInGroup);
+      });
+      
+      const ungroupedMenus = state.menu.menus.filter(menu => !action.payload.includes(menu.group));
+      newMenus.push(...ungroupedMenus);
+      
+      state.menu.menus = newMenus;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMenuByIdAsync.pending, (state) => {
-        // 로딩 상태 처리
+        state.status = "loading";
         console.log("메뉴 로딩 중...");
       })
       .addCase(fetchMenuByIdAsync.fulfilled, (state, action) => {
-        // 성공적으로 데이터를 가져온 경우
         console.log("🔥 메뉴 응답:", action.payload);
         state.status = "succeeded";
-        state.menu = action.payload;
-        state.groupNames = getGroupNames(action.payload.menus);
+        state.menu = { menus: action.payload.menus };
+        state.stats = action.payload.stats;
+        
+        const currentGroups = new Set(state.groupNames);
+        const newGroups = getGroupNames(action.payload.menus);
+        
+        newGroups.forEach(group => {
+          if (!currentGroups.has(group)) {
+            state.groupNames.push(group);
+          }
+        });
+        
+        state.groupNames = state.groupNames.filter(group => 
+          newGroups.includes(group)
+        );
       })
       .addCase(fetchMenuByIdAsync.rejected, (state, action) => {
-        // 에러 처리
         state.status = "failed";
         state.error = action.error.message;
         console.error("메뉴 로딩 실패:", action.error.message);
