@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { withErrorHandling } from '../utils/errorHandler';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1초
@@ -47,10 +48,10 @@ const POS_API = {
   },
 
   // POS 상태 업데이트
-  updatePosStatus: async (status) => {
-    const response = await apiClient.patch('/api/pos/status', { status });
+  updatePosStatus: withErrorHandling(async (status) => {
+    const response = await apiClient.put('/pos/status', { status });
     return response.data;
-  },
+  }, 'updatePosStatus'),
 
   // POS 설정 조회
   getPosSettings: async () => {
@@ -65,12 +66,32 @@ const POS_API = {
   },
 
   // POS 상태 히스토리 조회
-  getPosStatusHistory: async (params) => {
-    const response = await apiClient.get('/api/pos/status/history', { params });
-    // 타임스탬프 기준 내림차순 정렬 (최신순)
-    response.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  getPosStatusHistory: withErrorHandling(async ({ startDate, endDate } = {}) => {
+    const response = await apiClient.get('/pos/status/history', {
+      params: { startDate, endDate }
+    });
+    
+    // 응답 데이터의 상태 히스토리를 시간순으로 정렬
+    if (response.data.history) {
+      response.data.history.sort((a, b) => 
+        new Date(b.timestamp) - new Date(a.timestamp)
+      );
+    }
+    
     return response.data;
-  },
+  }, 'getPosStatusHistory'),
+
+  // POS 자동화 설정 조회
+  getPosAutoSettings: withErrorHandling(async () => {
+    const response = await apiClient.get('/pos/settings/auto');
+    return response.data;
+  }, 'getPosAutoSettings'),
+
+  // POS 자동화 설정 업데이트
+  updatePosAutoSettings: withErrorHandling(async (settings) => {
+    const response = await apiClient.put('/pos/settings/auto', settings);
+    return response.data;
+  }, 'updatePosAutoSettings'),
 };
 
 export default POS_API; 

@@ -59,8 +59,8 @@ const PosStatusHistory = ({ history }) => {
   if (history.length === 0) {
     return (
       <div className={styles.container}>
-        <h3 className={styles.title}>상태 변경 이력</h3>
-        <p className={styles.emptyMessage}>변경 이력이 없습니다.</p>
+        <h3 className={styles.title}>상태 변경 기록</h3>
+        <p className={styles.emptyMessage}>상태 변경 기록이 없습니다.</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ const PosStatusHistory = ({ history }) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>상태 변경 이력</h3>
+        <h3 className={styles.title}>상태 변경 기록</h3>
         <select
           className={styles.dateSelect}
           value={selectedDate}
