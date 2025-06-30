@@ -1,7 +1,8 @@
 .container {
-  padding: 16px;
-  background-color: #f5f5f5;
+  background: white;
   border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header {
@@ -9,6 +10,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 16px;
 }
 
 .title {
@@ -19,12 +21,19 @@
 }
 
 .dateSelect {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: white;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
   font-size: 14px;
-  color: #333;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-width: 140px;
+}
+
+.dateSelect:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 .historyList {
@@ -35,66 +44,214 @@
 }
 
 .historyItem {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.historyItem:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.historyHeader {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
 }
 
 .timestamp {
   font-size: 14px;
   color: #666;
+  font-weight: 500;
   min-width: 80px;
+}
+
+.expandButton {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.expandButton:hover {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+.basicInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reason {
+  font-size: 13px;
+  color: #333;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.userName {
+  font-size: 13px;
+  color: #666;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.expandedInfo {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  margin-top: 8px;
+}
+
+.metadataRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.metadataRow:last-child {
+  margin-bottom: 0;
+}
+
+.metadataLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  min-width: 80px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metadataValue {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.categoryBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.revenueLoss {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.orderCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f57c00;
+}
+
+.approvalInfo {
+  font-size: 13px;
+  font-weight: 500;
+  color: #28a745;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 12px;
+  gap: 4px;
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
 }
 
 .pageButton {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
+  background: white;
   border-radius: 4px;
-  background-color: white;
   cursor: pointer;
   font-size: 14px;
-  color: #333;
   transition: all 0.2s;
+  min-width: 40px;
 }
 
 .pageButton:hover:not(:disabled) {
   background-color: #f0f0f0;
-  border-color: #ccc;
+  border-color: #bbb;
+}
+
+.pageButton.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
 }
 
 .pageButton:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.pageInfo {
-  font-size: 14px;
-  color: #666;
-}
-
-.emptyMessage {
+.emptyState {
   text-align: center;
+  padding: 40px 20px;
   color: #666;
-  font-size: 14px;
-  margin: 24px 0;
+  font-size: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
 }
 
-.noHistory {
-  color: #666;
-  font-size: 14px;
-  font-style: italic;
+/* 반응형 */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .dateSelect {
+    width: 100%;
+  }
+  
+  .historyHeader {
+    flex-wrap: wrap;
+  }
+  
+  .basicInfo {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .metadataRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .metadataLabel {
+    min-width: auto;
+  }
+  
+  .pagination {
+    flex-wrap: wrap;
+  }
 } 

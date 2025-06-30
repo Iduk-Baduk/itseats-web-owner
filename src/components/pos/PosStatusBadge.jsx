@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from './PosStatusBadge.module.css';
 import { POS_STATUS, POS_STATUS_LABEL, POS_STATUS_STYLE } from '../../constants/posStatus';
 
-const PosStatusBadge = ({ status, className }) => {
+const PosStatusBadge = ({ status, className, ...props }) => {
   const style = POS_STATUS_STYLE[status] || {
     backgroundColor: '#e0e0e0',  // 기본 배경색
     color: '#666666'            // 기본 텍스트 색상
@@ -16,6 +16,7 @@ const PosStatusBadge = ({ status, className }) => {
       style={style}
       role="img"
       aria-label={`매장 상태: ${label}`}
+      {...props}
     >
       {label}
     </div>

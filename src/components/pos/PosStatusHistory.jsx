@@ -1,14 +1,25 @@
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { POS_STATUS } from '../../constants/posStatus';
+import { POS_STATUS, STATUS_CHANGE_CATEGORY_LABEL } from '../../constants/posStatus';
 import PosStatusBadge from './PosStatusBadge';
 import styles from './PosStatusHistory.module.css';
+import { formatRelativeTime, formatDate } from '../../utils/dateUtils';
+import { parseISO, format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 const ITEMS_PER_PAGE = 10;
 
 const getDateString = (timestamp) => {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const date = parseISO(timestamp);
+  return format(date, 'yyyy-MM-dd');
+};
+
+const formatTimeForDisplay = (timestamp) => {
+  // UTC 시간을 안전하게 추출하기 위해 Date 객체의 UTC 메서드 사용
+  const date = parseISO(timestamp);
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 const formatDateForDisplay = (dateString) => {
@@ -16,9 +27,31 @@ const formatDateForDisplay = (dateString) => {
   return `${year}년 ${month}월 ${day}일`;
 };
 
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: 'KRW'
+  }).format(amount);
+};
+
+// 고유 키 생성을 위한 유틸리티 함수
+const generateHistoryItemKey = (item, index) => {
+  if (item.id) return item.id;
+  
+  const components = [
+    item.timestamp,
+    item.status,
+    item.reason,
+    index
+  ].filter(Boolean);
+  
+  return components.join('-');
+};
+
 const PosStatusHistory = ({ history }) => {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedItems, setExpandedItems] = useState(new Set());
 
   const { filteredHistory, availableDates } = useMemo(() => {
     // 날짜별로 그룹화
@@ -34,9 +67,10 @@ const PosStatusHistory = ({ history }) => {
     // 날짜 목록 생성 및 정렬
     const dates = Object.keys(groupedHistory).sort((a, b) => b.localeCompare(a));
 
-    // 선택된 날짜 또는 가장 최근 날짜의 기록 필터링
-    const targetDate = selectedDate || dates[0];
-    const filtered = targetDate ? groupedHistory[targetDate] || [] : [];
+    // 선택된 날짜의 기록 필터링 (선택된 날짜가 없으면 전체 기록 반환)
+    const filtered = selectedDate 
+      ? (groupedHistory[selectedDate] || [])
+      : history;
 
     // 시간순 정렬 (내림차순)
     filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -49,6 +83,10 @@ const PosStatusHistory = ({ history }) => {
 
   // 현재 페이지의 아이템만 선택
   const paginatedHistory = useMemo(() => {
+    // 전체 항목이 ITEMS_PER_PAGE보다 적으면 페이지네이션 없이 모든 항목 표시
+    if (filteredHistory.length <= ITEMS_PER_PAGE) {
+      return filteredHistory;
+    }
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredHistory.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredHistory, currentPage]);
@@ -65,6 +103,18 @@ const PosStatusHistory = ({ history }) => {
     setCurrentPage(newPage);
   };
 
+  const toggleItemExpansion = (itemId) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
   if (history.length === 0) {
     return <div className={styles.emptyState}>상태 변경 기록이 없습니다.</div>;
   }
@@ -75,31 +125,124 @@ const PosStatusHistory = ({ history }) => {
         <h3 className={styles.title}>상태 변경 기록</h3>
         <select
           className={styles.dateSelect}
-          value={selectedDate || availableDates[0] || ''}
+          value={selectedDate}
           onChange={handleDateChange}
           aria-label="날짜 선택"
         >
+          <option value="">전체 기록</option>
           {availableDates.map(date => (
             <option key={date} value={date}>
-              {formatDateForDisplay(date)}
+              {format(parseISO(date), 'yyyy년 MM월 dd일', { locale: ko })}
             </option>
           ))}
         </select>
       </div>
 
-      <div className={styles.historyList}>
-        {paginatedHistory.map((item, index) => (
-          <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
-            <time
-              className={styles.timestamp}
-              dateTime={item.timestamp}
-              aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
+      <div className={styles.historyList} role="list">
+        {paginatedHistory.map((item, index) => {
+          const itemKey = generateHistoryItemKey(item, index);
+          const isExpanded = expandedItems.has(itemKey);
+          const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
+
+          return (
+            <div 
+              key={itemKey} 
+              className={styles.historyItem}
+              role="listitem"
             >
-              {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-            </time>
-            <PosStatusBadge status={item.status} />
-          </div>
-        ))}
+              <div className={styles.historyHeader}>
+                <time 
+                  className={styles.timestamp}
+                  dateTime={item.timestamp}
+                  title={format(parseISO(item.timestamp), 'yyyy-MM-dd HH:mm:ss', { timeZone: 'UTC', locale: ko })}
+                >
+                  {formatTimeForDisplay(item.timestamp)}
+                </time>
+                <PosStatusBadge status={item.status} />
+                {hasMetadata && (
+                  <button
+                    className={styles.expandButton}
+                    onClick={() => toggleItemExpansion(itemKey)}
+                    aria-label={isExpanded ? '접기' : '펼치기'}
+                  >
+                    {isExpanded ? '▼' : '▶'}
+                  </button>
+                )}
+              </div>
+
+              {/* 기본 정보 (항상 표시) */}
+              <div className={styles.basicInfo}>
+                {item.reason && (
+                  <span className={styles.reason}>
+                    📋 {item.reason}
+                  </span>
+                )}
+                {item.userName && (
+                  <span className={styles.userName}>
+                    👤 {item.userName}
+                  </span>
+                )}
+                {item.requiresApproval && !item.approvedBy && (
+                  <span className={styles.approvalStatus}>
+                    ⏳ 승인 대기 중
+                  </span>
+                )}
+              </div>
+
+              {/* 확장 정보 */}
+              {isExpanded && hasMetadata && (
+                <div className={styles.expandedInfo}>
+                  {item.notes && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>메모:</span>
+                      <span className={styles.metadataValue}>{item.notes}</span>
+                    </div>
+                  )}
+                  
+                  {item.category && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>분류:</span>
+                      <span className={styles.categoryBadge}>
+                        {STATUS_CHANGE_CATEGORY_LABEL[item.category] || item.category}
+                      </span>
+                    </div>
+                  )}
+
+                  {item.estimatedRevenueLoss > 0 && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>예상 손실:</span>
+                      <span className={styles.revenueLoss}>
+                        {formatCurrency(item.estimatedRevenueLoss)}
+                      </span>
+                    </div>
+                  )}
+
+                  {item.affectedOrderCount > 0 && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>영향받은 주문:</span>
+                      <span className={styles.orderCount}>
+                        {item.affectedOrderCount}건
+                      </span>
+                    </div>
+                  )}
+
+                  {item.requiresApproval && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>승인 정보:</span>
+                      <span className={styles.approvalInfo}>
+                        {item.approvedBy ? (
+                          <>✅ {item.approvedBy}님이 승인</>
+                        ) : (
+                          <>⏳ 승인 대기 중</>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {totalPages > 1 && (
@@ -109,7 +252,8 @@ const PosStatusHistory = ({ history }) => {
               key={page}
               className={`${styles.pageButton} ${page === currentPage ? styles.active : ''}`}
               onClick={() => handlePageChange(page)}
-              disabled={page === currentPage}
+              aria-label={`${page}페이지로 이동`}
+              aria-current={page === currentPage ? 'page' : undefined}
             >
               {page}
             </button>
@@ -121,10 +265,21 @@ const PosStatusHistory = ({ history }) => {
 };
 
 PosStatusHistory.propTypes = {
-  history: PropTypes.arrayOf(PropTypes.shape({
-    status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
-    timestamp: PropTypes.string.isRequired
-  })).isRequired
+  history: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      timestamp: PropTypes.string.isRequired,
+      status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
+      reason: PropTypes.string,
+      notes: PropTypes.string,
+      userName: PropTypes.string,
+      category: PropTypes.string,
+      estimatedRevenueLoss: PropTypes.number,
+      affectedOrderCount: PropTypes.number,
+      requiresApproval: PropTypes.bool,
+      approvedBy: PropTypes.string
+    })
+  ).isRequired
 };
 
-export default PosStatusHistory; 
+export default PosStatusHistory;
