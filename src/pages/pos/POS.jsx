@@ -4,36 +4,52 @@ import PosQuickAccess from "../../components/pos/PosQuickAccess";
 import styles from "./Pos.module.css";
 import PosStatusBadge from '../../components/pos/PosStatusBadge';
 import PosStatusControl from '../../components/pos/PosStatusControl';
+import PosAutoSettings from '../../components/pos/PosAutoSettings';
 import { POS_STATUS } from '../../constants/posStatus';
 
 const POS = () => {
   const [posStatus, setPosStatus] = useState(POS_STATUS.CLOSED);
   const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState({
+    autoOpen: false,
+    autoOpenTime: '09:00',
+    autoClose: false,
+    autoCloseTime: '23:00',
+  });
 
   // Mock API 호출을 시뮬레이션
   useEffect(() => {
-    const fetchPosStatus = async () => {
+    const fetchPosData = async () => {
       try {
         const response = await fetch('/data/db.json');
         const data = await response.json();
         setPosStatus(data.pos.currentStatus);
+        setSettings(data.pos.settings);
       } catch (error) {
-        console.error('Failed to fetch POS status:', error);
+        console.error('Failed to fetch POS data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPosStatus();
+    fetchPosData();
   }, []);
 
   const handleStatusChange = async (newStatus) => {
     try {
-      // 실제 API 호출 대신 상태만 업데이트
       setPosStatus(newStatus);
       // TODO: API 연동 시 실제 API 호출 추가
     } catch (error) {
       console.error('Failed to update POS status:', error);
+    }
+  };
+
+  const handleSettingsChange = async (newSettings) => {
+    try {
+      setSettings(newSettings);
+      // TODO: API 연동 시 실제 API 호출 추가
+    } catch (error) {
+      console.error('Failed to update POS settings:', error);
     }
   };
 
@@ -52,6 +68,10 @@ const POS = () => {
         <PosStatusControl
           currentStatus={posStatus}
           onStatusChange={handleStatusChange}
+        />
+        <PosAutoSettings
+          settings={settings}
+          onSettingsChange={handleSettingsChange}
         />
       </div>
       <PosMetricItem
