@@ -1,10 +1,12 @@
 import { useState } from "react";
 import styles from "./MenuInput.module.css";
 import MenuGroupModal from "./MenuGroupModal";
+import { useSelector } from "react-redux";
 
 export default function MenuInput({ groupNames, onChange, selectedState, onSelectState }) {
   const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
   const [descriptionLength, setDescriptionLength] = useState(0);
+  const reduxGroupNames = useSelector((state) => state.menu.groupNames);
 
   return (
     <div className={styles.form}>
@@ -13,7 +15,7 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           메뉴 그룹 관리
         </div>
         <MenuGroupModal
-          groupNames={groupNames}
+          groupNames={reduxGroupNames}
           modalState={menuGroupModal}
           setModalState={setMenuGroupModal}
           setGroupNames={(newGroups) => onChange("groupNames", newGroups)}
@@ -27,7 +29,7 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           onChange={(e) => onChange("menuGroupName", e.target.value)}
         >
           <option value="선택">선택</option>
-          {groupNames.map((groupName, index) => (
+          {reduxGroupNames.map((groupName, index) => (
             <option key={index} value={groupName}>
               {groupName}
             </option>
