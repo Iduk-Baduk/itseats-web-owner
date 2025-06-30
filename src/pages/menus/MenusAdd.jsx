@@ -5,12 +5,14 @@ import { UpArrayIcon, DownArrayIcon } from "../../components/common/Icons";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchMenuByIdAsync } from "../../store/menuSlice";
 
 import styles from "./MenusAdd.module.css";
 
 export default function MenusAdd() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const groupNames = useSelector((state) => state.menu.groupNames);
   const status = useSelector((state) => state.menu.status);
   const [menuData, setMenuData] = useState({
@@ -24,6 +26,7 @@ export default function MenusAdd() {
   const [optionGroupModal, setMenuGroupModal] = useState(false);
   const [optionGroups, setOptionGroups] = useState([]);
   const [groupOpenStates, setGroupOpenStates] = useState({});
+  const [allSelected, setAllSelected] = useState(false);
 
   useEffect(() => {
     console.log(optionGroups);
@@ -77,7 +80,16 @@ export default function MenusAdd() {
             <tr>
               <th>메뉴 정보</th>
               <th>
-                <input type="checkbox" id="selectAll" />
+                <input 
+                  type="checkbox" 
+                  id="selectAll"
+                  checked={allSelected}
+                  onChange={(e) => {
+                    setAllSelected(e.target.checked);
+                    // 전체 선택/해제 로직 구현
+                    // 실제 메뉴 항목들과 연동하여 구현할 수 있습니다
+                  }}
+                />
                 <label htmlFor="selectAll">전체 선택</label>
               </th>
             </tr>
@@ -124,6 +136,11 @@ export default function MenusAdd() {
                               <select
                                 value={option.optionStatus}
                                 className={styles.optionStatus}
+                                onChange={(e) => {
+                                  const updatedGroups = [...optionGroups];
+                                  updatedGroups[groupIndex].options[optionIndex].optionStatus = e.target.value;
+                                  setOptionGroups(updatedGroups);
+                                }}
                               >
                                 <option value="ONSALE">판매중</option>
                                 <option value="OUT_OF_STOCK">오늘만 품절</option>
@@ -153,7 +170,8 @@ export default function MenusAdd() {
           <div className={styles.actionButtons}>
             <button
               onClick={() => {
-                console.log(menuData);
+                // 실제 취소 로직 구현 (이전 페이지로 이동)
+                navigate(-1);
               }}
               className={styles.cancelButton}
             >

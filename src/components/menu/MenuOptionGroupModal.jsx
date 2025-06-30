@@ -40,7 +40,11 @@ export default function MenuOptionGroupModal({ onClose, onSave }) {
       return;
     }
 
-    targetGroup.options.push({ name: optionName, price: Number(optionPrice) });
+    targetGroup.options.push({ 
+      name: optionName, 
+      price: Number(optionPrice), 
+      optionStatus: "ONSALE" 
+    });
 
     setOptionGroups(updatedGroups);
     setOptionName("");
@@ -58,7 +62,7 @@ export default function MenuOptionGroupModal({ onClose, onSave }) {
     setOptionGroups(updatedGroups);
 
     if (selectedGroupIndex === index) {
-      setSelectedGroupIndex(0); // 선택된 그룹이 삭제되면 첫 번째 그룹
+      setSelectedGroupIndex(""); // 선택 해제
     } else if (selectedGroupIndex > index) {
       setSelectedGroupIndex((prev) => prev - 1); // 삭제된 그룹 이후의 그룹이 선택되면 인덱스 조정
     }
@@ -118,7 +122,13 @@ export default function MenuOptionGroupModal({ onClose, onSave }) {
 
           <div className={styles.rightPanel}>
             <div className={styles.requiredOption}>
-              <input type="checkbox" id="required" className={styles.checkBox} />
+              <input 
+                type="checkbox" 
+                id="required" 
+                className={styles.checkBox}
+                checked={isRequired}
+                onChange={(e) => setIsRequired(e.target.checked)}
+              />
               <label htmlFor="required">표시 시 필수 옵션으로 변환됩니다.</label>
             </div>
 
