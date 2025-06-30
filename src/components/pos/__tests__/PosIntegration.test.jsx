@@ -1,18 +1,19 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { describe, test, expect, vi, beforeEach, afterEach, it } from 'vitest';
 import PosAutoSettings from '../PosAutoSettings';
 import PosStatusControl from '../PosStatusControl';
 import PosStatusHistory from '../PosStatusHistory';
+import PosStatusBadge from '../PosStatusBadge';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
 import * as posAutoScheduler from '../../../utils/posAutoScheduler';
 import * as posAPI from '../../../services/posAPI';
+import { AuthProvider } from '../../../contexts/AuthContext';
 
 // API 모킹
 vi.mock('../../../services/posAPI', () => ({
-  default: {
-    updatePosStatus: vi.fn()
-  }
+  updatePosStatus: vi.fn(),
+  fetchPosHistory: vi.fn()
 }));
 
 // react-hot-toast 모킹
@@ -22,6 +23,97 @@ vi.mock('react-hot-toast', () => ({
     error: vi.fn()
   }
 }));
+
+describe('POS Integration Tests', () => {
+  const mockPosId = 'pos1';
+  const mockInitialStatus = POS_STATUS.OPEN;
+
+  const mockHistory = [
+    {
+      id: '1',
+      timestamp: '2024-03-20T10:00:00.000Z',
+      status: POS_STATUS.OPEN,
+      reason: '영업 시작',
+      estimatedRevenueLoss: 0,
+      affectedOrderCount: 0
+    }
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    posAPI.fetchPosHistory.mockResolvedValue(mockHistory);
+  });
+
+  const renderComponents = () => {
+    return render(
+      <AuthProvider>
+        <div>
+          <PosStatusBadge status={mockInitialStatus} />
+          <PosStatusControl
+            posId={mockPosId}
+            currentStatus={mockInitialStatus}
+            onStatusChange={vi.fn()}
+          />
+          <PosStatusHistory history={mockHistory} />
+        </div>
+      </AuthProvider>
+    );
+  };
+
+  it('shows current status correctly across components', () => {
+    renderComponents();
+    expect(screen.getByText('영업 중')).toBeInTheDocument();
+  });
+
+  it('updates status badge when status changes', async () => {
+    posAPI.updatePosStatus.mockResolvedValueOnce({
+      status: POS_STATUS.CLOSED,
+      timestamp: '2024-03-20T18:00:00.000Z'
+    });
+
+    renderComponents();
+    
+    // 상태 변경 시도
+    fireEvent.click(screen.getByText('영업 종료'));
+    const reasonInput = screen.getByLabelText('변경 사유');
+    fireEvent.change(reasonInput, { target: { value: '영업 종료' } });
+    fireEvent.click(screen.getByText('확인'));
+
+    // 상태 변경 확인
+    await waitFor(() => {
+      expect(posAPI.updatePosStatus).toHaveBeenCalledWith(
+        mockPosId,
+        expect.objectContaining({
+          status: POS_STATUS.CLOSED,
+          reason: '영업 종료'
+        })
+      );
+    });
+  });
+
+  it('shows error message when status update fails', async () => {
+    posAPI.updatePosStatus.mockRejectedValueOnce(new Error('API Error'));
+
+    renderComponents();
+    
+    // 상태 변경 시도
+    fireEvent.click(screen.getByText('영업 종료'));
+    const reasonInput = screen.getByLabelText('변경 사유');
+    fireEvent.change(reasonInput, { target: { value: '영업 종료' } });
+    fireEvent.click(screen.getByText('확인'));
+
+    // 에러 메시지 확인
+    await waitFor(() => {
+      expect(screen.getByText(/오류가 발생했습니다/)).toBeInTheDocument();
+    });
+  });
+
+  it('displays history correctly', () => {
+    renderComponents();
+    expect(screen.getByText('영업 시작')).toBeInTheDocument();
+    expect(screen.getByRole('time')).toHaveAttribute('dateTime', '2024-03-20T10:00:00.000Z');
+  });
+});
 
 describe('POS Status Management Integration', () => {
   const mockOnStatusChange = vi.fn();

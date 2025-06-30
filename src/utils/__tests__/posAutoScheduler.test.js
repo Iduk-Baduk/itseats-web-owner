@@ -10,6 +10,8 @@ import {
   validateAutoSettings,
   convertTimeStringToMinutes,
 } from '../posAutoScheduler';
+import { scheduleStatusChange, cancelScheduledChange } from '../posAutoScheduler';
+import * as posAPI from '../../services/posAPI';
 
 vi.mock('../../services/posAPI');
 
@@ -253,12 +255,83 @@ describe('usePosAutoScheduler', () => {
 });
 
 describe('POS Auto Scheduler', () => {
+  const mockPosId = 'pos1';
+  const mockCurrentTime = new Date('2024-03-20T10:00:00.000Z');
+  const mockScheduleTime = new Date('2024-03-20T18:00:00.000Z');
+
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.setSystemTime(mockCurrentTime);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('schedules status change correctly', () => {
+    const schedule = {
+      targetStatus: POS_STATUS.CLOSED,
+      scheduledTime: mockScheduleTime,
+      reason: '자동 영업 종료'
+    };
+
+    const timeoutId = scheduleStatusChange(mockPosId, schedule);
+    expect(timeoutId).toBeDefined();
+  });
+
+  it('executes scheduled change at correct time', () => {
+    const schedule = {
+      targetStatus: POS_STATUS.CLOSED,
+      scheduledTime: mockScheduleTime,
+      reason: '자동 영업 종료'
+    };
+
+    scheduleStatusChange(mockPosId, schedule);
+
+    // 예약된 시간으로 이동
+    vi.advanceTimersByTime(8 * 60 * 60 * 1000); // 8시간
+
+    expect(posAPI.updatePosStatus).toHaveBeenCalledWith(mockPosId, {
+      status: POS_STATUS.CLOSED,
+      reason: '자동 영업 종료',
+      isAutomatic: true
+    });
+  });
+
+  it('cancels scheduled change correctly', () => {
+    const schedule = {
+      targetStatus: POS_STATUS.CLOSED,
+      scheduledTime: mockScheduleTime,
+      reason: '자동 영업 종료'
+    };
+
+    const timeoutId = scheduleStatusChange(mockPosId, schedule);
+    cancelScheduledChange(timeoutId);
+
+    // 예약된 시간으로 이동
+    vi.advanceTimersByTime(8 * 60 * 60 * 1000);
+
+    expect(posAPI.updatePosStatus).not.toHaveBeenCalled();
+  });
+
+  it('handles invalid schedule time', () => {
+    const pastSchedule = {
+      targetStatus: POS_STATUS.CLOSED,
+      scheduledTime: new Date('2024-03-20T09:00:00.000Z'), // 현재 시간보다 이전
+      reason: '자동 영업 종료'
+    };
+
+    expect(() => scheduleStatusChange(mockPosId, pastSchedule)).toThrow();
+  });
+
+  it('validates required schedule parameters', () => {
+    const invalidSchedule = {
+      scheduledTime: mockScheduleTime
+      // targetStatus 누락
+    };
+
+    expect(() => scheduleStatusChange(mockPosId, invalidSchedule)).toThrow();
   });
 
   describe('isValidTimeFormat', () => {

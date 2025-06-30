@@ -224,7 +224,8 @@
       },
       {
         "status": "CLOSED",
-        "timestamp": "2025-06-30T19:35:48.3NZ"
+        "timestamp": "2025-06-30T21:29:02.990Z",
+        "approvedAt": null
       }
     ],
     "settings": {

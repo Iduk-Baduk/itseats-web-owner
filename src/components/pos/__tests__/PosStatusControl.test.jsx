@@ -1,15 +1,14 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PosStatusControl from '../PosStatusControl';
 import { POS_STATUS } from '../../../constants/posStatus';
 import * as posAPI from '../../../services/posAPI';
+import { AuthProvider } from '../../../contexts/AuthContext';
 
 // API 모킹
 vi.mock('../../../services/posAPI', () => ({
-  default: {
-    updatePosStatus: vi.fn()
-  }
+  updatePosStatus: vi.fn()
 }));
 
 // react-hot-toast 모킹
@@ -21,8 +20,80 @@ vi.mock('react-hot-toast', () => ({
 }));
 
 describe('PosStatusControl', () => {
+  const mockPosId = 'pos1';
+  const mockCurrentStatus = POS_STATUS.OPEN;
+  const mockOnStatusChange = vi.fn();
+
+  const renderComponent = () => {
+    return render(
+      <AuthProvider>
+        <PosStatusControl
+          posId={mockPosId}
+          currentStatus={mockCurrentStatus}
+          onStatusChange={mockOnStatusChange}
+        />
+      </AuthProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('renders status buttons correctly', () => {
+    renderComponent();
+    expect(screen.getByText('영업 시작')).toBeInTheDocument();
+    expect(screen.getByText('영업 종료')).toBeInTheDocument();
+    expect(screen.getByText('휴식 시작')).toBeInTheDocument();
+  });
+
+  it('disables current status button', () => {
+    renderComponent();
+    const currentStatusButton = screen.getByText('영업 중');
+    expect(currentStatusButton).toBeDisabled();
+  });
+
+  it('opens dialog on status button click', () => {
+    renderComponent();
+    fireEvent.click(screen.getByText('영업 종료'));
+    expect(screen.getByText('상태 변경 확인')).toBeInTheDocument();
+  });
+
+  it('handles status change successfully', async () => {
+    posAPI.updatePosStatus.mockResolvedValueOnce({ status: POS_STATUS.CLOSED });
+    
+    renderComponent();
+    fireEvent.click(screen.getByText('영업 종료'));
+    
+    const reasonInput = screen.getByLabelText('변경 사유');
+    fireEvent.change(reasonInput, { target: { value: '영업 종료' } });
+    
+    fireEvent.click(screen.getByText('확인'));
+    
+    await waitFor(() => {
+      expect(posAPI.updatePosStatus).toHaveBeenCalledWith(mockPosId, expect.objectContaining({
+        status: POS_STATUS.CLOSED,
+        reason: '영업 종료'
+      }));
+      expect(mockOnStatusChange).toHaveBeenCalledWith({ status: POS_STATUS.CLOSED });
+    });
+  });
+
+  it('handles error during status change', async () => {
+    posAPI.updatePosStatus.mockRejectedValueOnce(new Error('API Error'));
+    
+    renderComponent();
+    fireEvent.click(screen.getByText('영업 종료'));
+    
+    const reasonInput = screen.getByLabelText('변경 사유');
+    fireEvent.change(reasonInput, { target: { value: '영업 종료' } });
+    
+    fireEvent.click(screen.getByText('확인'));
+    
+    await waitFor(() => {
+      expect(screen.getByText(/오류가 발생했습니다/)).toBeInTheDocument();
+      expect(mockOnStatusChange).not.toHaveBeenCalled();
+    });
   });
 
   test('renders status buttons correctly', () => {

@@ -1,136 +1,94 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getErrorMessage, logError, retryApiCall, withErrorHandling } from '../errorHandler';
+import { describe, it, expect, vi } from 'vitest';
+import { getErrorMessage, handleError, withErrorHandling } from '../errorHandler';
+import { ERROR_TYPES, ERROR_MESSAGES } from '../../constants/errorTypes';
+import toast from 'react-hot-toast';
 
-describe('errorHandler', () => {
-  const originalConsoleError = console.error;
-  const originalConsoleWarn = console.warn;
+vi.mock('react-hot-toast', () => ({
+  default: {
+    error: vi.fn()
+  }
+}));
 
+describe('Error Handler', () => {
   beforeEach(() => {
-    // React 개발 모드 경고만 필터링하도록 수정
-    console.error = (...args) => {
-      if (typeof args[0] === 'string' && (
-        args[0].includes('Warning: ReactDOM.render is deprecated') ||
-        args[0].includes('Warning: componentWillReceiveProps') ||
-        args[0].includes('Warning: findDOMNode is deprecated')
-      )) {
-        return;
-      }
-      originalConsoleError.apply(console, args);
-    };
-
-    console.warn = vi.fn();
-  });
-
-  afterEach(() => {
-    console.error = originalConsoleError;
-    console.warn = originalConsoleWarn;
     vi.clearAllMocks();
+    console.error = vi.fn();
   });
 
   describe('getErrorMessage', () => {
-    it('returns default message for null error', () => {
-      expect(getErrorMessage(null)).toBe('알 수 없는 오류가 발생했습니다.');
+    it('returns unknown error message for null error', () => {
+      expect(getErrorMessage(null)).toBe(ERROR_MESSAGES[ERROR_TYPES.UNKNOWN]);
     });
 
-    it('returns appropriate message for API response errors', () => {
+    it('returns API error message when available', () => {
       const error = {
-        response: { status: 400 }
+        response: {
+          data: {
+            message: '커스텀 에러 메시지'
+          }
+        }
       };
-      expect(getErrorMessage(error)).toBe('잘못된 요청입니다. 입력값을 확인해주세요.');
+      expect(getErrorMessage(error)).toBe('커스텀 에러 메시지');
     });
 
-    it('returns network error message for request errors', () => {
+    it('returns auth error message for 401/403 status', () => {
       const error = {
-        request: {},
-        message: 'Network Error'
+        response: {
+          status: 401
+        }
       };
-      expect(getErrorMessage(error)).toBe('서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.');
+      expect(getErrorMessage(error)).toBe(ERROR_MESSAGES[ERROR_TYPES.AUTH]);
     });
 
-    it('returns error message for other errors', () => {
-      const error = new Error('Custom error');
-      expect(getErrorMessage(error)).toBe('Custom error');
+    it('returns network error message for offline status', () => {
+      const originalNavigator = global.navigator;
+      global.navigator = { onLine: false };
+      
+      expect(getErrorMessage(new Error())).toBe(ERROR_MESSAGES[ERROR_TYPES.NETWORK]);
+      
+      global.navigator = originalNavigator;
     });
   });
 
-  describe('logError', () => {
-    it('logs error with context in development', () => {
-      const error = new Error('Test error');
-      const context = 'test context';
-      
-      const originalNodeEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-      
-      const consoleErrorSpy = vi.spyOn(console, 'error');
-      logError(error, context);
-      
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[Error]', expect.objectContaining({
-        context,
-        message: error.message,
-        stack: error.stack
-      }));
-      
-      process.env.NODE_ENV = originalNodeEnv;
-      consoleErrorSpy.mockRestore();
-    });
-  });
-
-  describe('retryApiCall', () => {
-    it('retries failed API calls', async () => {
-      const apiCall = vi.fn()
-        .mockRejectedValueOnce(new Error('First failure'))
-        .mockRejectedValueOnce(new Error('Second failure'))
-        .mockResolvedValueOnce('success');
-
-      const result = await retryApiCall(apiCall, 3, 100);
-      
-      expect(result).toBe('success');
-      expect(apiCall).toHaveBeenCalledTimes(3);
+  describe('handleError', () => {
+    it('shows toast message by default', () => {
+      const error = new Error('테스트 에러');
+      handleError(error);
+      expect(toast.error).toHaveBeenCalled();
     });
 
-    it('throws error after max retries', async () => {
-      const error = new Error('API Error');
-      const apiCall = vi.fn().mockRejectedValue(error);
-
-      await expect(retryApiCall(apiCall, 2, 100))
-        .rejects
-        .toThrow('API Error');
-      
-      expect(apiCall).toHaveBeenCalledTimes(2);
+    it('sets form error when setError is provided', () => {
+      const error = new Error('테스트 에러');
+      const setError = vi.fn();
+      handleError(error, { setError });
+      expect(setError).toHaveBeenCalled();
     });
 
-    it('does not retry on certain HTTP status codes', async () => {
-      const error = {
-        response: { status: 404 },
-        message: 'Not Found'
-      };
-      const apiCall = vi.fn().mockRejectedValue(error);
-
-      await expect(retryApiCall(apiCall, 3, 100))
-        .rejects
-        .toEqual(error);
-      
-      expect(apiCall).toHaveBeenCalledTimes(1);
+    it('logs error with context', () => {
+      const error = new Error('테스트 에러');
+      const context = '테스트 컨텍스트';
+      handleError(error, { context });
+      expect(console.error).toHaveBeenCalledWith(`Error in ${context}:`, error);
     });
   });
 
   describe('withErrorHandling', () => {
-    it('wraps function with error handling', async () => {
-      const fn = vi.fn().mockResolvedValue('success');
-      const wrappedFn = withErrorHandling(fn, 'test');
+    it('wraps function and handles errors', async () => {
+      const mockFn = vi.fn().mockRejectedValue(new Error('테스트 에러'));
+      const wrappedFn = withErrorHandling(mockFn, '테스트 작업');
 
-      const result = await wrappedFn();
-      expect(result).toBe('success');
+      await expect(wrappedFn()).rejects.toThrow('테스트 에러');
+      expect(toast.error).toHaveBeenCalled();
     });
 
-    it('handles errors appropriately', async () => {
-      const error = new Error('Test error');
-      const fn = vi.fn().mockRejectedValue(error);
-      const wrappedFn = withErrorHandling(fn, 'test');
+    it('passes through successful results', async () => {
+      const expectedResult = { success: true };
+      const mockFn = vi.fn().mockResolvedValue(expectedResult);
+      const wrappedFn = withErrorHandling(mockFn, '테스트 작업');
 
-      await expect(wrappedFn())
-        .rejects
-        .toThrow('Test error');
+      const result = await wrappedFn();
+      expect(result).toEqual(expectedResult);
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 }); 

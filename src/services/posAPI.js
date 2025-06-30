@@ -1,43 +1,72 @@
 import apiClient from './apiClient';
-import { withErrorHandling, retryApiCall, handleError } from '../utils/errorHandler';
+import { retryApiCall, handleError } from '../utils/errorHandler';
+import { format } from 'date-fns';
 import { toISOString } from '../utils/dateUtils';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1초
 
-// ISO 8601 형식 검증을 위한 정규식
-const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+// 타임스탬프 처리를 위한 유틸리티 함수들
+const dateUtils = {
+  toDate: (timestamp) => {
+    if (!timestamp) return new Date();
+    return new Date(timestamp);
+  },
 
-// 타임스탬프 정규화 함수
-const normalizeTimestamp = (timestamp) => {
-  if (!timestamp) return new Date().toISOString();
-  return ISO_DATE_REGEX.test(timestamp) ? timestamp : new Date(timestamp).toISOString();
+  toISOString: (timestamp) => {
+    return dateUtils.toDate(timestamp).toISOString();
+  },
+
+  format: (timestamp, formatStr = 'yyyy-MM-dd HH:mm:ss') => {
+    return format(dateUtils.toDate(timestamp), formatStr);
+  }
 };
 
 // 고유 ID 생성 헬퍼
 const generateId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+// 타임스탬프 마이그레이션 상태 확인
+const checkTimestampMigrationNeeded = async () => {
+  try {
+    const response = await apiClient.get('/pos');
+    const data = response.data;
+    
+    // 마이그레이션이 필요한지 빠르게 확인
+    const needsMigration = [
+      data.lastUpdated,
+      ...(data.statusHistory || []).map(item => item.timestamp),
+      ...(data.notifications || []).map(item => item.timestamp)
+    ].some(timestamp => timestamp && !dateUtils.toDate(timestamp).toISOString().includes('T'));
+
+    return needsMigration;
+  } catch (error) {
+    console.error('Failed to check timestamp migration status:', error);
+    return false;
+  }
+};
 
 // 데이터베이스 타임스탬프 형식 수정 함수
 const fixDatabaseTimestamps = async () => {
   try {
     const currentData = await apiClient.get('/pos');
     let needsUpdate = false;
+    const updates = { ...currentData.data };
 
     // lastUpdated 필드 검증
-    if (currentData.data.lastUpdated) {
-      const fixedLastUpdated = normalizeTimestamp(currentData.data.lastUpdated);
-      if (fixedLastUpdated !== currentData.data.lastUpdated) {
-        currentData.data.lastUpdated = fixedLastUpdated;
+    if (updates.lastUpdated) {
+      const fixedLastUpdated = dateUtils.toISOString(updates.lastUpdated);
+      if (fixedLastUpdated !== updates.lastUpdated) {
+        updates.lastUpdated = fixedLastUpdated;
         needsUpdate = true;
       }
     }
 
-    // statusHistory 타임스탬프 검증
-    if (currentData.data.statusHistory) {
-      currentData.data.statusHistory = currentData.data.statusHistory.map(item => {
-        const fixedTimestamp = normalizeTimestamp(item.timestamp);
-        const fixedApprovedAt = item.approvedAt ? normalizeTimestamp(item.approvedAt) : null;
-        
+    // statusHistory 타임스탬프 검증 - 배치 처리
+    if (updates.statusHistory?.length) {
+      const fixedHistory = updates.statusHistory.map(item => {
+        const fixedTimestamp = dateUtils.toISOString(item.timestamp);
+        const fixedApprovedAt = item.approvedAt ? dateUtils.toISOString(item.approvedAt) : null;
+
         if (fixedTimestamp !== item.timestamp || fixedApprovedAt !== item.approvedAt) {
           needsUpdate = true;
           return {
@@ -48,12 +77,16 @@ const fixDatabaseTimestamps = async () => {
         }
         return item;
       });
+
+      if (needsUpdate) {
+        updates.statusHistory = fixedHistory;
+      }
     }
 
-    // notifications 타임스탬프 검증
-    if (currentData.data.notifications) {
-      currentData.data.notifications = currentData.data.notifications.map(item => {
-        const fixedTimestamp = normalizeTimestamp(item.timestamp);
+    // notifications 타임스탬프 검증 - 배치 처리
+    if (updates.notifications?.length) {
+      const fixedNotifications = updates.notifications.map(item => {
+        const fixedTimestamp = dateUtils.toISOString(item.timestamp);
         if (fixedTimestamp !== item.timestamp) {
           needsUpdate = true;
           return {
@@ -63,15 +96,32 @@ const fixDatabaseTimestamps = async () => {
         }
         return item;
       });
+
+      if (needsUpdate) {
+        updates.notifications = fixedNotifications;
+      }
     }
 
-    // 변경된 내용이 있으면 업데이트
+    // 변경된 내용이 있을 때만 업데이트 수행
     if (needsUpdate) {
-      await apiClient.put('/pos', currentData.data);
-      console.log('Database timestamps have been fixed');
+      await apiClient.put('/pos', updates);
+      console.log('Database timestamps have been normalized');
+      
+      // 마이그레이션 완료 표시 저장
+      try {
+        await apiClient.post('/pos/settings', {
+          timestampMigrationCompleted: true,
+          migrationDate: dateUtils.toISOString(new Date())
+        });
+      } catch (settingError) {
+        console.warn('Failed to save migration status:', settingError);
+      }
     }
+
+    return needsUpdate;
   } catch (error) {
     console.error('Failed to fix database timestamps:', error);
+    throw new Error('타임스탬프 정규화 중 오류가 발생했습니다.');
   }
 };
 
@@ -89,33 +139,30 @@ export class TransactionError extends Error {
   }
 }
 
-// 에러 처리를 포함한 API 호출 래퍼
-const withErrorHandling = (fn, operationName) => async (...args) => {
+// POS 전용 에러 처리 래퍼
+const withPosErrorHandling = (fn, operationName) => async (...args) => {
   try {
     return await fn(...args);
   } catch (error) {
+    // POS 전용 에러는 상위로 전파
     if (error instanceof ConcurrencyError || error instanceof TransactionError) {
       throw error;
     }
+    // 일반적인 에러 처리
     handleError(error, {
       showToast: true,
-      context: operationName
+      context: `POS_${operationName}`
     });
     throw error;
   }
 };
 
-// 낙관적 잠금을 포함한 데이터 업데이트 헬퍼
-const updatePosData = async (posId, updateFn) => {
-  const currentData = await apiClient.get(`/pos/${posId}`);
-  const { version } = currentData.data;
-
+// 공통 데이터 업데이트 헬퍼
+const updatePosData = async (updateFn) => {
   try {
+    const currentData = await apiClient.get('/pos');
     const updatedData = updateFn(currentData.data);
-    const response = await apiClient.put(`/pos/${posId}`, {
-      ...updatedData,
-      version
-    });
+    const response = await apiClient.put('/pos', updatedData);
     return response.data;
   } catch (error) {
     if (error.response?.status === 409) {
@@ -125,41 +172,28 @@ const updatePosData = async (posId, updateFn) => {
   }
 };
 
-// 트랜잭션 처리를 포함한 데이터 업데이트 헬퍼
-const updatePosDataWithTransaction = async (posId, updateFn) => {
-  try {
-    const currentData = await apiClient.get(`/pos/${posId}`);
-    const updatedData = updateFn(currentData.data);
-    
-    const response = await apiClient.post(`/pos/${posId}/transaction`, {
-      data: updatedData,
-      timestamp: normalizeTimestamp(new Date().toISOString())
-    });
-    
-    return response.data;
-  } catch (error) {
-    if (error.response?.status === 409) {
-      throw new ConcurrencyError();
-    }
-    if (error.response?.status === 500) {
-      throw new TransactionError();
-    }
-    throw error;
+// 설정 업데이트를 위한 공통 헬퍼
+const updateSettings = (currentData, newSettings, settingsKey = 'settings') => ({
+  ...currentData,
+  [settingsKey]: {
+    ...currentData[settingsKey],
+    ...newSettings,
+    updatedAt: dateUtils.toISOString(new Date())
   }
-};
+});
 
 // API 메서드들
-export const getPosStatus = withErrorHandling(
+export const getPosStatus = withPosErrorHandling(
   async (posId) => {
     const response = await apiClient.get(`/pos/${posId}`);
     return response.data;
   },
-  'getPosStatus'
+  'GET_STATUS'
 );
 
-export const updatePosStatus = withErrorHandling(
+export const updatePosStatus = withPosErrorHandling(
   async (posId, statusData) => {
-    return updatePosDataWithTransaction(posId, (currentData) => ({
+    return updatePosData(currentData => ({
       ...currentData,
       status: statusData.status,
       statusMetadata: {
@@ -168,38 +202,24 @@ export const updatePosStatus = withErrorHandling(
       }
     }));
   },
-  'updatePosStatus'
+  'UPDATE_STATUS'
 );
 
-export const updatePosSettings = withErrorHandling(
-  async (posId, settings) => {
-    return updatePosData(posId, (currentData) => ({
-      ...currentData,
-      settings: {
-        ...currentData.settings,
-        ...settings,
-        updatedAt: toISOString(settings.updatedAt)
-      }
-    }));
+export const updatePosSettings = withPosErrorHandling(
+  async (settings) => {
+    return updatePosData(currentData => updateSettings(currentData, settings));
   },
   'updatePosSettings'
 );
 
-export const updatePosAutoSettings = withErrorHandling(
-  async (posId, autoSettings) => {
-    return updatePosData(posId, (currentData) => ({
-      ...currentData,
-      autoSettings: {
-        ...currentData.autoSettings,
-        ...autoSettings,
-        updatedAt: toISOString(autoSettings.updatedAt)
-      }
-    }));
+export const updatePosAutoSettings = withPosErrorHandling(
+  async (settings) => {
+    return updatePosData(currentData => updateSettings(currentData, settings, 'autoSettings'));
   },
   'updatePosAutoSettings'
 );
 
-export const getPosStatusHistory = withErrorHandling(
+export const getPosStatusHistory = withPosErrorHandling(
   async (posId, params = {}) => {
     const response = await apiClient.get(`/pos/${posId}/history`, { params });
     return response.data;
@@ -207,7 +227,7 @@ export const getPosStatusHistory = withErrorHandling(
   'getPosStatusHistory'
 );
 
-export const retryFailedTransaction = withErrorHandling(
+export const retryFailedTransaction = withPosErrorHandling(
   async (transactionId) => {
     const response = await apiClient.post(`/transactions/${transactionId}/retry`);
     return response.data;
@@ -216,18 +236,24 @@ export const retryFailedTransaction = withErrorHandling(
 );
 
 const posAPI = {
-  // POS 상태 조회 (타임스탬프 형식 검증 추가)
-  getPosStatus: withErrorHandling(async () => {
+  // POS 상태 조회 (타임스탬프 형식 검증 개선)
+  getPosStatus: withPosErrorHandling(async () => {
     const response = await apiClient.get('/pos');
-    await fixDatabaseTimestamps(); // 데이터베이스 타임스탬프 검증
+    
+    // 마이그레이션이 필요한 경우에만 실행
+    const needsMigration = await checkTimestampMigrationNeeded();
+    if (needsMigration) {
+      await fixDatabaseTimestamps();
+    }
+    
     return { status: response.data.currentStatus };
   }, 'getPosStatus'),
 
   // POS 상태 업데이트 (확장된 메타데이터 포함)
-  updatePosStatus: withErrorHandling(async (status, metadata = {}) => {
+  updatePosStatus: withPosErrorHandling(async (status, metadata = {}) => {
     // 전체 데이터 조회 후 상태만 업데이트
     const currentData = await apiClient.get('/pos');
-    const timestamp = normalizeTimestamp(new Date().toISOString());
+    const timestamp = dateUtils.toISOString(new Date());
     
     // 새로운 히스토리 항목 생성
     const newHistoryItem = {
@@ -243,14 +269,14 @@ const posAPI = {
       category: metadata.category || 'MANUAL',
       requiresApproval: metadata.requiresApproval || false,
       approvedBy: metadata.approvedBy || null,
-      approvedAt: metadata.approvedAt ? normalizeTimestamp(metadata.approvedAt) : null
+      approvedAt: metadata.approvedAt ? dateUtils.toISOString(metadata.approvedAt) : null
     };
 
     // 기존 히스토리의 타임스탬프 형식 수정
     const updatedHistory = currentData.data.statusHistory.map(item => ({
       ...item,
-      timestamp: normalizeTimestamp(item.timestamp),
-      approvedAt: item.approvedAt ? normalizeTimestamp(item.approvedAt) : null
+      timestamp: dateUtils.toISOString(item.timestamp),
+      approvedAt: item.approvedAt ? dateUtils.toISOString(item.approvedAt) : null
     }));
 
     const updatedData = {
@@ -292,29 +318,13 @@ const posAPI = {
   }, 'updatePosStatus'),
 
   // POS 설정 조회
-  getPosSettings: withErrorHandling(async () => {
+  getPosSettings: withPosErrorHandling(async () => {
     const response = await apiClient.get('/pos');
     return response.data.settings;
   }, 'getPosSettings'),
 
-  // POS 설정 업데이트
-  updatePosSettings: withErrorHandling(async (settings) => {
-    // 전체 데이터 조회 후 설정만 업데이트
-    const currentData = await apiClient.get('/pos');
-    const updatedData = {
-      ...currentData.data,
-      settings: {
-        ...currentData.data.settings,
-        ...settings
-      }
-    };
-    
-    const response = await apiClient.put('/pos', updatedData);
-    return response.data;
-  }, 'updatePosSettings'),
-
   // POS 상태 히스토리 조회 (확장된 필터링)
-  getPosStatusHistory: withErrorHandling(async ({ 
+  getPosStatusHistory: withPosErrorHandling(async ({ 
     startDate, 
     endDate, 
     status, 
@@ -329,9 +339,9 @@ const posAPI = {
     statusHistory = statusHistory.filter(item => {
       // 날짜 필터링
       if (startDate || endDate) {
-        const itemDate = new Date(item.timestamp);
-        const start = startDate ? new Date(startDate) : new Date(0);
-        const end = endDate ? new Date(endDate) : new Date();
+        const itemDate = dateUtils.toDate(item.timestamp);
+        const start = startDate ? dateUtils.toDate(startDate) : new Date(0);
+        const end = endDate ? dateUtils.toDate(endDate) : new Date();
         if (!(itemDate >= start && itemDate <= end)) {
           return false;
         }
@@ -357,77 +367,51 @@ const posAPI = {
     
     // 응답 데이터의 상태 히스토리를 시간순(내림차순)으로 정렬
     statusHistory.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      dateUtils.toDate(b.timestamp) - dateUtils.toDate(a.timestamp)
     );
     
     return { history: statusHistory };
   }, 'getPosStatusHistory'),
 
   // POS 자동화 설정 조회
-  getPosAutoSettings: withErrorHandling(async () => {
+  getPosAutoSettings: withPosErrorHandling(async () => {
     const response = await apiClient.get('/pos');
     return response.data.settings;
   }, 'getPosAutoSettings'),
 
-  // POS 자동화 설정 업데이트
-  updatePosAutoSettings: withErrorHandling(async (settings) => {
-    // 전체 데이터 조회 후 설정만 업데이트
-    const currentData = await apiClient.get('/pos');
-    const updatedData = {
-      ...currentData.data,
-      settings: {
-        ...currentData.data.settings,
-        ...settings
-      }
-    };
-    
-    const response = await apiClient.put('/pos', updatedData);
-    return response.data;
-  }, 'updatePosAutoSettings'),
-
   // 분석 데이터 조회
-  getPosAnalytics: withErrorHandling(async () => {
+  getPosAnalytics: withPosErrorHandling(async () => {
     const response = await apiClient.get('/pos');
     return response.data.analytics || {};
   }, 'getPosAnalytics'),
 
   // 알림 생성
-  createNotification: withErrorHandling(async (notificationData) => {
+  createNotification: withPosErrorHandling(async (notificationData) => {
     const newNotification = {
       id: generateId(),
       type: notificationData.type,
       title: notificationData.title,
       message: notificationData.message,
-      timestamp: normalizeTimestamp(new Date().toISOString()),
+      timestamp: dateUtils.toISOString(new Date()),
       isRead: false,
       severity: notificationData.severity || 'INFO',
       relatedStatusChangeId: notificationData.relatedStatusChangeId || null
     };
 
-    // 현재 알림 목록 조회
-    const currentData = await apiClient.get('/pos');
-    
-    // 기존 알림의 타임스탬프 형식 수정
-    const updatedNotifications = currentData.data.notifications 
-      ? currentData.data.notifications.map(notification => ({
+    return updatePosData(currentData => ({
+      ...currentData,
+      notifications: [
+        newNotification,
+        ...(currentData.notifications || []).map(notification => ({
           ...notification,
-          timestamp: normalizeTimestamp(notification.timestamp)
+          timestamp: dateUtils.toISOString(notification.timestamp)
         }))
-      : [];
-    
-    // notifications 배열이 없으면 새로 생성
-    const updatedData = {
-      ...currentData.data,
-      notifications: [newNotification, ...updatedNotifications]
-    };
-    
-    await apiClient.put('/pos', updatedData);
-
-    return newNotification;
+      ]
+    }));
   }, 'createNotification'),
 
   // 알림 목록 조회
-  getNotifications: withErrorHandling(async ({ unreadOnly = false } = {}) => {
+  getNotifications: withPosErrorHandling(async ({ unreadOnly = false } = {}) => {
     const response = await apiClient.get('/pos');
     const notifications = response.data.notifications || [];
     
@@ -439,42 +423,24 @@ const posAPI = {
   }, 'getNotifications'),
 
   // 알림 읽음 처리
-  markNotificationAsRead: withErrorHandling(async (notificationId) => {
-    const currentData = await apiClient.get('/pos');
-    const notifications = currentData.data.notifications || [];
-    
-    const updatedNotifications = notifications.map(notif => 
-      notif.id === notificationId 
-        ? { ...notif, isRead: true }
-        : notif
-    );
-
-    const updatedData = {
-      ...currentData.data,
-      notifications: updatedNotifications
-    };
-    
-    await apiClient.put('/pos', updatedData);
-    return true;
+  markNotificationAsRead: withPosErrorHandling(async (notificationId) => {
+    return updatePosData(currentData => ({
+      ...currentData,
+      notifications: (currentData.notifications || []).map(notif => 
+        notif.id === notificationId ? { ...notif, isRead: true } : notif
+      )
+    }));
   }, 'markNotificationAsRead'),
 
   // 모든 알림 읽음 처리
-  markAllNotificationsAsRead: withErrorHandling(async () => {
-    const currentData = await apiClient.get('/pos');
-    const notifications = currentData.data.notifications || [];
-    
-    const updatedNotifications = notifications.map(notif => ({
-      ...notif,
-      isRead: true
+  markAllNotificationsAsRead: withPosErrorHandling(async () => {
+    return updatePosData(currentData => ({
+      ...currentData,
+      notifications: (currentData.notifications || []).map(notif => ({
+        ...notif,
+        isRead: true
+      }))
     }));
-
-    const updatedData = {
-      ...currentData.data,
-      notifications: updatedNotifications
-    };
-    
-    await apiClient.put('/pos', updatedData);
-    return true;
   }, 'markAllNotificationsAsRead')
 };
 

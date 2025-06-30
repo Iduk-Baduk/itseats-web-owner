@@ -1,28 +1,41 @@
-const fs = require('fs').promises;
-const path = require('path');
+import { promises as fs } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function toISOString(date) {
   if (!date) return new Date().toISOString();
-  return new Date(date).toISOString();
+  try {
+    return new Date(date).toISOString();
+  } catch (error) {
+    console.warn('Invalid date:', date);
+    return new Date().toISOString();
+  }
 }
 
 async function fixTimestamps(data) {
   // POS 상태 이력의 타임스탬프 수정
-  if (Array.isArray(data.history)) {
-    data.history = data.history.map(item => ({
+  if (data.pos?.statusHistory) {
+    data.pos.statusHistory = data.pos.statusHistory.map(item => ({
       ...item,
-      timestamp: toISOString(item.timestamp)
+      timestamp: toISOString(item.timestamp),
+      approvedAt: item.approvedAt ? toISOString(item.approvedAt) : null
     }));
   }
 
-  // 설정의 타임스탬프 수정
-  if (data.settings?.updatedAt) {
-    data.settings.updatedAt = toISOString(data.settings.updatedAt);
+  // POS 마지막 업데이트 시간 수정
+  if (data.pos?.lastUpdated) {
+    data.pos.lastUpdated = toISOString(data.pos.lastUpdated);
   }
 
-  // 자동화 설정의 타임스탬프 수정
-  if (data.autoSettings?.updatedAt) {
-    data.autoSettings.updatedAt = toISOString(data.autoSettings.updatedAt);
+  // 알림의 타임스탬프 수정
+  if (data.pos?.notifications) {
+    data.pos.notifications = data.pos.notifications.map(item => ({
+      ...item,
+      timestamp: toISOString(item.timestamp)
+    }));
   }
 
   return data;
@@ -31,21 +44,17 @@ async function fixTimestamps(data) {
 async function migrateDatabase() {
   try {
     // db.json 파일 읽기
-    const dbPath = path.join(__dirname, '..', 'data', 'db.json');
+    const dbPath = join(__dirname, '..', 'data', 'db.json');
     const rawData = await fs.readFile(dbPath, 'utf8');
     const database = JSON.parse(rawData);
 
-    // POS 데이터의 타임스탬프 수정
-    if (database.pos) {
-      database.pos = await Promise.all(
-        database.pos.map(pos => fixTimestamps(pos))
-      );
-    }
+    // 데이터베이스 타임스탬프 수정
+    const updatedDatabase = await fixTimestamps(database);
 
     // 수정된 데이터를 파일에 저장
     await fs.writeFile(
       dbPath,
-      JSON.stringify(database, null, 2),
+      JSON.stringify(updatedDatabase, null, 2),
       'utf8'
     );
 
@@ -53,7 +62,7 @@ async function migrateDatabase() {
     
     // 마이그레이션 완료 표시 파일 생성
     await fs.writeFile(
-      path.join(__dirname, '..', 'data', '.timestamp_migrated'),
+      join(__dirname, '..', 'data', '.timestamp_migrated'),
       new Date().toISOString(),
       'utf8'
     );

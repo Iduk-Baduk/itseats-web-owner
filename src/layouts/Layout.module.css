@@ -1,3 +1,8 @@
+/* 공통 CSS 변수 정의 */
+:root {
+  --sidebar-width: 260px;
+}
+
 .app {
   display: flex;
   flex-direction: row;
@@ -6,7 +11,7 @@
   height: 100dvh;
 }
 .app>nav {
-  flex: 0 0 260px;
+  flex: 0 0 var(--sidebar-width);
   box-sizing: border-box;
   box-shadow: 3px 0 4px rgba(0, 0, 0, 0.15);
   z-index: var(--z-index-nav);
@@ -31,7 +36,7 @@
 
 .nav {
   position: fixed;
-  width: 240px;
+  width: var(--sidebar-width);
   height: 100vh;
   background-color: white;
   box-sizing: border-box;
@@ -42,7 +47,7 @@
 .main {
   flex: 1;
   overflow: auto;
-  margin-left: 240px;
+  margin-left: var(--sidebar-width);
 }
 
-// ... existing code ...
+/* ... existing code ... */

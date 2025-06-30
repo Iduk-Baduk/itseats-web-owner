@@ -1,16 +1,20 @@
-import { ERROR_TYPES, ERROR_MESSAGES } from '../constants/errorTypes';
+import { ERROR_TYPES, ERROR_MESSAGES as COMMON_ERROR_MESSAGES } from '../constants/errorTypes';
 import toast from 'react-hot-toast';
-
-// 에러 메시지 상수
-export const ERROR_MESSAGES = {
-  POS_STATUS_UPDATE: '매장 상태 변경에 실패했습니다.',
-  POS_SETTINGS_UPDATE: '자동화 설정 변경에 실패했습니다.',
-  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
-  UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.'
-};
 
 // 최대 재시도 횟수
 const MAX_RETRIES = 3;
+
+// POS 관련 추가 에러 메시지
+export const POS_ERROR_MESSAGES = {
+  POS_STATUS_UPDATE: '매장 상태 변경에 실패했습니다.',
+  POS_SETTINGS_UPDATE: '자동화 설정 변경에 실패했습니다.',
+};
+
+// 통합 에러 메시지
+export const ERROR_MESSAGES = {
+  ...COMMON_ERROR_MESSAGES,
+  ...POS_ERROR_MESSAGES
+};
 
 /**
  * 네트워크 연결 복구를 기다리는 함수
@@ -67,7 +71,7 @@ export const retryApiCall = async (apiCall, maxRetries = MAX_RETRIES, delay = 10
 
       // 네트워크 에러인 경우
       if (!navigator.onLine || error.message.includes('Network')) {
-        toast.error(ERROR_MESSAGES.NETWORK_ERROR);
+        toast.error(ERROR_MESSAGES[ERROR_TYPES.NETWORK]);
         // 네트워크가 복구될 때까지 대기 (최대 30초)
         await waitForNetworkRecovery();
         continue;
@@ -103,36 +107,60 @@ export const getErrorType = (error) => {
   return ERROR_TYPES.UNKNOWN;
 };
 
+/**
+ * 에러 메시지를 사용자 친화적인 메시지로 변환
+ */
 export const getErrorMessage = (error) => {
-  const errorType = getErrorType(error);
-  const defaultMessage = ERROR_MESSAGES[errorType];
-  
-  // API에서 에러 메시지를 제공하는 경우
-  if (error?.response?.data?.message) {
-    return error.response.data.message;
+  if (!error) {
+    return ERROR_MESSAGES[ERROR_TYPES.UNKNOWN];
   }
-  
-  return defaultMessage;
+
+  // API 응답 에러
+  if (error.response) {
+    const { status } = error.response;
+    
+    // API에서 제공하는 에러 메시지가 있으면 사용
+    if (error.response.data?.message) {
+      return error.response.data.message;
+    }
+
+    // 상태 코드별 기본 메시지
+    if (status === 401 || status === 403) return ERROR_MESSAGES[ERROR_TYPES.AUTH];
+    if (status === 404) return ERROR_MESSAGES[ERROR_TYPES.NOT_FOUND];
+    if (status >= 500) return ERROR_MESSAGES[ERROR_TYPES.SERVER];
+    if (status === 400) return ERROR_MESSAGES[ERROR_TYPES.VALIDATION];
+  }
+
+  // 네트워크 에러
+  if (!navigator.onLine || error.message?.includes('network')) {
+    return ERROR_MESSAGES[ERROR_TYPES.NETWORK];
+  }
+
+  return ERROR_MESSAGES[ERROR_TYPES.UNKNOWN];
 };
 
+/**
+ * 에러 처리 유틸리티
+ */
 export const handleError = (error, options = {}) => {
   const {
     showToast = true,
     setError = null,
     errorField = 'submit',
+    context = ''
   } = options;
-  
+
   const message = getErrorMessage(error);
-  console.error('Error occurred:', error);
-  
+  console.error(`Error in ${context}:`, error);
+
   if (showToast) {
     toast.error(message);
   }
-  
+
   if (setError) {
     setError(errorField, { message });
   }
-  
+
   return message;
 };
 
@@ -167,18 +195,16 @@ export const logError = (error, context = '') => {
 };
 
 /**
- * 에러 처리 래퍼 함수
- * @param {Function} fn - 래핑할 함수
- * @param {string} context - 에러 발생 컨텍스트
- * @returns {Function} 에러 처리가 포함된 함수
+ * 에러 처리를 포함한 API 호출 래퍼
  */
-export const withErrorHandling = (fn, context = '') => {
-  return async (...args) => {
-    try {
-      return await retryApiCall(() => fn(...args));
-    } catch (error) {
-      logError(error, context);
-      throw error;
-    }
-  };
+export const withErrorHandling = (fn, operationName) => async (...args) => {
+  try {
+    return await fn(...args);
+  } catch (error) {
+    handleError(error, {
+      showToast: true,
+      context: operationName
+    });
+    throw error;
+  }
 }; 

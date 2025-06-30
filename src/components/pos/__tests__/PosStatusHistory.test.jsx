@@ -1,35 +1,71 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, test, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import PosStatusHistory from '../PosStatusHistory';
 import { POS_STATUS } from '../../../constants/posStatus';
 
 describe('PosStatusHistory', () => {
   const mockHistory = [
     {
-      status: POS_STATUS.OPEN,
-      timestamp: new Date('2024-03-21T10:00:00').toISOString(),
+      id: '1',
+      timestamp: '2024-03-20T10:00:00.000Z',
+      status: 'OPEN',
+      reason: '영업 시작',
+      estimatedRevenueLoss: 0,
+      affectedOrderCount: 0
     },
     {
-      status: POS_STATUS.BREAK,
-      timestamp: new Date('2024-03-20T15:00:00').toISOString(),
-    },
-    {
-      status: POS_STATUS.CLOSED,
-      timestamp: new Date('2024-03-20T22:00:00').toISOString(),
-    },
+      id: '2',
+      timestamp: '2024-03-20T18:00:00.000Z',
+      status: 'CLOSED',
+      reason: '영업 종료',
+      estimatedRevenueLoss: 50000,
+      affectedOrderCount: 3
+    }
   ];
 
-  test('renders empty state correctly', () => {
+  it('renders empty state when no history', () => {
     render(<PosStatusHistory history={[]} />);
-    expect(screen.getByText('상태 변경 기록이 없습니다.')).toBeInTheDocument();
+    expect(screen.getByText('상태 변경 이력이 없습니다.')).toBeInTheDocument();
   });
 
-  test('renders history items correctly', () => {
+  it('renders history items correctly', () => {
     render(<PosStatusHistory history={mockHistory} />);
-    const statusBadges = screen.getAllByRole('img');
-    // 초기에는 가장 최근 날짜(2024-03-21)의 기록만 표시되므로 1개
-    expect(statusBadges).toHaveLength(1);
+    
+    // 상태 확인
+    expect(screen.getByText('OPEN')).toBeInTheDocument();
+    expect(screen.getByText('CLOSED')).toBeInTheDocument();
+    
+    // 사유 확인
+    expect(screen.getByText('영업 시작')).toBeInTheDocument();
+    expect(screen.getByText('영업 종료')).toBeInTheDocument();
+    
+    // 영향도 정보 확인
+    expect(screen.getByText('예상 매출 손실: 50,000원')).toBeInTheDocument();
+    expect(screen.getByText('영향 받은 주문: 3건')).toBeInTheDocument();
+  });
+
+  it('renders timestamps in correct format', () => {
+    render(<PosStatusHistory history={mockHistory} />);
+    
+    const timestamps = screen.getAllByRole('time');
+    expect(timestamps).toHaveLength(2);
+    
+    timestamps.forEach(timestamp => {
+      expect(timestamp).toHaveAttribute('dateTime');
+    });
+  });
+
+  it('handles approval status correctly', () => {
+    const historyWithApproval = [
+      {
+        ...mockHistory[0],
+        requiresApproval: true
+      }
+    ];
+
+    render(<PosStatusHistory history={historyWithApproval} />);
+    expect(screen.getByText('승인 필요')).toBeInTheDocument();
   });
 
   test('filters history by date', () => {
