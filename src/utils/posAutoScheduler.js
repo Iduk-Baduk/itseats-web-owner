@@ -37,45 +37,112 @@ export const isWithinOperatingHours = (openTime, closeTime) => {
   return currentTime >= openTimeMinutes && currentTime < closeTimeMinutes;
 };
 
+// 설정의 유효성을 검사하는 함수
+const isValidSettings = (settings) => {
+  if (!settings) return false;
+  
+  // 자동 오픈 설정 검증
+  const hasValidOpenSettings = !settings.autoOpen || (settings.autoOpen && settings.autoOpenTime);
+  
+  // 자동 마감 설정 검증
+  const hasValidCloseSettings = !settings.autoClose || (settings.autoClose && settings.autoCloseTime);
+  
+  return hasValidOpenSettings && hasValidCloseSettings;
+};
+
 // 다음 상태 변경까지 남은 시간(밀리초) 계산
 export const getNextStatusChangeDelay = (settings) => {
-  if (!settings.autoOpen || !settings.autoClose || !settings.autoOpenTime || !settings.autoCloseTime) {
+  if (!isValidSettings(settings)) {
     return null;
   }
 
   const now = new Date();
   const currentTime = now.getHours() * 60 + now.getMinutes();
   
-  const [openHours, openMinutes] = settings.autoOpenTime.split(':').map(Number);
-  const [closeHours, closeMinutes] = settings.autoCloseTime.split(':').map(Number);
+  // 자동화가 모두 비활성화된 경우
+  if (!settings.autoOpen && !settings.autoClose) {
+    return null;
+  }
+  
+  const [openHours, openMinutes] = (settings.autoOpenTime || '00:00').split(':').map(Number);
+  const [closeHours, closeMinutes] = (settings.autoCloseTime || '00:00').split(':').map(Number);
   
   const openTimeMinutes = openHours * 60 + openMinutes;
   const closeTimeMinutes = closeHours * 60 + closeMinutes;
   
-  // 현재 영업 시간 상태 확인
-  const isOpen = isWithinOperatingHours(settings.autoOpenTime, settings.autoCloseTime);
-  
-  if (!isOpen) {
-    // 영업 시간 외: 다음 오픈 시간까지의 지연 시간 계산
+  // 현재 영업 시간 상태 확인 (자동 오픈과 마감이 모두 활성화된 경우에만)
+  const isOpen = settings.autoOpen && settings.autoClose ? 
+    isWithinOperatingHours(settings.autoOpenTime, settings.autoCloseTime) :
+    null;
+
+  // 자동 오픈만 활성화된 경우
+  if (settings.autoOpen && !settings.autoClose) {
     if (currentTime < openTimeMinutes) {
-      // 오늘 오픈 시간까지 대기
+      return (openTimeMinutes - currentTime) * 60 * 1000;
+    }
+    return ((24 * 60 - currentTime) + openTimeMinutes) * 60 * 1000;
+  }
+
+  // 자동 마감만 활성화된 경우
+  if (!settings.autoOpen && settings.autoClose) {
+    if (currentTime < closeTimeMinutes) {
+      return (closeTimeMinutes - currentTime) * 60 * 1000;
+    }
+    return ((24 * 60 - currentTime) + closeTimeMinutes) * 60 * 1000;
+  }
+
+  // 둘 다 활성화된 경우 기존 로직 사용
+  if (!isOpen) {
+    if (currentTime < openTimeMinutes) {
       return (openTimeMinutes - currentTime) * 60 * 1000;
     } else {
-      // 다음 날 오픈 시간까지 대기
       return ((24 * 60 - currentTime) + openTimeMinutes) * 60 * 1000;
     }
   } else {
-    // 영업 중: 마감 시간까지의 지연 시간 계산
-    return (closeTimeMinutes - currentTime) * 60 * 1000;
+    if (closeTimeMinutes < openTimeMinutes) {
+      if (currentTime >= openTimeMinutes) {
+        return ((24 * 60 - currentTime) + closeTimeMinutes) * 60 * 1000;
+      } else {
+        return (closeTimeMinutes - currentTime) * 60 * 1000;
+      }
+    } else {
+      return (closeTimeMinutes - currentTime) * 60 * 1000;
+    }
   }
 };
 
 // 현재 시간에 따른 적절한 POS 상태 결정
 export const determineCurrentStatus = (settings) => {
-  if (!settings.autoOpen || !settings.autoClose || !settings.autoOpenTime || !settings.autoCloseTime) {
+  if (!isValidSettings(settings)) {
     return null;
   }
 
+  // 자동화가 모두 비활성화된 경우
+  if (!settings.autoOpen && !settings.autoClose) {
+    return null;
+  }
+
+  // 자동 오픈만 활성화된 경우
+  if (settings.autoOpen && !settings.autoClose) {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHours, openMinutes] = settings.autoOpenTime.split(':').map(Number);
+    const openTimeMinutes = openHours * 60 + openMinutes;
+    
+    return currentTime >= openTimeMinutes ? POS_STATUS.OPEN : POS_STATUS.CLOSED;
+  }
+
+  // 자동 마감만 활성화된 경우
+  if (!settings.autoOpen && settings.autoClose) {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [closeHours, closeMinutes] = settings.autoCloseTime.split(':').map(Number);
+    const closeTimeMinutes = closeHours * 60 + closeMinutes;
+    
+    return currentTime >= closeTimeMinutes ? POS_STATUS.CLOSED : null;
+  }
+
+  // 둘 다 활성화된 경우
   return isWithinOperatingHours(settings.autoOpenTime, settings.autoCloseTime)
     ? POS_STATUS.OPEN
     : POS_STATUS.CLOSED;

@@ -6,6 +6,13 @@ import PosStatusControl from '../PosStatusControl';
 import PosStatusHistory from '../PosStatusHistory';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
 import * as posAutoScheduler from '../../../utils/posAutoScheduler';
+import POS_API from '../../../services/posAPI';
+
+// API 모킹
+vi.mock('../../../services/posAPI');
+
+const mockUpdatePosStatus = vi.fn().mockResolvedValue({});
+POS_API.updatePosStatus = mockUpdatePosStatus;
 
 describe('POS Status Management Integration', () => {
   const mockOnStatusChange = vi.fn();
@@ -20,7 +27,7 @@ describe('POS Status Management Integration', () => {
     vi.useRealTimers();
   });
 
-  test('manual status change updates history', () => {
+  test('manual status change updates history', async () => {
     const initialHistory = [];
     let currentHistory = [...initialHistory];
     
@@ -48,8 +55,11 @@ describe('POS Status Management Integration', () => {
     );
 
     const breakButton = screen.getByRole('button', { name: POS_STATUS_LABEL[POS_STATUS.BREAK] });
-    fireEvent.click(breakButton);
+    await act(async () => {
+      fireEvent.click(breakButton);
+    });
 
+    expect(mockUpdatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.BREAK);
     
     rerender(

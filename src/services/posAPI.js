@@ -28,6 +28,8 @@ const POS_API = {
   // POS 상태 히스토리 조회
   getPosStatusHistory: async (params) => {
     const response = await apiClient.get('/api/pos/status/history', { params });
+    // 타임스탬프 기준 내림차순 정렬 (최신순)
+    response.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     return response.data;
   },
 };

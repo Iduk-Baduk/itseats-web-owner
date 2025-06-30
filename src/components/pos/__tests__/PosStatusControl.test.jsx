@@ -1,14 +1,21 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import PosStatusControl from '../PosStatusControl';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
+import POS_API from '../../../services/posAPI';
+
+// API 모킹
+vi.mock('../../../services/posAPI');
+
+const mockUpdatePosStatus = vi.fn().mockResolvedValue({});
+POS_API.updatePosStatus = mockUpdatePosStatus;
 
 describe('PosStatusControl', () => {
   const mockOnStatusChange = vi.fn();
   
   beforeEach(() => {
-    mockOnStatusChange.mockClear();
+    vi.clearAllMocks();
   });
 
   test('renders all status buttons', () => {
@@ -36,7 +43,7 @@ describe('PosStatusControl', () => {
     expect(button).toBeDisabled();
   });
 
-  test('calls onStatusChange when clicking enabled button', () => {
+  test('calls onStatusChange when clicking enabled button', async () => {
     render(
       <PosStatusControl
         currentStatus={POS_STATUS.OPEN}
@@ -45,11 +52,15 @@ describe('PosStatusControl', () => {
     );
 
     const breakButton = screen.getByText(POS_STATUS_LABEL[POS_STATUS.BREAK]);
-    fireEvent.click(breakButton);
+    await act(async () => {
+      fireEvent.click(breakButton);
+    });
+
+    expect(mockUpdatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.BREAK);
   });
 
-  test('does not call onStatusChange when clicking disabled button', () => {
+  test('does not call onStatusChange when clicking disabled button', async () => {
     render(
       <PosStatusControl
         currentStatus={POS_STATUS.OPEN}
@@ -59,7 +70,10 @@ describe('PosStatusControl', () => {
     );
 
     const breakButton = screen.getByText(POS_STATUS_LABEL[POS_STATUS.BREAK]);
-    fireEvent.click(breakButton);
+    await act(async () => {
+      fireEvent.click(breakButton);
+    });
+
     expect(mockOnStatusChange).not.toHaveBeenCalled();
   });
 

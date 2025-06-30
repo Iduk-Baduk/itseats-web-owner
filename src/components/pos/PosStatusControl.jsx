@@ -2,11 +2,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../constants/posStatus';
 import styles from './PosStatusControl.module.css';
+import POS_API from '../../services/posAPI';
+import { retryApiCall, ERROR_MESSAGES } from '../../utils/errorHandler';
 
-const PosStatusControl = ({ currentStatus, onStatusChange, disabled }) => {
-  const handleStatusChange = (newStatus) => {
-    if (disabled || newStatus === currentStatus) return;
-    onStatusChange(newStatus);
+const PosStatusControl = ({ currentStatus, onStatusChange, disabled = false }) => {
+  const handleStatusChange = async (nextStatus) => {
+    try {
+      await retryApiCall(
+        () => POS_API.updatePosStatus(nextStatus),
+        {
+          errorMessage: ERROR_MESSAGES.POS_STATUS_UPDATE,
+          onError: (message) => {
+            // TODO: 실제 알림 컴포넌트로 교체
+            alert(message);
+          }
+        }
+      );
+      onStatusChange(nextStatus);
+    } catch (error) {
+      console.error('Failed to update POS status after retries:', error);
+    }
   };
 
   return (
