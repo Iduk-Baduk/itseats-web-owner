@@ -12,10 +12,22 @@ import { retryApiCall } from '../utils/errorHandler';
  * @returns {boolean} 트리거 여부
  */
 const shouldTriggerAtTime = (currentTime, targetTime) => {
-  const current = new Date(`1970-01-01T${currentTime}:00`);
-  const target = new Date(`1970-01-01T${targetTime}:00`);
-  const diff = Math.abs(current.getTime() - target.getTime());
-  return diff < 60000; // 1분 이내
+  // 시간 형식 검증 (HH:mm)
+  const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timePattern.test(currentTime) || !timePattern.test(targetTime)) {
+    console.warn('Invalid time format provided to shouldTriggerAtTime');
+    return false;
+  }
+  
+  try {
+    const current = new Date(`1970-01-01T${currentTime}:00`);
+    const target = new Date(`1970-01-01T${targetTime}:00`);
+    const diff = Math.abs(current.getTime() - target.getTime());
+    return diff < 60000; // 1분 이내
+  } catch (error) {
+    console.error('Error comparing times:', error);
+    return false;
+  }
 };
 
 /**

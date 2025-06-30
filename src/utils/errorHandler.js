@@ -12,52 +12,75 @@ export const ERROR_MESSAGES = {
 const MAX_RETRIES = 3;
 
 /**
- * API 호출을 재시도하는 함수
+ * 네트워크 연결 복구를 기다리는 함수
+ * @param {number} timeout - 타임아웃 시간 (밀리초)
+ * @returns {Promise} 네트워크 연결 복구 Promise
+ */
+const waitForNetworkRecovery = (timeout = 30000) => {
+  return new Promise((resolve) => {
+    if (navigator.onLine) {
+      resolve();
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      window.removeEventListener('online', checkConnection);
+      resolve();
+    }, timeout);
+
+    const checkConnection = () => {
+      if (navigator.onLine) {
+        clearTimeout(timeoutId);
+        window.removeEventListener('online', checkConnection);
+        resolve();
+      }
+    };
+
+    window.addEventListener('online', checkConnection);
+  });
+};
+
+/**
+ * API 호출 재시도 함수
  * @param {Function} apiCall - API 호출 함수
- * @param {Object} options - 옵션 (재시도 횟수, 에러 메시지 등)
+ * @param {number} maxRetries - 최대 재시도 횟수
+ * @param {number} delay - 재시도 간격 (밀리초)
  * @returns {Promise} API 호출 결과
  */
-export const retryApiCall = async (apiCall, options = {}) => {
-  const {
-    maxRetries = MAX_RETRIES,
-    errorMessage = ERROR_MESSAGES.UNKNOWN_ERROR,
-    onError = () => {},
-  } = options;
-
+export const retryApiCall = async (apiCall, maxRetries = MAX_RETRIES, delay = 1000) => {
   let lastError;
-  
-  for (let i = 0; i < maxRetries; i++) {
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await apiCall();
     } catch (error) {
       lastError = error;
-      console.error(`API call failed (attempt ${i + 1}/${maxRetries}):`, error);
       
+      // 재시도가 의미 없는 에러인 경우 즉시 실패 처리
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 401 || status === 403 || status === 404) {
+          throw error;
+        }
+      }
+
       // 네트워크 에러인 경우
       if (!navigator.onLine || error.message.includes('Network')) {
-        onError(ERROR_MESSAGES.NETWORK_ERROR);
-        // 네트워크가 복구될 때까지 대기
-        await new Promise(resolve => {
-          const checkConnection = () => {
-            if (navigator.onLine) {
-              window.removeEventListener('online', checkConnection);
-              resolve();
-            }
-          };
-          window.addEventListener('online', checkConnection);
-        });
+        toast.error(ERROR_MESSAGES.NETWORK_ERROR);
+        // 네트워크가 복구될 때까지 대기 (최대 30초)
+        await waitForNetworkRecovery();
         continue;
       }
-      
-      onError(errorMessage);
-      
-      // 마지막 시도가 아닌 경우 잠시 대기
-      if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+
+      // 마지막 시도가 아닌 경우 대기 후 재시도
+      if (attempt < maxRetries) {
+        console.warn(`API 호출 실패 (${attempt}번째 시도): ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay * attempt));
       }
     }
   }
-  
+
+  console.error(`API 호출 실패 (${maxRetries}회 재시도 후): ${lastError.message}`);
   throw lastError;
 };
 
@@ -132,76 +155,6 @@ export const logError = (error, context = '') => {
   // if (process.env.NODE_ENV === 'production') {
   //   sendErrorToMonitoring(errorInfo);
   // }
-};
-
-/**
- * 네트워크 연결 복구를 기다리는 함수
- * @param {number} timeout - 타임아웃 시간 (밀리초)
- * @returns {Promise} 네트워크 연결 복구 Promise
- */
-const waitForNetworkRecovery = (timeout = 30000) => {
-  return new Promise((resolve) => {
-    if (navigator.onLine) {
-      resolve();
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      window.removeEventListener('online', checkConnection);
-      resolve();
-    }, timeout);
-
-    const checkConnection = () => {
-      if (navigator.onLine) {
-        clearTimeout(timeoutId);
-        window.removeEventListener('online', checkConnection);
-        resolve();
-      }
-    };
-
-    window.addEventListener('online', checkConnection);
-  });
-};
-
-/**
- * API 호출 재시도 함수
- * @param {Function} apiCall - API 호출 함수
- * @param {number} maxRetries - 최대 재시도 횟수
- * @param {number} delay - 재시도 간격 (밀리초)
- * @returns {Promise} API 호출 결과
- */
-export const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
-  let lastError;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await apiCall();
-    } catch (error) {
-      lastError = error;
-      
-      // 재시도가 의미 없는 에러인 경우 즉시 실패 처리
-      if (error.response) {
-        const status = error.response.status;
-        if (status === 401 || status === 403 || status === 404) {
-          throw error;
-        }
-      }
-
-      // 네트워크 에러인 경우 연결 복구 대기
-      if (error.request && !navigator.onLine) {
-        await waitForNetworkRecovery();
-      }
-
-      // 마지막 시도가 아닌 경우 대기 후 재시도
-      if (attempt < maxRetries) {
-        console.warn(`API 호출 실패 (${attempt}번째 시도): ${error.message}`);
-        await new Promise(resolve => setTimeout(resolve, delay * attempt));
-      }
-    }
-  }
-
-  console.error(`API 호출 실패 (${maxRetries}회 재시도 후): ${lastError.message}`);
-  throw lastError;
 };
 
 /**

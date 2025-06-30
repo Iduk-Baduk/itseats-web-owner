@@ -11,11 +11,7 @@ import {
   convertTimeStringToMinutes,
 } from '../posAutoScheduler';
 
-vi.mock('../../services/posAPI', () => ({
-  default: {
-    updatePosStatus: vi.fn()
-  }
-}));
+vi.mock('../../services/posAPI');
 
 describe('posAutoScheduler utilities', () => {
   beforeEach(() => {
@@ -174,10 +170,13 @@ describe('posAutoScheduler utilities', () => {
 });
 
 describe('usePosAutoScheduler', () => {
+  let mockPosAPI;
+
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2024, 0, 1, 10, 0, 0));
     vi.clearAllMocks();
+    mockPosAPI = vi.mocked(POS_API.default);
   });
 
   afterEach(() => {
@@ -222,7 +221,7 @@ describe('usePosAutoScheduler', () => {
     };
     const onStatusChange = vi.fn();
     const consoleErrorSpy = vi.spyOn(console, 'error');
-    POS_API.default.updatePosStatus.mockRejectedValueOnce(new Error('API Error'));
+    mockPosAPI.updatePosStatus.mockRejectedValueOnce(new Error('API Error'));
 
     renderHook(() => usePosAutoScheduler(settings, onStatusChange));
     

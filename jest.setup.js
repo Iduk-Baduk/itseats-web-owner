@@ -14,7 +14,12 @@ globalThis.import = {
 // Mock console.error to not pollute test output
 const originalConsoleError = console.error;
 console.error = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('Warning:')) {
+  // React 개발 모드 경고만 필터링
+  if (typeof args[0] === 'string' && (
+    args[0].includes('Warning: ReactDOM.render is deprecated') ||
+    args[0].includes('Warning: componentWillReceiveProps') ||
+    args[0].includes('Warning: findDOMNode is deprecated')
+  )) {
     return;
   }
   originalConsoleError.apply(console, args);
