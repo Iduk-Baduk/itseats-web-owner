@@ -100,8 +100,128 @@
   },
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-06-30T19:35:48.3NZ",
+    "lastUpdated": "2025-06-30T20:16:44.945Z",
     "statusHistory": [
+      {
+        "id": "id_1751314604945_jlnt9z2q4",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T20:16:44.945Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751314588473_iqw1ajthv",
+        "status": "OPEN",
+        "timestamp": "2025-06-30T20:16:28.473Z",
+        "reason": "정상 영업 시작",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313367713_43y3j95ow",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:56:07.713Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313341631_v99y1wml8",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:55:41.631Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313279447_egdeke243",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:54:39.447Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313279400_9y5wvexau",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:54:39.400Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313253038_zd250ahpt",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:54:13.038Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "id_1751313253019_mrpue4vy3",
+        "status": "CLOSED",
+        "timestamp": "2025-06-30T19:54:13.019Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "status": "CLOSED",
         "timestamp": "2025-06-30T19:35:48.3NZ"
@@ -112,6 +232,98 @@
       "autoCloseTime": "23:00",
       "autoOpen": true,
       "autoOpenTime": "09:00"
-    }
+    },
+    "notifications": [
+      {
+        "id": "id_1751314604948_omuax5qlk",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T20:16:44.948Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751314604945_jlnt9z2q4"
+      },
+      {
+        "id": "id_1751314588481_hy5gosmh2",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '정상 영업 시작'으로 인해 'OPEN' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T20:16:28.481Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "id_1751314588473_iqw1ajthv"
+      },
+      {
+        "id": "id_1751313367724_sk0crg3yh",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:56:07.724Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313367713_43y3j95ow"
+      },
+      {
+        "id": "id_1751313341636_mwlfaa1z4",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:55:41.636Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313341631_v99y1wml8"
+      },
+      {
+        "id": "id_1751313279449_qn5ntbock",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:39.449Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313279447_egdeke243"
+      },
+      {
+        "id": "id_1751313279421_vkshksbhk",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:39.421Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313279400_9y5wvexau"
+      },
+      {
+        "id": "id_1751313253044_ogmq76ffp",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:13.044Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313253042_c3cuabzwb"
+      },
+      {
+        "id": "id_1751313253041_8vt25ay4l",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:13.041Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313253038_zd250ahpt"
+      },
+      {
+        "id": "id_1751313253025_wwtuudvdr",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:13.025Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313253019_ntvrphgue"
+      }
+    ]
   }
 }

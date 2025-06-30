@@ -9,9 +9,40 @@
   flex: 0 0 260px;
   box-sizing: border-box;
   box-shadow: 3px 0 4px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: var(--z-index-nav);
 }
 .app>main {
   flex: 1;
   overflow: auto;
 }
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-header);
+}
+
+.nav {
+  position: fixed;
+  width: 240px;
+  height: 100vh;
+  background-color: white;
+  box-sizing: border-box;
+  box-shadow: 3px 0 4px rgba(0, 0, 0, 0.15);
+  z-index: var(--z-index-nav);
+}
+
+.main {
+  flex: 1;
+  overflow: auto;
+  margin-left: 240px;
+}
+
+// ... existing code ...

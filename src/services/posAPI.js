@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { withErrorHandling, retryApiCall } from '../utils/errorHandler';
+import { withErrorHandling, retryApiCall, handleError } from '../utils/errorHandler';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1초
@@ -89,6 +89,146 @@ const fixDatabaseTimestamps = async () => {
     console.error('Failed to fix database timestamps:', error);
   }
 };
+
+export class ConcurrencyError extends Error {
+  constructor(message = '다른 사용자가 이미 상태를 변경했습니다. 새로고침 후 다시 시도해주세요.') {
+    super(message);
+    this.name = 'ConcurrencyError';
+  }
+}
+
+export class TransactionError extends Error {
+  constructor(message = '처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.') {
+    super(message);
+    this.name = 'TransactionError';
+  }
+}
+
+// 에러 처리를 포함한 API 호출 래퍼
+const withErrorHandling = (fn, operationName) => async (...args) => {
+  try {
+    return await fn(...args);
+  } catch (error) {
+    if (error instanceof ConcurrencyError || error instanceof TransactionError) {
+      throw error;
+    }
+    handleError(error, {
+      showToast: true,
+      context: operationName
+    });
+    throw error;
+  }
+};
+
+// 낙관적 잠금을 포함한 데이터 업데이트 헬퍼
+const updatePosData = async (posId, updateFn) => {
+  const currentData = await apiClient.get(`/pos/${posId}`);
+  const { version } = currentData.data;
+
+  try {
+    const updatedData = updateFn(currentData.data);
+    const response = await apiClient.put(`/pos/${posId}`, {
+      ...updatedData,
+      version
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 409) {
+      throw new ConcurrencyError();
+    }
+    throw error;
+  }
+};
+
+// 트랜잭션 처리를 포함한 데이터 업데이트 헬퍼
+const updatePosDataWithTransaction = async (posId, updateFn) => {
+  try {
+    const currentData = await apiClient.get(`/pos/${posId}`);
+    const updatedData = updateFn(currentData.data);
+    
+    const response = await apiClient.post(`/pos/${posId}/transaction`, {
+      data: updatedData,
+      timestamp: new Date().toISOString()
+    });
+    
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 409) {
+      throw new ConcurrencyError();
+    }
+    if (error.response?.status === 500) {
+      throw new TransactionError();
+    }
+    throw error;
+  }
+};
+
+// API 메서드들
+export const getPosStatus = withErrorHandling(
+  async (posId) => {
+    const response = await apiClient.get(`/pos/${posId}`);
+    return response.data;
+  },
+  'getPosStatus'
+);
+
+export const updatePosStatus = withErrorHandling(
+  async (posId, statusData) => {
+    return updatePosDataWithTransaction(posId, (currentData) => ({
+      ...currentData,
+      status: statusData.status,
+      statusMetadata: {
+        ...statusData,
+        timestamp: new Date().toISOString()
+      }
+    }));
+  },
+  'updatePosStatus'
+);
+
+export const updatePosSettings = withErrorHandling(
+  async (posId, settings) => {
+    return updatePosData(posId, (currentData) => ({
+      ...currentData,
+      settings: {
+        ...currentData.settings,
+        ...settings,
+        updatedAt: new Date().toISOString()
+      }
+    }));
+  },
+  'updatePosSettings'
+);
+
+export const updatePosAutoSettings = withErrorHandling(
+  async (posId, autoSettings) => {
+    return updatePosData(posId, (currentData) => ({
+      ...currentData,
+      autoSettings: {
+        ...currentData.autoSettings,
+        ...autoSettings,
+        updatedAt: new Date().toISOString()
+      }
+    }));
+  },
+  'updatePosAutoSettings'
+);
+
+export const getPosStatusHistory = withErrorHandling(
+  async (posId, params = {}) => {
+    const response = await apiClient.get(`/pos/${posId}/history`, { params });
+    return response.data;
+  },
+  'getPosStatusHistory'
+);
+
+export const retryFailedTransaction = withErrorHandling(
+  async (transactionId) => {
+    const response = await apiClient.post(`/transactions/${transactionId}/retry`);
+    return response.data;
+  },
+  'retryFailedTransaction'
+);
 
 const posAPI = {
   // POS 상태 조회 (타임스탬프 형식 검증 추가)

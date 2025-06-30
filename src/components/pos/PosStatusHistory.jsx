@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { POS_STATUS, STATUS_CHANGE_CATEGORY_LABEL } from '../../constants/posStatus';
 import PosStatusBadge from './PosStatusBadge';
 import styles from './PosStatusHistory.module.css';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,6 +23,20 @@ const formatCurrency = (amount) => {
     style: 'currency',
     currency: 'KRW'
   }).format(amount);
+};
+
+// 고유 키 생성을 위한 유틸리티 함수
+const generateHistoryItemKey = (item, index) => {
+  if (item.id) return item.id;
+  
+  const components = [
+    item.timestamp,
+    item.status,
+    item.reason,
+    index
+  ].filter(Boolean);
+  
+  return components.join('-');
 };
 
 const PosStatusHistory = ({ history }) => {
@@ -113,15 +129,17 @@ const PosStatusHistory = ({ history }) => {
           const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
 
           return (
-            <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
+            <div 
+              key={generateHistoryItemKey(item, index)} 
+              className={styles.historyItem}
+            >
               <div className={styles.historyHeader}>
-                <time
-                  className={styles.timestamp}
-                  dateTime={item.timestamp}
-                  aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-                >
-                  {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-                </time>
+                <span className={styles.timestamp}>
+                  {formatDistanceToNow(new Date(item.timestamp), { 
+                    addSuffix: true, 
+                    locale: ko 
+                  })}
+                </span>
                 <PosStatusBadge status={item.status} />
                 {hasMetadata && (
                   <button

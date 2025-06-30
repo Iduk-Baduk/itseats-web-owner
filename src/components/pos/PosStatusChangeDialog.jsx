@@ -8,14 +8,17 @@ import {
   APPROVAL_REQUIRED_STATUSES 
 } from '../../constants/posStatus';
 import styles from './PosStatusChangeDialog.module.css';
+import { handleError } from '../../utils/errorHandler';
+import Button from '../basic/Button';
+import TextInput from '../basic/TextInput';
 
 const PosStatusChangeDialog = ({ 
   isOpen, 
   currentStatus, 
   targetStatus, 
-  onConfirm, 
-  onCancel,
-  requiredApproval = false 
+  onClose, 
+  onConfirm,
+  requiresApproval = false 
 }) => {
   const [formData, setFormData] = useState({
     reason: '',
@@ -27,6 +30,7 @@ const PosStatusChangeDialog = ({
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   // 다이얼로그가 열릴 때 폼 초기화
   useEffect(() => {
@@ -44,7 +48,6 @@ const PosStatusChangeDialog = ({
   }, [isOpen, targetStatus]);
 
   const availableReasons = STATUS_CHANGE_REASONS[targetStatus] || [];
-  const requiresApproval = APPROVAL_REQUIRED_STATUSES.includes(targetStatus);
 
   const validateForm = () => {
     const newErrors = {};
@@ -75,14 +78,14 @@ const PosStatusChangeDialog = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
     setIsSubmitting(true);
+    setError(null);
 
     try {
+      if (!validateForm()) {
+        return;
+      }
+
       const finalReason = formData.reason === 'custom' 
         ? formData.customReason 
         : formData.reason;
@@ -90,15 +93,19 @@ const PosStatusChangeDialog = ({
       const changeData = {
         reason: finalReason,
         notes: formData.notes,
-        estimatedRevenueLoss: parseInt(formData.estimatedRevenueLoss) || 0,
-        affectedOrderCount: parseInt(formData.affectedOrderCount) || 0,
+        estimatedRevenueLoss: parseInt(formData.estimatedRevenueLoss, 10) || 0,
+        affectedOrderCount: parseInt(formData.affectedOrderCount, 10) || 0,
         category: formData.category,
         requiresApproval: requiresApproval
       };
 
       await onConfirm(changeData);
+      onClose();
     } catch (error) {
-      console.error('Status change failed:', error);
+      handleError(error, {
+        showToast: true,
+        setError: (field, { message }) => setError(message)
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +140,7 @@ const PosStatusChangeDialog = ({
           <h3 id="dialog-title" className={styles.title}>POS 상태 변경 확인</h3>
           <button 
             className={styles.closeButton}
-            onClick={onCancel}
+            onClick={onClose}
             aria-label="닫기"
           >
             ×
@@ -244,22 +251,21 @@ const PosStatusChangeDialog = ({
         </div>
 
         <div className={styles.footer}>
-          <button
-            type="button"
-            onClick={onCancel}
-            className={styles.cancelButton}
+          <Button 
+            type="button" 
+            variant="secondary" 
+            onClick={onClose}
             disabled={isSubmitting}
           >
             취소
-          </button>
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className={styles.confirmButton}
+          </Button>
+          <Button 
+            type="submit" 
+            variant="primary"
             disabled={isSubmitting}
           >
-            {isSubmitting ? '처리중...' : requiresApproval ? '승인 요청' : '변경하기'}
-          </button>
+            {isSubmitting ? '처리 중...' : requiresApproval ? '승인 요청' : '변경하기'}
+          </Button>
         </div>
       </div>
     </div>
@@ -270,9 +276,13 @@ PosStatusChangeDialog.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   currentStatus: PropTypes.string.isRequired,
   targetStatus: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  requiredApproval: PropTypes.bool
+  requiresApproval: PropTypes.bool,
+};
+
+PosStatusChangeDialog.defaultProps = {
+  requiresApproval: false,
 };
 
 export default PosStatusChangeDialog; 

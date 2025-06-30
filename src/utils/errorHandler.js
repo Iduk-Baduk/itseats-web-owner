@@ -1,4 +1,5 @@
-import { toast } from 'react-toastify';
+import { ERROR_TYPES, ERROR_MESSAGES } from '../constants/errorTypes';
+import toast from 'react-hot-toast';
 
 // 에러 메시지 상수
 export const ERROR_MESSAGES = {
@@ -84,47 +85,55 @@ export const retryApiCall = async (apiCall, maxRetries = MAX_RETRIES, delay = 10
   throw lastError;
 };
 
-/**
- * API 에러 메시지를 사용자 친화적인 메시지로 변환
- * @param {Error} error - 에러 객체
- * @returns {string} 사용자 친화적인 에러 메시지
- */
-export const getErrorMessage = (error) => {
-  if (!error) {
-    return '알 수 없는 오류가 발생했습니다.';
-  }
-
-  // API 응답 에러
+export const getErrorType = (error) => {
+  if (!error) return ERROR_TYPES.UNKNOWN;
+  
+  if (!navigator.onLine) return ERROR_TYPES.NETWORK;
+  
   if (error.response) {
     const { status } = error.response;
-    
-    switch (status) {
-      case 400:
-        return '잘못된 요청입니다. 입력값을 확인해주세요.';
-      case 401:
-        return '인증이 필요합니다. 다시 로그인해주세요.';
-      case 403:
-        return '접근 권한이 없습니다.';
-      case 404:
-        return '요청하신 정보를 찾을 수 없습니다.';
-      case 409:
-        return '요청하신 작업을 처리할 수 없습니다. 다시 시도해주세요.';
-      case 429:
-        return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
-      case 500:
-        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      default:
-        return '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    }
+    if (status === 401 || status === 403) return ERROR_TYPES.AUTH;
+    if (status === 404) return ERROR_TYPES.NOT_FOUND;
+    if (status >= 500) return ERROR_TYPES.SERVER;
+    if (status === 400) return ERROR_TYPES.VALIDATION;
   }
+  
+  if (error.message?.includes('network')) return ERROR_TYPES.NETWORK;
+  
+  return ERROR_TYPES.UNKNOWN;
+};
 
-  // 네트워크 에러
-  if (error.request) {
-    return '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.';
+export const getErrorMessage = (error) => {
+  const errorType = getErrorType(error);
+  const defaultMessage = ERROR_MESSAGES[errorType];
+  
+  // API에서 에러 메시지를 제공하는 경우
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
   }
+  
+  return defaultMessage;
+};
 
-  // 기타 에러
-  return error.message || '알 수 없는 오류가 발생했습니다.';
+export const handleError = (error, options = {}) => {
+  const {
+    showToast = true,
+    setError = null,
+    errorField = 'submit',
+  } = options;
+  
+  const message = getErrorMessage(error);
+  console.error('Error occurred:', error);
+  
+  if (showToast) {
+    toast.error(message);
+  }
+  
+  if (setError) {
+    setError(errorField, { message });
+  }
+  
+  return message;
 };
 
 /**
