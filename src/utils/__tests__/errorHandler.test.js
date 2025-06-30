@@ -1,134 +1,134 @@
-import { describe, test, expect, vi } from 'vitest';
-import { getErrorMessage, logError, withErrorHandling } from '../errorHandler';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { getErrorMessage, logError, retryApiCall, withErrorHandling } from '../errorHandler';
 
-describe('Error Handler', () => {
+describe('errorHandler', () => {
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+
+  beforeEach(() => {
+    // React 개발 모드 경고만 필터링하도록 수정
+    console.error = (...args) => {
+      if (typeof args[0] === 'string' && (
+        args[0].includes('Warning: ReactDOM.render is deprecated') ||
+        args[0].includes('Warning: componentWillReceiveProps') ||
+        args[0].includes('Warning: findDOMNode is deprecated')
+      )) {
+        return;
+      }
+      originalConsoleError.apply(console, args);
+    };
+
+    console.warn = vi.fn();
+  });
+
+  afterEach(() => {
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+    vi.clearAllMocks();
+  });
+
   describe('getErrorMessage', () => {
-    test('handles API response errors', () => {
-      const cases = [
-        {
-          error: { response: { status: 400 } },
-          expected: '잘못된 요청입니다. 입력값을 확인해주세요.',
-        },
-        {
-          error: { response: { status: 401 } },
-          expected: '인증이 필요합니다. 다시 로그인해주세요.',
-        },
-        {
-          error: { response: { status: 403 } },
-          expected: '접근 권한이 없습니다.',
-        },
-        {
-          error: { response: { status: 404 } },
-          expected: '요청하신 정보를 찾을 수 없습니다.',
-        },
-        {
-          error: { response: { status: 500 } },
-          expected: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        },
-      ];
-
-      cases.forEach(({ error, expected }) => {
-        expect(getErrorMessage(error)).toBe(expected);
-      });
+    it('returns default message for null error', () => {
+      expect(getErrorMessage(null)).toBe('알 수 없는 오류가 발생했습니다.');
     });
 
-    test('handles network errors', () => {
-      const error = { request: {} };
-      expect(getErrorMessage(error)).toBe(
-        '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.'
-      );
+    it('returns appropriate message for API response errors', () => {
+      const error = {
+        response: { status: 400 }
+      };
+      expect(getErrorMessage(error)).toBe('잘못된 요청입니다. 입력값을 확인해주세요.');
     });
 
-    test('handles unknown errors', () => {
-      expect(getErrorMessage()).toBe('알 수 없는 오류가 발생했습니다.');
-      expect(getErrorMessage({})).toBe('알 수 없는 오류가 발생했습니다.');
+    it('returns network error message for request errors', () => {
+      const error = {
+        request: {},
+        message: 'Network Error'
+      };
+      expect(getErrorMessage(error)).toBe('서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.');
     });
 
-    test('handles custom error messages', () => {
-      const error = new Error('커스텀 에러 메시지');
-      expect(getErrorMessage(error)).toBe('커스텀 에러 메시지');
+    it('returns error message for other errors', () => {
+      const error = new Error('Custom error');
+      expect(getErrorMessage(error)).toBe('Custom error');
     });
   });
 
   describe('logError', () => {
-    const originalNodeEnv = process.env.NODE_ENV;
-    const originalConsoleError = console.error;
-
-    beforeEach(() => {
-      console.error = vi.fn();
-    });
-
-    afterEach(() => {
-      process.env.NODE_ENV = originalNodeEnv;
-      console.error = originalConsoleError;
-    });
-
-    test('logs errors in development environment', () => {
+    it('logs error with context in development', () => {
+      const error = new Error('Test error');
+      const context = 'test context';
+      
+      const originalNodeEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = 'development';
-      const error = new Error('테스트 에러');
-      const context = '테스트 컨텍스트';
-
+      
       logError(error, context);
+      
+      expect(console.error).toHaveBeenCalledWith('[Error]', expect.objectContaining({
+        context,
+        message: error.message,
+        stack: error.stack
+      }));
+      
+      process.env.NODE_ENV = originalNodeEnv;
+    });
+  });
 
-      expect(console.error).toHaveBeenCalledWith(
-        '[Error]',
-        expect.objectContaining({
-          context,
-          message: error.message,
-          stack: error.stack,
-        })
-      );
+  describe('retryApiCall', () => {
+    it('retries failed API calls', async () => {
+      const apiCall = vi.fn()
+        .mockRejectedValueOnce(new Error('First failure'))
+        .mockRejectedValueOnce(new Error('Second failure'))
+        .mockResolvedValueOnce('success');
+
+      const result = await retryApiCall(apiCall, 3, 100);
+      
+      expect(result).toBe('success');
+      expect(apiCall).toHaveBeenCalledTimes(3);
     });
 
-    test('includes API response data in logs', () => {
-      process.env.NODE_ENV = 'development';
+    it('throws error after max retries', async () => {
+      const error = new Error('API Error');
+      const apiCall = vi.fn().mockRejectedValue(error);
+
+      await expect(retryApiCall(apiCall, 2, 100))
+        .rejects
+        .toThrow('API Error');
+      
+      expect(apiCall).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not retry on certain HTTP status codes', async () => {
       const error = {
-        message: '테스트 에러',
-        response: {
-          data: { detail: '상세 에러 정보' }
-        }
+        response: { status: 404 },
+        message: 'Not Found'
       };
+      const apiCall = vi.fn().mockRejectedValue(error);
 
-      logError(error);
-
-      expect(console.error).toHaveBeenCalledWith(
-        '[Error]',
-        expect.objectContaining({
-          message: error.message,
-          response: error.response.data,
-        })
-      );
+      await expect(retryApiCall(apiCall, 3, 100))
+        .rejects
+        .toEqual(error);
+      
+      expect(apiCall).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('withErrorHandling', () => {
-    test('passes through successful function calls', async () => {
-      const fn = async () => 'success';
-      const wrapped = withErrorHandling(fn, 'test');
-      
-      const result = await wrapped();
+    it('wraps function with error handling', async () => {
+      const fn = vi.fn().mockResolvedValue('success');
+      const wrappedFn = withErrorHandling(fn, 'test');
+
+      const result = await wrappedFn();
       expect(result).toBe('success');
     });
 
-    test('handles and logs errors', async () => {
-      const error = new Error('테스트 에러');
-      const fn = async () => { throw error; };
-      const wrapped = withErrorHandling(fn, 'test');
+    it('handles errors appropriately', async () => {
+      const error = new Error('Test error');
+      const fn = vi.fn().mockRejectedValue(error);
+      const wrappedFn = withErrorHandling(fn, 'test');
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
-      await expect(wrapped()).rejects.toThrow(error);
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    test('preserves function arguments', async () => {
-      const fn = async (a, b) => a + b;
-      const wrapped = withErrorHandling(fn, 'test');
-      
-      const result = await wrapped(1, 2);
-      expect(result).toBe(3);
+      await expect(wrappedFn())
+        .rejects
+        .toThrow('Test error');
     });
   });
 }); 

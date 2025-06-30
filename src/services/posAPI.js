@@ -40,12 +40,12 @@ const retryApiCall = async (apiCall, maxRetries = MAX_RETRIES, delay = RETRY_DEL
   throw lastError;
 };
 
-const POS_API = {
+const posAPI = {
   // POS 상태 조회
-  getPosStatus: async () => {
-    const response = await apiClient.get('/api/pos/status');
+  getPosStatus: withErrorHandling(async () => {
+    const response = await apiClient.get('/pos/status');
     return response.data;
-  },
+  }, 'getPosStatus'),
 
   // POS 상태 업데이트
   updatePosStatus: withErrorHandling(async (status) => {
@@ -54,16 +54,16 @@ const POS_API = {
   }, 'updatePosStatus'),
 
   // POS 설정 조회
-  getPosSettings: async () => {
-    const response = await apiClient.get('/api/pos/settings');
+  getPosSettings: withErrorHandling(async () => {
+    const response = await apiClient.get('/pos/settings');
     return response.data;
-  },
+  }, 'getPosSettings'),
 
   // POS 설정 업데이트
-  updatePosSettings: async (settings) => {
-    const response = await apiClient.patch('/api/pos/settings', settings);
+  updatePosSettings: withErrorHandling(async (settings) => {
+    const response = await apiClient.put('/pos/settings', settings);
     return response.data;
-  },
+  }, 'updatePosSettings'),
 
   // POS 상태 히스토리 조회
   getPosStatusHistory: withErrorHandling(async ({ startDate, endDate } = {}) => {
@@ -91,7 +91,7 @@ const POS_API = {
   updatePosAutoSettings: withErrorHandling(async (settings) => {
     const response = await apiClient.put('/pos/settings/auto', settings);
     return response.data;
-  }, 'updatePosAutoSettings'),
+  }, 'updatePosAutoSettings')
 };
 
-export default POS_API; 
+export default posAPI; 

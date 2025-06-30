@@ -1,56 +1,71 @@
-import { useEffect, useRef } from 'react';
-import { determineCurrentStatus, getNextStatusChangeDelay } from '../utils/posAutoScheduler';
-import POS_API from '../services/posAPI';
+import { useEffect, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
+import posAPI from '../services/posAPI';
+import { updatePosStatus } from '../store/posSlice';
+import { retryApiCall } from '../utils/errorHandler';
 
-const usePosAutoScheduler = (settings, onStatusChange) => {
-  const timeoutRef = useRef(null);
+/**
+ * POS 자동화 스케줄러 훅
+ * @returns {Object} 스케줄러 컨트롤 함수들
+ */
+export const usePosAutoScheduler = () => {
+  const dispatch = useDispatch();
 
-  const scheduleNextStatusChange = () => {
-    // 이전 타이머 제거
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // 다음 상태 변경까지의 지연 시간 계산
-    const delay = getNextStatusChangeDelay(settings);
-    if (!delay) return;
-
-    // 다음 상태 변경 예약
-    timeoutRef.current = setTimeout(async () => {
-      const nextStatus = determineCurrentStatus(settings);
-      if (nextStatus) {
-        try {
-          await POS_API.updatePosStatus(nextStatus);
-          onStatusChange(nextStatus);
-        } catch (error) {
-          console.error('Failed to auto-update POS status:', error);
-        }
-      }
-      // 다음 상태 변경 스케줄링
-      scheduleNextStatusChange();
-    }, delay);
-  };
-
-  // 설정이 변경되거나 컴포넌트가 마운트될 때 스케줄러 시작
-  useEffect(() => {
-    // 자동화가 활성화된 경우에만 스케줄러 시작
-    if (settings.autoOpen && settings.autoClose) {
-      // 현재 상태 확인 및 필요한 경우 업데이트
-      const currentStatus = determineCurrentStatus(settings);
-      if (currentStatus) {
-        onStatusChange(currentStatus);
-      }
+  /**
+   * POS 상태 자동 업데이트
+   * @param {string} status - 새로운 POS 상태
+   */
+  const autoUpdatePosStatus = useCallback(async (status) => {
+    try {
+      const result = await retryApiCall(
+        () => posAPI.updatePosStatus(status),
+        3,  // 최대 3회 재시도
+        1000 // 1초 간격
+      );
       
-      scheduleNextStatusChange();
+      dispatch(updatePosStatus(result));
+      toast.success(`POS 상태가 ${status}로 자동 변경되었습니다.`);
+    } catch (error) {
+      console.error('Failed to auto-update POS status:', error);
+      toast.error('POS 상태 자동 변경에 실패했습니다. 수동으로 변경해주세요.');
     }
+  }, [dispatch]);
 
-    // 컴포넌트 언마운트 시 타이머 정리
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+  /**
+   * 자동화 설정에 따른 스케줄러 실행
+   */
+  const runScheduler = useCallback(async () => {
+    try {
+      const settings = await posAPI.getPosAutoSettings();
+      if (!settings.autoOpen && !settings.autoClose) {
+        return;
       }
-    };
-  }, [settings, onStatusChange]);
-};
 
-export default usePosAutoScheduler; 
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      if (settings.autoOpen && currentTime === settings.autoOpenTime) {
+        await autoUpdatePosStatus('OPEN');
+      } else if (settings.autoClose && currentTime === settings.autoCloseTime) {
+        await autoUpdatePosStatus('CLOSED');
+      }
+    } catch (error) {
+      console.error('Failed to run POS auto scheduler:', error);
+      toast.error('POS 자동화 설정을 불러오는데 실패했습니다.');
+    }
+  }, [autoUpdatePosStatus]);
+
+  useEffect(() => {
+    const intervalId = setInterval(runScheduler, 60000); // 1분마다 실행
+    return () => clearInterval(intervalId);
+  }, [runScheduler]);
+
+  return {
+    runScheduler
+  };
+}; 

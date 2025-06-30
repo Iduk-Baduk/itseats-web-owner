@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify';
+
 // 에러 메시지 상수
 export const ERROR_MESSAGES = {
   POS_STATUS_UPDATE: '매장 상태 변경에 실패했습니다.',
@@ -122,6 +124,10 @@ export const logError = (error, context = '') => {
     console.error('[Error]', errorInfo);
   }
 
+  // 사용자에게 에러 메시지 표시
+  const userMessage = getErrorMessage(error);
+  toast.error(userMessage);
+
   // TODO: 프로덕션 환경에서는 에러 모니터링 서비스로 전송
   // if (process.env.NODE_ENV === 'production') {
   //   sendErrorToMonitoring(errorInfo);
@@ -164,7 +170,7 @@ const waitForNetworkRecovery = (timeout = 30000) => {
  * @param {number} delay - 재시도 간격 (밀리초)
  * @returns {Promise} API 호출 결과
  */
-const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
+export const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
   let lastError;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
