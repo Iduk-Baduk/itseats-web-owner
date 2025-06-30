@@ -21,7 +21,7 @@ export default function MenusAdd() {
   const [menuData, setMenuData] = useState({
     menuGroupName: "",
     menuName: "",
-    menuPrice: 0,
+    menuPrice: "",
     menuStatus: "ONSALE",
     menuDescription: "",
   });
@@ -31,17 +31,24 @@ export default function MenusAdd() {
   const [isEditMode] = useState(!!id);
 
   useEffect(() => {
-    dispatch(fetchMenuByIdAsync());
-  }, [dispatch]);
+    if (isEditMode) {
+      dispatch(fetchMenuByIdAsync());
+    }
+  }, [dispatch, isEditMode]);
 
   useEffect(() => {
     if (isEditMode && menus && menus.length > 0) {
-      const menuToEdit = menus.find(menu => menu.id === id || menu.menuId === Number(id));
+      const menuToEdit = menus.find(menu => {
+        const menuId = menu.menuId || menu.id;
+        return String(menuId) === String(id);
+      });
+      
       if (menuToEdit) {
+        console.log("Found menu to edit:", menuToEdit);
         setMenuData({
           menuGroupName: menuToEdit.menuGroupName || "",
           menuName: menuToEdit.menuName || "",
-          menuPrice: menuToEdit.menuPrice || 0,
+          menuPrice: menuToEdit.menuPrice || "",
           menuStatus: menuToEdit.menuStatus || "ONSALE",
           menuDescription: menuToEdit.menuDescription || "",
         });
@@ -63,10 +70,15 @@ export default function MenusAdd() {
   }, [isEditMode, id, menus]);
 
   const handleMenuInputChange = (field, value) => {
-    setMenuData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    console.log("Changing field:", field, "to value:", value);
+    setMenuData((prev) => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+      console.log("New menu data:", newData);
+      return newData;
+    });
   };
 
   const toggleGroupOpen = (index) => {
@@ -109,17 +121,23 @@ export default function MenusAdd() {
           isRequired: group.isRequired,
           options: group.options.map((opt) => ({
             optionName: opt.name,
-            optionPrice: opt.price,
+            optionPrice: String(opt.price),
             optionStatus: opt.optionStatus,
           })),
         })),
       };
 
+      console.log("Saving menu with payload:", payload);
+
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        const menuToEdit = menus.find(menu => menu.id === id || menu.menuId === Number(id));
-        const menuId = menuToEdit?.id || id;
+        const menuToEdit = menus.find(menu => {
+          const menuId = menu.menuId || menu.id;
+          return String(menuId) === String(id);
+        });
+        const menuId = menuToEdit?.id || menuToEdit?.menuId || id;
+        console.log("Updating menu with ID:", menuId, "Payload:", payload);
         await menuAPI.updateMenu(menuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
@@ -131,6 +149,24 @@ export default function MenusAdd() {
     } catch (error) {
       console.error(isEditMode ? "메뉴 수정 실패:" : "메뉴 추가 실패:", error);
       alert(isEditMode ? "메뉴 수정에 실패했습니다." : "메뉴 추가에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const handleDeleteMenu = async () => {
+    if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
+    
+    try {
+      const menuToEdit = menus.find(menu => {
+        const menuId = menu.menuId || menu.id;
+        return String(menuId) === String(id);
+      });
+      const menuId = menuToEdit?.id || menuToEdit?.menuId || id;
+      await menuAPI.deleteMenu(menuId);
+      alert("메뉴가 성공적으로 삭제되었습니다.");
+      navigate("/menus");
+    } catch (error) {
+      console.error("메뉴 삭제 실패:", error);
+      alert("메뉴 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -166,7 +202,7 @@ export default function MenusAdd() {
                   groupNames={groupNames}
                   onChange={handleMenuInputChange}
                   selectedState={menuData.menuStatus}
-                  onSelectState={(value) => setMenuData((prev) => ({ ...prev, menuStatus: value }))}
+                  onSelectState={(value) => handleMenuInputChange("menuStatus", value)}
                   initialData={menuData}
                 />
               </td>
@@ -218,15 +254,27 @@ export default function MenusAdd() {
                     </div>
                   );
                 })}
+                <div className={styles.optionManageButton} onClick={() => setOptionGroupModal(true)}>
+                  옵션 그룹 관리
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
 
-        <div className={styles.actions}>
-          <button onClick={() => setOptionGroupModal(true)}>옵션 그룹 추가</button>
-          <button onClick={handleSaveMenu}>{isEditMode ? "수정" : "추가"}</button>
+        <div className={styles.actionButtons}>
+          <button onClick={() => navigate("/menus")} className={styles.cancelButton}>
+            취소
+          </button>
+          <button onClick={handleSaveMenu} className={styles.saveButton}>
+            {isEditMode ? "수정" : "추가"}
+          </button>
         </div>
+        {isEditMode && (
+          <div className={styles.deleteText} onClick={handleDeleteMenu}>
+            메뉴 삭제
+          </div>
+        )}
       </div>
 
       <MenuOptionGroupModal
