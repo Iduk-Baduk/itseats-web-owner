@@ -1,0 +1,39 @@
+.container {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+
+.timestamp {
+  font-size: 14px;
+  color: #666;
+  min-width: 140px;
+}
+
+.noHistory {
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+} 

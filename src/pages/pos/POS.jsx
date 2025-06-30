@@ -5,6 +5,7 @@ import styles from "./Pos.module.css";
 import PosStatusBadge from '../../components/pos/PosStatusBadge';
 import PosStatusControl from '../../components/pos/PosStatusControl';
 import PosAutoSettings from '../../components/pos/PosAutoSettings';
+import PosStatusHistory from '../../components/pos/PosStatusHistory';
 import { POS_STATUS } from '../../constants/posStatus';
 
 const POS = () => {
@@ -16,6 +17,7 @@ const POS = () => {
     autoClose: false,
     autoCloseTime: '23:00',
   });
+  const [statusHistory, setStatusHistory] = useState([]);
 
   // Mock API 호출을 시뮬레이션
   useEffect(() => {
@@ -25,6 +27,7 @@ const POS = () => {
         const data = await response.json();
         setPosStatus(data.pos.currentStatus);
         setSettings(data.pos.settings);
+        setStatusHistory(data.pos.statusHistory);
       } catch (error) {
         console.error('Failed to fetch POS data:', error);
       } finally {
@@ -38,6 +41,12 @@ const POS = () => {
   const handleStatusChange = async (newStatus) => {
     try {
       setPosStatus(newStatus);
+      // 히스토리에 새로운 상태 추가
+      const newHistoryItem = {
+        status: newStatus,
+        timestamp: new Date().toISOString(),
+      };
+      setStatusHistory([newHistoryItem, ...statusHistory]);
       // TODO: API 연동 시 실제 API 호출 추가
     } catch (error) {
       console.error('Failed to update POS status:', error);
@@ -73,6 +82,7 @@ const POS = () => {
           settings={settings}
           onSettingsChange={handleSettingsChange}
         />
+        <PosStatusHistory history={statusHistory} />
       </div>
       <PosMetricItem
         metricName={dummyData.storeName}
