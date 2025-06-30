@@ -1,10 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./MenuInput.module.css";
 import MenuGroupModal from "./MenuGroupModal";
+import { useSelector } from "react-redux";
 
-export default function MenuInput({ groupNames, onChange, selectedState, onSelectState }) {
+export default function MenuInput({ onChange, selectedState, onSelectState, initialData }) {
   const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
   const [descriptionLength, setDescriptionLength] = useState(0);
+  const [formData, setFormData] = useState({
+    menuGroupName: "",
+    menuName: "",
+    menuPrice: "",
+    menuDescription: "",
+  });
+  const reduxGroupNames = useSelector((state) => state.menu.groupNames);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        menuGroupName: initialData.menuGroupName || "",
+        menuName: initialData.menuName || "",
+        menuPrice: initialData.menuPrice || "",
+        menuDescription: initialData.menuDescription || "",
+      });
+      setDescriptionLength(initialData.menuDescription?.length || 0);
+    }
+  }, [initialData]);
+
+  // 메뉴 그룹이 없는 경우 기본값 설정
+  useEffect(() => {
+    if (initialData && !initialData.menuGroupName && reduxGroupNames.length > 0) {
+      onChange("menuGroupName", reduxGroupNames[0]);
+    }
+  }, [initialData, reduxGroupNames, onChange]);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    onChange(field, value);
+  };
 
   return (
     <div className={styles.form}>
@@ -13,7 +48,7 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           메뉴 그룹 관리
         </div>
         <MenuGroupModal
-          groupNames={groupNames}
+          groupNames={reduxGroupNames}
           modalState={menuGroupModal}
           setModalState={setMenuGroupModal}
           setGroupNames={(newGroups) => onChange("groupNames", newGroups)}
@@ -22,17 +57,16 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
 
         {/* 1. 그룹 선택 */}
         <select
-          defaultValue="선택"
+          value={formData.menuGroupName}
           className={styles.select}
-          onChange={(e) => onChange("menuGroupName", e.target.value)}
+          onChange={(e) => handleChange("menuGroupName", e.target.value)}
         >
-          <option value="선택">선택</option>
-          {groupNames.map((groupName, index) => (
+          <option value="" disabled>메뉴 그룹 선택</option>
+          {reduxGroupNames.map((groupName, index) => (
             <option key={index} value={groupName}>
               {groupName}
             </option>
           ))}
-          <option value="기타">기타</option>
         </select>
       </div>
 
@@ -40,7 +74,8 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       <div className={styles.formGroup}>
         <input
           placeholder="메뉴명"
-          onChange={(e) => onChange("menuName", e.target.value)}
+          value={formData.menuName}
+          onChange={(e) => handleChange("menuName", e.target.value)}
           className={styles.input}
         />
       </div>
@@ -48,11 +83,12 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       {/* 3. 가격 */}
       <div className={styles.formGroup}>
         <input
-          placeholder="가격(원)"
-          onChange={(e) => onChange("menuPrice", e.target.value)}
+          placeholder="금액 입력"
+          value={formData.menuPrice}
+          onChange={(e) => handleChange("menuPrice", e.target.value)}
           type="number"
           className={styles.input}
-          defaultValue={0}
+          min="0"
         />
       </div>
 
@@ -98,8 +134,9 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           maxLength={60}
           className={styles.textarea}
           placeholder="메뉴 구성 또는 설명글 입력 (선택사항)"
+          value={formData.menuDescription}
           onChange={(e) => {
-            onChange("menuDescription", e.target.value);
+            handleChange("menuDescription", e.target.value);
             setDescriptionLength(e.target.value.length);
           }}
         />

@@ -2,7 +2,27 @@
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  font-weight: bold;
+}
+
+.actionLink {
   color: var(--theme-color);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionLink:hover {
+  text-decoration: underline;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.plus {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
 }

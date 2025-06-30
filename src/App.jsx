@@ -26,6 +26,7 @@ function App() {
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/menus" element={<Menus />} />
           <Route path="/menus/add" element={<MenusAdd />} />
+          <Route path="/menus/edit/:id" element={<MenusAdd />} />
           <Route path="/reviews" element={<Reviews />} />
         </Route>
         <Route path="/" element={<PosLayout />}>

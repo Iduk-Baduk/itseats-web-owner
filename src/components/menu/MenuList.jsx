@@ -1,23 +1,53 @@
 import { useState } from "react";
 import styles from "./MenuList.module.css";
 import { groupMenusByCategory } from "../../utils/groupMenus";
+import { useSelector } from "react-redux";
 
-export default function MenuList({ menu }) {
-  const [selectedMenus, setSelectedMenus] = useState(new Set());
-  const [menuStatuses, setMenuStatuses] = useState({});
-
-  const handleCheckboxChange = (menuId, checked) => {
-    const newSelected = new Set(selectedMenus);
-    if (checked) {
-      newSelected.add(menuId);
-    } else {
-      newSelected.delete(menuId);
+const MenuItem = ({ item, selectedMenuId, onMenuClick, menuStatuses, onStatusChange }) => {
+  const handleClick = (e) => {
+    if (e.target.tagName.toLowerCase() === 'select') {
+      return;
     }
-    setSelectedMenus(newSelected);
+    onMenuClick(item.menuId || item.id);
   };
+
+  return (
+    <li
+      className={`${styles.menuItem} ${selectedMenuId === (item.menuId || item.id) ? styles.selected : ''}`}
+      onClick={handleClick}
+    >
+      <div className={styles.imageBox}></div>
+      <span className={styles.menuName}>{item.menuName}</span>
+      <select
+        className={styles.statusSelect}
+        value={menuStatuses[item.menuId || item.id] || item.menuStatus}
+        onChange={(e) => {
+          e.stopPropagation();
+          onStatusChange(item.menuId || item.id, e.target.value);
+        }}
+      >
+        <option value="ONSALE">판매중</option>
+        <option value="OUT_OF_STOCK">오늘만 품절</option>
+        <option value="HIDDEN">메뉴숨김</option>
+      </select>
+    </li>
+  );
+};
+
+export default function MenuList({ menu, onMenuSelect }) {
+  const [selectedMenuId, setSelectedMenuId] = useState(null);
+  const [menuStatuses, setMenuStatuses] = useState({});
+  const groupNames = useSelector((state) => state.menu.groupNames);
 
   const handleStatusChange = (menuId, status) => {
     setMenuStatuses(prev => ({ ...prev, [menuId]: status }));
+  };
+
+  const handleMenuClick = (menuId) => {
+    console.log("Menu clicked:", menuId);
+    const newSelectedId = selectedMenuId === menuId ? null : menuId;
+    setSelectedMenuId(newSelectedId);
+    onMenuSelect(newSelectedId);
   };
 
   const groupedMenus = menu.menus && Array.isArray(menu.menus) && menu.menus.length > 0 
@@ -27,32 +57,24 @@ export default function MenuList({ menu }) {
   return (
     <div>
       {menu.menus && Array.isArray(menu.menus) && menu.menus.length > 0 ? (
-        Object.entries(groupedMenus).map(([groupName, items]) => (
-          <div key={groupName}>
-            <h2 className={styles.groupTitle}>{groupName}</h2>
-            <ul className={styles.menuList}>
-              {items.map((item) => (
-                <li key={item.menuId} className={styles.menuItem}>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedMenus.has(item.menuId)}
-                    onChange={(e) => handleCheckboxChange(item.menuId, e.target.checked)}
+        groupNames.map((groupName) => (
+          groupedMenus[groupName] && (
+            <div key={`group-${groupName}`}>
+              <h2 className={styles.groupTitle}>{groupName}</h2>
+              <ul className={styles.menuList}>
+                {groupedMenus[groupName].map((item) => (
+                  <MenuItem
+                    key={`menu-${item.menuId || item.id}`}
+                    item={item}
+                    selectedMenuId={selectedMenuId}
+                    onMenuClick={handleMenuClick}
+                    menuStatuses={menuStatuses}
+                    onStatusChange={handleStatusChange}
                   />
-                  <div className={styles.imageBox}></div>
-                  <span className={styles.menuName}>{item.menuName}</span>
-                  <select 
-                    className={styles.statusSelect} 
-                    value={menuStatuses[item.menuId] || item.menuStatus}
-                    onChange={(e) => handleStatusChange(item.menuId, e.target.value)}
-                  >
-                    <option value="ONSALE">판매중</option>
-                    <option value="OUT_OF_STOCK">오늘만 품절</option>
-                    <option value="HIDDEN">메뉴숨김</option>
-                  </select>
-                </li>
-              ))}
-            </ul>
-          </div>
+                ))}
+              </ul>
+            </div>
+          )
         ))
       ) : (
         <div>메뉴가 없습니다.</div>
