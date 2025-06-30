@@ -4,6 +4,12 @@ import { renderHook } from '@testing-library/react';
 import usePosAutoScheduler from '../../hooks/usePosAutoScheduler';
 import * as POS_API from '../../services/posAPI';
 import { vi } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import {
+  isValidTimeFormat,
+  validateAutoSettings,
+  convertTimeStringToMinutes,
+} from '../posAutoScheduler';
 
 vi.mock('../../services/posAPI', () => ({
   default: {
@@ -209,5 +215,159 @@ describe('usePosAutoScheduler', () => {
     vi.runAllTimers();
     
     expect(onStatusChange).toHaveBeenCalledTimes(1); // 초기 상태 업데이트만 호출됨
+  });
+});
+
+describe('POS Auto Scheduler', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  describe('isValidTimeFormat', () => {
+    test.each([
+      ['10:00', true],
+      ['23:59', true],
+      ['00:00', true],
+      ['24:00', false],
+      ['10:60', false],
+      ['1000', false],
+      ['10:0', false],
+      ['', false],
+      [null, false],
+      ['abc', false],
+    ])('validates time format %s correctly', (input, expected) => {
+      expect(isValidTimeFormat(input)).toBe(expected);
+    });
+  });
+
+  describe('validateAutoSettings', () => {
+    test('validates correct settings', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '22:00'
+      };
+      const result = validateAutoSettings(settings);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    test('detects invalid open time', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '25:00',
+        autoClose: false,
+        autoCloseTime: '22:00'
+      };
+      const result = validateAutoSettings(settings);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('자동 오픈 시간이 올바르지 않습니다.');
+    });
+
+    test('detects invalid close time', () => {
+      const settings = {
+        autoOpen: false,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '24:00'
+      };
+      const result = validateAutoSettings(settings);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('자동 마감 시간이 올바르지 않습니다.');
+    });
+
+    test('detects same open and close time', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '09:00'
+      };
+      const result = validateAutoSettings(settings);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('자동 오픈 시간과 마감 시간이 같을 수 없습니다.');
+    });
+  });
+
+  describe('isWithinOperatingHours', () => {
+    test('handles normal operating hours', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '22:00'
+      };
+
+      // 영업 시간 내
+      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      expect(isWithinOperatingHours(settings)).toBe(true);
+
+      // 영업 시간 외
+      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      expect(isWithinOperatingHours(settings)).toBe(false);
+    });
+
+    test('handles overnight operating hours', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '22:00',
+        autoClose: true,
+        autoCloseTime: '02:00'
+      };
+
+      // 영업 시간 내 (자정 이전)
+      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      expect(isWithinOperatingHours(settings)).toBe(true);
+
+      // 영업 시간 내 (자정 이후)
+      vi.setSystemTime(new Date('2024-03-21T01:00:00Z'));
+      expect(isWithinOperatingHours(settings)).toBe(true);
+
+      // 영업 시간 외
+      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      expect(isWithinOperatingHours(settings)).toBe(false);
+    });
+  });
+
+  describe('determineCurrentStatus', () => {
+    test('returns null when auto settings are disabled', () => {
+      const settings = {
+        autoOpen: false,
+        autoOpenTime: '09:00',
+        autoClose: false,
+        autoCloseTime: '22:00'
+      };
+      expect(determineCurrentStatus(settings)).toBeNull();
+    });
+
+    test('returns correct status during operating hours', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '22:00'
+      };
+
+      vi.setSystemTime(new Date('2024-03-20T14:00:00Z'));
+      expect(determineCurrentStatus(settings)).toBe(POS_STATUS.OPEN);
+
+      vi.setSystemTime(new Date('2024-03-20T23:00:00Z'));
+      expect(determineCurrentStatus(settings)).toBe(POS_STATUS.CLOSED);
+    });
+
+    test('returns null for invalid settings', () => {
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '25:00', // 잘못된 시간
+        autoClose: true,
+        autoCloseTime: '22:00'
+      };
+      expect(determineCurrentStatus(settings)).toBeNull();
+    });
   });
 }); 
