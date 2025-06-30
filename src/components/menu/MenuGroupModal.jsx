@@ -1,8 +1,23 @@
 import Button from "../basic/Button";
 import { useEffect, useState } from "react";
-import { addGroupName, setAllGroupNames } from "../../store/menuSlice";
+import { addGroupName, setAllGroupNames, fetchMenuByIdAsync } from "../../store/menuSlice";
 import styles from "./MenuGroupModal.module.css";
 import { useDispatch } from "react-redux";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import SortableGroupItem from "./SortableGroupItem";
 
 // TODO: - button이 css를 안 먹는 버그가 있음
 // 추후 해결 필요
@@ -17,6 +32,28 @@ export default function MenuGroupModal({
   const [newGroup, setNewGroup] = useState(""); // 새로 추가 될 그룹
 
   const dispatch = useDispatch();
+
+  // DnD 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      setTempGroups((items) => {
+        const oldIndex = items.findIndex((item) => item === active.id);
+        const newIndex = items.findIndex((item) => item === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   // 추가 핸들러
   const handleAddGroup = () => {
@@ -39,7 +76,7 @@ export default function MenuGroupModal({
   };
 
   // 적용 핸들러
-  const handleApply = () => {
+  const handleApply = async () => {
     // 만약 임시 그룹과 기존 그룹이 동일하다면 아무 작업도 하지 않습니다.
     const areEqual =
       tempGroups.length === groupNames.length &&
@@ -52,6 +89,10 @@ export default function MenuGroupModal({
     // 목록 전체를 교체하는 올바른 액션을 사용합니다.
     dispatch(setAllGroupNames(tempGroups));
     setGroupNames(tempGroups);
+    
+    // 메뉴 데이터를 다시 불러옵니다.
+    await dispatch(fetchMenuByIdAsync());
+    
     alert("메뉴 그룹이 업데이트 되었습니다.");
     setModalState(false);
     onclose();
@@ -74,19 +115,25 @@ export default function MenuGroupModal({
               </div>
             </div>
             <div className={styles.groupList}>
-              {tempGroups.map((group, index) => (
-                <div key={index} className={styles.groupItem}>
-                  <div className={styles.groupTextContainer}>
-                    <span className={styles.groupText}>{group}</span>
-                    <div
-                      className={styles.groupCloseButton}
-                      onClick={() => handleDeleteGroup(index)}
-                    >
-                      ✕
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={tempGroups}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {tempGroups.map((group) => (
+                    <SortableGroupItem
+                      key={group}
+                      id={group}
+                      group={group}
+                      onDelete={() => handleDeleteGroup(tempGroups.indexOf(group))}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
 
             <div className={styles.addGroup}>
