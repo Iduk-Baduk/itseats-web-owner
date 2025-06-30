@@ -1,0 +1,72 @@
+.container {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.settingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.errorContainer {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  border-left: 4px solid #d32f2f;
+}
+
+.errorMessage {
+  margin: 0;
+  color: #d32f2f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.description {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.description p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.settingLabel {
+  flex: 1;
+  font-size: 14px;
+  color: #666;
+}
+
+.timeInput {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.timeInput:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+} 
