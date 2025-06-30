@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
 import styles from "./Pos.module.css";
@@ -7,6 +7,7 @@ import PosStatusControl from '../../components/pos/PosStatusControl';
 import PosAutoSettings from '../../components/pos/PosAutoSettings';
 import PosStatusHistory from '../../components/pos/PosStatusHistory';
 import POS_API from '../../services/posAPI';
+import usePosAutoScheduler from '../../hooks/usePosAutoScheduler';
 import { POS_STATUS } from '../../constants/posStatus';
 
 const POS = () => {
@@ -20,6 +21,28 @@ const POS = () => {
     autoCloseTime: '23:00',
   });
   const [statusHistory, setStatusHistory] = useState([]);
+
+  // 상태 변경 핸들러
+  const handleStatusChange = useCallback(async (newStatus) => {
+    try {
+      setError(null);
+      await POS_API.updatePosStatus(newStatus);
+      setPosStatus(newStatus);
+      
+      // 히스토리에 새로운 상태 추가
+      const newHistoryItem = {
+        status: newStatus,
+        timestamp: new Date().toISOString(),
+      };
+      setStatusHistory(prev => [newHistoryItem, ...prev]);
+    } catch (err) {
+      setError('상태 변경에 실패했습니다.');
+      console.error('Failed to update POS status:', err);
+    }
+  }, []);
+
+  // 자동화 스케줄러 적용
+  usePosAutoScheduler(settings, handleStatusChange);
 
   // 초기 데이터 로딩
   useEffect(() => {
@@ -48,24 +71,6 @@ const POS = () => {
 
     fetchInitialData();
   }, []);
-
-  const handleStatusChange = async (newStatus) => {
-    try {
-      setError(null);
-      await POS_API.updatePosStatus(newStatus);
-      setPosStatus(newStatus);
-      
-      // 히스토리에 새로운 상태 추가
-      const newHistoryItem = {
-        status: newStatus,
-        timestamp: new Date().toISOString(),
-      };
-      setStatusHistory([newHistoryItem, ...statusHistory]);
-    } catch (err) {
-      setError('상태 변경에 실패했습니다.');
-      console.error('Failed to update POS status:', err);
-    }
-  };
 
   const handleSettingsChange = async (newSettings) => {
     try {
