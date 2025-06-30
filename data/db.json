@@ -223,8 +223,18 @@
         "approvedAt": null
       },
       {
+        "id": "id_1751313942990_xkw9p2mnt",
         "status": "CLOSED",
         "timestamp": "2025-06-30T21:29:02.990Z",
+        "reason": "사유 없음",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
         "approvedAt": null
       }
     ],
