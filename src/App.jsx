@@ -13,30 +13,120 @@ import MenusAdd from "./pages/menus/MenusAdd";
 import Reviews from "./pages/reviews/Reviews";
 import Login from "./pages/users/Login";
 import RegisterContainer from "./pages/users/register/RegisterContainer";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { Toaster } from "react-hot-toast";
+
+// 인증이 필요한 라우트를 위한 래퍼 컴포넌트
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/login" replace />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/settlements" element={<Settlements />} />
-          <Route path="/stores" element={<Stores />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/menus" element={<Menus />} />
-          <Route path="/menus/add" element={<MenusAdd />} />
-          <Route path="/menus/edit/:id" element={<MenusAdd />} />
-          <Route path="/reviews" element={<Reviews />} />
-        </Route>
-        <Route path="/" element={<PosLayout />}>
-          <Route path="/pos" element={<Pos />} />
-          <Route path="/pos/orders" element={<PosOrders />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<RegisterContainer />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <Toaster position="top-right" />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/login" replace />} />
+            <Route
+              path="/sales"
+              element={
+                <ProtectedRoute>
+                  <Sales />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settlements"
+              element={
+                <ProtectedRoute>
+                  <Settlements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stores"
+              element={
+                <ProtectedRoute>
+                  <Stores />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                <ProtectedRoute>
+                  <Accounts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/menus"
+              element={
+                <ProtectedRoute>
+                  <Menus />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/menus/add"
+              element={
+                <ProtectedRoute>
+                  <MenusAdd />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/menus/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <MenusAdd />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reviews"
+              element={
+                <ProtectedRoute>
+                  <Reviews />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+          <Route path="/" element={<PosLayout />}>
+            <Route
+              path="/pos"
+              element={
+                <ProtectedRoute>
+                  <Pos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pos/orders"
+              element={
+                <ProtectedRoute>
+                  <PosOrders />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterContainer />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

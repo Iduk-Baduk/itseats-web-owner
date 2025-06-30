@@ -5,10 +5,12 @@ import PosStatusChangeDialog from './PosStatusChangeDialog';
 import styles from './PosStatusControl.module.css';
 import posAPI from '../../services/posAPI';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 const PosStatusControl = ({ currentStatus, onStatusChange, disabled }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [targetStatus, setTargetStatus] = useState(null);
+  const { currentUser } = useAuth();
 
   const handleStatusClick = (newStatus) => {
     if (newStatus === currentStatus) return;
@@ -20,11 +22,10 @@ const PosStatusControl = ({ currentStatus, onStatusChange, disabled }) => {
 
   const handleConfirmStatusChange = async (metadata) => {
     try {
-      // 현재 사용자 정보 (실제 앱에서는 인증 시스템에서 가져옴)
-      const currentUser = {
-        userId: 'admin001',
-        userName: '관리자'
-      };
+      if (!currentUser) {
+        toast.error('인증이 필요합니다.');
+        return;
+      }
 
       // 메타데이터에 사용자 정보 추가
       const fullMetadata = {
@@ -60,44 +61,39 @@ const PosStatusControl = ({ currentStatus, onStatusChange, disabled }) => {
   };
 
   return (
-    <>
-      <div className={styles.container}>
-        <h3 className={styles.title}>POS 상태 관리</h3>
-        <div className={styles.buttonGroup}>
-          {Object.values(POS_STATUS).map(status => (
-            <button
-              key={status}
-              className={`${styles.button} ${currentStatus === status ? styles.active : ''}`}
-              onClick={() => handleStatusClick(status)}
-              disabled={disabled || currentStatus === status}
-              aria-label={POS_STATUS_LABEL[status]}
-            >
-              {POS_STATUS_LABEL[status]}
-            </button>
-          ))}
-        </div>
+    <div className={styles.container}>
+      <div className={styles.statusButtons}>
+        {Object.values(POS_STATUS).map((status) => (
+          <button
+            key={status}
+            className={`${styles.statusButton} ${
+              status === currentStatus ? styles.active : ''
+            }`}
+            onClick={() => handleStatusClick(status)}
+            disabled={disabled || status === currentStatus}
+          >
+            {POS_STATUS_LABEL[status]}
+          </button>
+        ))}
       </div>
 
-      {/* 상태 변경 확인 다이얼로그 */}
-      <PosStatusChangeDialog
-        isOpen={isDialogOpen}
-        currentStatus={currentStatus}
-        targetStatus={targetStatus || currentStatus}
-        onConfirm={handleConfirmStatusChange}
-        onCancel={handleCancelStatusChange}
-      />
-    </>
+      {isDialogOpen && (
+        <PosStatusChangeDialog
+          isOpen={isDialogOpen}
+          currentStatus={currentStatus}
+          targetStatus={targetStatus}
+          onConfirm={handleConfirmStatusChange}
+          onCancel={handleCancelStatusChange}
+        />
+      )}
+    </div>
   );
 };
 
 PosStatusControl.propTypes = {
   currentStatus: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
   onStatusChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-PosStatusControl.defaultProps = {
-  disabled: false,
+  disabled: PropTypes.bool
 };
 
 export default PosStatusControl; 
