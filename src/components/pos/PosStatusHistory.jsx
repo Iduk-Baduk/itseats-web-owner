@@ -15,9 +15,11 @@ const getDateString = (timestamp) => {
 };
 
 const formatTimeForDisplay = (timestamp) => {
-  // UTC 시간을 그대로 표시하기 위해 직접 파싱
-  const utcTime = timestamp.substring(11, 16); // 'T' 이후 HH:mm 부분 추출
-  return utcTime;
+  // UTC 시간을 안전하게 추출하기 위해 Date 객체의 UTC 메서드 사용
+  const date = parseISO(timestamp);
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 const formatDateForDisplay = (dateString) => {
