@@ -4,10 +4,18 @@ export default function MenuAction({ handleAddMenu, handleManageMenuGroup, class
   return (
     <div className={className}>
       <div className={styles.menuActions}>
-        <div onClick={handleAddMenu}>
+        <div 
+          onClick={handleAddMenu}
+          className={styles.actionLink}
+        >
           <span className={styles.plus}>+</span>메뉴 추가
         </div>
-        <div onClick={handleManageMenuGroup}>메뉴 그룹 관리</div>
+        <div 
+          onClick={handleManageMenuGroup}
+          className={styles.actionLink}
+        >
+          메뉴 그룹 관리
+        </div>
       </div>
     </div>
   );
