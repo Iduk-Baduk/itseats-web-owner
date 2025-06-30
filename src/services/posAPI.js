@@ -14,16 +14,87 @@ const formatTimestamp = (timestamp) => {
     if (isNaN(date.getTime())) {
       return new Date().toISOString();
     }
-    return date.toISOString();
+    // 밀리초를 3자리로 표준화
+    const isoString = date.toISOString();
+    const [datePart, timePart] = isoString.split('T');
+    const [timePart1, timezone] = timePart.split('Z');
+    const [hours, minutes, seconds] = timePart1.split(':');
+    const [secondsPart, milliseconds] = seconds.split('.');
+    
+    // 밀리초가 3자리가 아닌 경우 3자리로 패딩
+    const paddedMilliseconds = milliseconds 
+      ? milliseconds.padEnd(3, '0').slice(0, 3)
+      : '000';
+    
+    return `${datePart}T${hours}:${minutes}:${secondsPart}.${paddedMilliseconds}Z`;
   } catch (error) {
     return new Date().toISOString();
   }
 };
 
+// 데이터베이스 타임스탬프 형식 수정 함수
+const fixDatabaseTimestamps = async () => {
+  try {
+    const currentData = await apiClient.get('/pos');
+    let needsUpdate = false;
+
+    // lastUpdated 필드 검증
+    if (currentData.data.lastUpdated) {
+      const fixedLastUpdated = formatTimestamp(currentData.data.lastUpdated);
+      if (fixedLastUpdated !== currentData.data.lastUpdated) {
+        currentData.data.lastUpdated = fixedLastUpdated;
+        needsUpdate = true;
+      }
+    }
+
+    // statusHistory 타임스탬프 검증
+    if (currentData.data.statusHistory) {
+      currentData.data.statusHistory = currentData.data.statusHistory.map(item => {
+        const fixedTimestamp = formatTimestamp(item.timestamp);
+        const fixedApprovedAt = item.approvedAt ? formatTimestamp(item.approvedAt) : null;
+        
+        if (fixedTimestamp !== item.timestamp || fixedApprovedAt !== item.approvedAt) {
+          needsUpdate = true;
+          return {
+            ...item,
+            timestamp: fixedTimestamp,
+            approvedAt: fixedApprovedAt
+          };
+        }
+        return item;
+      });
+    }
+
+    // notifications 타임스탬프 검증
+    if (currentData.data.notifications) {
+      currentData.data.notifications = currentData.data.notifications.map(item => {
+        const fixedTimestamp = formatTimestamp(item.timestamp);
+        if (fixedTimestamp !== item.timestamp) {
+          needsUpdate = true;
+          return {
+            ...item,
+            timestamp: fixedTimestamp
+          };
+        }
+        return item;
+      });
+    }
+
+    // 변경된 내용이 있으면 업데이트
+    if (needsUpdate) {
+      await apiClient.put('/pos', currentData.data);
+      console.log('Database timestamps have been fixed');
+    }
+  } catch (error) {
+    console.error('Failed to fix database timestamps:', error);
+  }
+};
+
 const posAPI = {
-  // POS 상태 조회
+  // POS 상태 조회 (타임스탬프 형식 검증 추가)
   getPosStatus: withErrorHandling(async () => {
     const response = await apiClient.get('/pos');
+    await fixDatabaseTimestamps(); // 데이터베이스 타임스탬프 검증
     return { status: response.data.currentStatus };
   }, 'getPosStatus'),
 
