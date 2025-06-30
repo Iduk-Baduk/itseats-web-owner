@@ -5,12 +5,10 @@ export const API_CONFIG = {
 
 export const API_ENDPOINTS = {
   // 매장 메뉴 관련
-  //   MENUS_BY_ID: (id) => `/api/owner/${store_id}/menus`,
-  MENU_LIST: () => `/menus`,  // GET, POST 요청 모두 사용
-  ADD_MENU: () => `/menus`,  // POST 요청용
-  UPDATE_MENU: (id) => `/menus/${id}`,  // PATCH 요청용
-  DELETE_MENU: (id) => `/menus/${id}`,  // DELETE 요청용
-  GET_MENU: (id) => `/menus/${id}`,  // GET 요청용
-  MENU_STATS: () => `/menuStats`,  // GET 요청용
+  MENUS: {
+    LIST: () => `/menus`,           // GET (목록), POST (생성)
+    DETAIL: (id) => `/menus/${id}`, // GET (단일), PATCH (수정), DELETE (삭제)
+    STATS: () => `/menuStats`,      // GET (통계)
+  },
   OWNER: `/owner`,
 };

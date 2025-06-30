@@ -11,6 +11,16 @@ import { menuAPI } from "../../services/menuAPI";
 
 import styles from "./MenusAdd.module.css";
 
+// ID 처리를 위한 헬퍼 함수 재사용
+const getMenuId = (menu) => menu?.id || menu?.menuId;
+
+const findMenuById = (menus, targetId) => {
+  return menus.find(menu => {
+    const menuId = getMenuId(menu);
+    return String(menuId) === String(targetId);
+  });
+};
+
 export default function MenusAdd() {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -38,10 +48,7 @@ export default function MenusAdd() {
 
   useEffect(() => {
     if (isEditMode && menus && menus.length > 0) {
-      const menuToEdit = menus.find(menu => {
-        const menuId = menu.menuId || menu.id;
-        return String(menuId) === String(id);
-      });
+      const menuToEdit = findMenuById(menus, id);
       
       if (menuToEdit) {
         console.log("Found menu to edit:", menuToEdit);
@@ -89,20 +96,23 @@ export default function MenusAdd() {
   };
 
   const validateMenuData = (payload) => {
-    if (!payload.menuName) {
-      alert("메뉴명을 입력해주세요.");
-      return false;
+    const errors = [];
+    
+    if (!payload.menuName?.trim()) {
+      errors.push("메뉴명을 입력해주세요.");
     }
-    if (!payload.menuPrice) {
-      alert("메뉴 가격을 입력해주세요.");
-      return false;
+    if (!payload.menuPrice || isNaN(Number(payload.menuPrice))) {
+      errors.push("올바른 메뉴 가격을 입력해주세요.");
     }
     if (!payload.menuStatus) {
-      alert("메뉴 상태를 선택해주세요.");
-      return false;
+      errors.push("메뉴 상태를 선택해주세요.");
     }
-    if (!payload.menuGroupName || payload.menuGroupName === "선택") {
-      alert("메뉴 그룹을 선택해주세요.");
+    if (!payload.menuGroupName?.trim()) {
+      errors.push("메뉴 그룹을 선택해주세요.");
+    }
+    
+    if (errors.length > 0) {
+      alert(errors.join('\n'));
       return false;
     }
     return true;
@@ -132,11 +142,8 @@ export default function MenusAdd() {
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        const menuToEdit = menus.find(menu => {
-          const menuId = menu.menuId || menu.id;
-          return String(menuId) === String(id);
-        });
-        const menuId = menuToEdit?.id || menuToEdit?.menuId || id;
+        const menuToEdit = findMenuById(menus, id);
+        const menuId = getMenuId(menuToEdit) || id;
         console.log("Updating menu with ID:", menuId, "Payload:", payload);
         await menuAPI.updateMenu(menuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
@@ -156,11 +163,8 @@ export default function MenusAdd() {
     if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
     
     try {
-      const menuToEdit = menus.find(menu => {
-        const menuId = menu.menuId || menu.id;
-        return String(menuId) === String(id);
-      });
-      const menuId = menuToEdit?.id || menuToEdit?.menuId || id;
+      const menuToEdit = findMenuById(menus, id);
+      const menuId = getMenuId(menuToEdit) || id;
       await menuAPI.deleteMenu(menuId);
       alert("메뉴가 성공적으로 삭제되었습니다.");
       navigate("/menus");

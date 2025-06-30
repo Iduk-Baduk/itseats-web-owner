@@ -1,11 +1,21 @@
 import { API_ENDPOINTS } from "../config/api";
 import apiClient from "./apiClient";
 
+// ID 처리를 위한 헬퍼 함수
+const getMenuId = (menu) => menu?.id || menu?.menuId;
+
+const findMenuById = (menus, targetId) => {
+  return menus.find(menu => {
+    const menuId = getMenuId(menu);
+    return String(menuId) === String(targetId);
+  });
+};
+
 // 메뉴 API 서비스
 export const menuAPI = {
   getMenus: async () => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.MENU_LIST());
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.LIST());
       return response.data;
     } catch (e) {
       console.error("API Error: getMenus", e);
@@ -15,7 +25,7 @@ export const menuAPI = {
 
   getMenu: async (id) => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.GET_MENU(String(id)));
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(String(id)));
       return response.data;
     } catch (e) {
       console.error("API Error: getMenu", e);
@@ -25,7 +35,7 @@ export const menuAPI = {
 
   getMenuStats: async () => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.MENU_STATS());
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.STATS());
       return response.data;
     } catch (e) {
       console.error("API Error: getMenuStats", e);
@@ -47,7 +57,7 @@ export const menuAPI = {
 
   addMenu: async (menuData) => {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.ADD_MENU(), menuData);
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.LIST(), menuData);
       return response.data;
     } catch (e) {
       console.error("API Error: addMenu", e);
@@ -58,7 +68,7 @@ export const menuAPI = {
   updateMenu: async (id, menuData) => {
     try {
       console.log("Updating menu:", { id, menuData }); // 디버깅용 로그
-      const response = await apiClient.patch(API_ENDPOINTS.UPDATE_MENU(String(id)), menuData);
+      const response = await apiClient.patch(API_ENDPOINTS.MENUS.DETAIL(String(id)), menuData);
       return response.data;
     } catch (e) {
       console.error("API Error: updateMenu", e);
@@ -68,7 +78,7 @@ export const menuAPI = {
 
   deleteMenu: async (id) => {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.DELETE_MENU(String(id)));
+      const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(String(id)));
       return response.data;
     } catch (e) {
       console.error("API Error: deleteMenu", e);
