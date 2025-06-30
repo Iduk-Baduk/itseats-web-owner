@@ -5,3 +5,34 @@
 .posQuickAccess {
   margin: 4rem 4.5rem 0 4.4rem;
 }
+
+.container {
+  padding: 24px;
+}
+
+.statusSection {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statusSection h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.currentStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.currentStatus span {
+  font-size: 14px;
+  color: #666;
+}

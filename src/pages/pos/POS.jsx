@@ -1,11 +1,59 @@
+import React, { useState, useEffect } from 'react';
 import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
-
 import styles from "./Pos.module.css";
+import PosStatusBadge from '../../components/pos/PosStatusBadge';
+import PosStatusControl from '../../components/pos/PosStatusControl';
+import { POS_STATUS } from '../../constants/posStatus';
 
-export default function Pos() {
+const POS = () => {
+  const [posStatus, setPosStatus] = useState(POS_STATUS.CLOSED);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Mock API 호출을 시뮬레이션
+  useEffect(() => {
+    const fetchPosStatus = async () => {
+      try {
+        const response = await fetch('/data/db.json');
+        const data = await response.json();
+        setPosStatus(data.pos.currentStatus);
+      } catch (error) {
+        console.error('Failed to fetch POS status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosStatus();
+  }, []);
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      // 실제 API 호출 대신 상태만 업데이트
+      setPosStatus(newStatus);
+      // TODO: API 연동 시 실제 API 호출 추가
+    } catch (error) {
+      console.error('Failed to update POS status:', error);
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div>
+    <div className={styles.container}>
+      <div className={styles.statusSection}>
+        <h2>POS 상태 관리</h2>
+        <div className={styles.currentStatus}>
+          <span>현재 상태:</span>
+          <PosStatusBadge status={posStatus} />
+        </div>
+        <PosStatusControl
+          currentStatus={posStatus}
+          onStatusChange={handleStatusChange}
+        />
+      </div>
       <PosMetricItem
         metricName={dummyData.storeName}
         metricValue={dummyData.metrics}
@@ -14,7 +62,7 @@ export default function Pos() {
       <PosQuickAccess className={styles.posQuickAccess} />
     </div>
   );
-}
+};
 
 const dummyData = {
   storeName: "스타벅스 커피",
@@ -26,3 +74,5 @@ const dummyData = {
     orderAcceptanceRate: "100%",
   },
 };
+
+export default POS;

@@ -97,5 +97,29 @@
         ]
       }
     ]
+  },
+  "pos": {
+    "currentStatus": "OPEN",
+    "lastUpdated": "2024-03-21T10:00:00Z",
+    "statusHistory": [
+      {
+        "status": "CLOSED",
+        "timestamp": "2024-03-21T00:00:00Z"
+      },
+      {
+        "status": "PREPARING",
+        "timestamp": "2024-03-21T09:30:00Z"
+      },
+      {
+        "status": "OPEN",
+        "timestamp": "2024-03-21T10:00:00Z"
+      }
+    ],
+    "settings": {
+      "autoClose": true,
+      "autoCloseTime": "23:00",
+      "autoOpen": true,
+      "autoOpenTime": "09:00"
+    }
   }
 }
