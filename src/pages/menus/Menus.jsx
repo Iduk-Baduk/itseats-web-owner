@@ -16,14 +16,27 @@ export default function Menus() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [menuGroupModal, setMenuGroupModal] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState(null);
   const groupNames = useSelector((state) => state.menu.groupNames);
+
+  const handleMenuSelect = (menuId) => {
+    setSelectedMenuId(menuId);
+  };
+
+  const handleAddOrEditMenu = () => {
+    if (selectedMenuId) {
+      navigate(`/menus/edit/${selectedMenuId}`);
+    } else {
+      navigate("/menus/add");
+    }
+  };
 
   if (status === "loading") {
     return <div>메뉴를 불러오는 중...</div>;
   }
 
   if (error) {
-    return <p> 에러 발생: {error}</p>;
+    return <p>에러 발생: {error}</p>;
   }
 
   return (
@@ -42,15 +55,17 @@ export default function Menus() {
       {/* 요약 카드 */}
       <MenusSummaryCard menu={menu} />
       {/* 메뉴 리스트 */}
-      <MenuList menu={menu} />
+      <MenuList 
+        menu={menu} 
+        onMenuSelect={handleMenuSelect}
+      />
       {/* 메뉴 추가 및 관리 버튼 */}
       <MenuActions
-        handleAddMenu={() => {
-          navigate("/menus/add");
-        }}
+        handleAddMenu={handleAddOrEditMenu}
         handleManageMenuGroup={() => {
           setMenuGroupModal(true);
         }}
+        selectedMenuId={selectedMenuId}
       />
 
       {/* 메뉴 그룹 관리 모달 */}

@@ -37,6 +37,7 @@
   border-left: none;
   padding: 0.5rem;
   text-align: left;
+  vertical-align: top;
 }
 
 .actionButtons {
@@ -52,6 +53,11 @@
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButtons button:hover {
+  opacity: 0.9;
 }
 
 .cancelButton {
@@ -69,10 +75,15 @@
 .deleteText {
   text-align: center;
   font-size: 13px;
-  color: var(--border-color);
+  color: #dc3545;
   text-decoration: underline;
   cursor: pointer;
   margin-top: 1rem;
+  transition: color 0.2s;
+}
+
+.deleteText:hover {
+  color: #c82333;
 }
 
 .optionGroup {
@@ -113,19 +124,28 @@
 .optionStatus {
   padding: 4px 8px;
   border: 1px solid #aaa;
+  border-radius: 4px;
+  background-color: white;
 }
 
 .optionManageButton {
-  color: green;
+  color: #28a745;
   cursor: pointer;
+  padding: 1rem;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.optionManageButton:hover {
+  color: #218838;
+  text-decoration: underline;
 }
 
 @media (max-width: 480px) {
-  .addButton,
-  .cancelButton {
+  .actionButtons button {
     padding: 0.4rem 1.5rem;
     font-size: 14px;
-    flex: 1; /* ✅ 버튼을 같은 너비로 채움 */
+    flex: 1;
     text-align: center;
   }
 }

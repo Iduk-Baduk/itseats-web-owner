@@ -6,10 +6,22 @@ import { useSelector } from "react-redux";
 export default function MenuInput({ groupNames, onChange, selectedState, onSelectState, initialData }) {
   const [menuGroupModal, setMenuGroupModal] = useState(false); // 메뉴 그룹 관리 모달
   const [descriptionLength, setDescriptionLength] = useState(0);
+  const [formData, setFormData] = useState({
+    menuGroupName: "",
+    menuName: "",
+    menuPrice: "",
+    menuDescription: "",
+  });
   const reduxGroupNames = useSelector((state) => state.menu.groupNames);
 
   useEffect(() => {
     if (initialData) {
+      setFormData({
+        menuGroupName: initialData.menuGroupName || "",
+        menuName: initialData.menuName || "",
+        menuPrice: initialData.menuPrice || "",
+        menuDescription: initialData.menuDescription || "",
+      });
       setDescriptionLength(initialData.menuDescription?.length || 0);
     }
   }, [initialData]);
@@ -20,6 +32,14 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       onChange("menuGroupName", reduxGroupNames[0]);
     }
   }, [initialData, reduxGroupNames, onChange]);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    onChange(field, value);
+  };
 
   return (
     <div className={styles.form}>
@@ -37,9 +57,9 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
 
         {/* 1. 그룹 선택 */}
         <select
-          value={initialData?.menuGroupName || ""}
+          value={formData.menuGroupName}
           className={styles.select}
-          onChange={(e) => onChange("menuGroupName", e.target.value)}
+          onChange={(e) => handleChange("menuGroupName", e.target.value)}
         >
           <option value="" disabled>메뉴 그룹 선택</option>
           {reduxGroupNames.map((groupName, index) => (
@@ -54,8 +74,8 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       <div className={styles.formGroup}>
         <input
           placeholder="메뉴명"
-          value={initialData?.menuName || ""}
-          onChange={(e) => onChange("menuName", e.target.value)}
+          value={formData.menuName}
+          onChange={(e) => handleChange("menuName", e.target.value)}
           className={styles.input}
         />
       </div>
@@ -64,8 +84,8 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
       <div className={styles.formGroup}>
         <input
           placeholder="금액 입력"
-          value={initialData?.menuPrice || ""}
-          onChange={(e) => onChange("menuPrice", e.target.value)}
+          value={formData.menuPrice}
+          onChange={(e) => handleChange("menuPrice", e.target.value)}
           type="number"
           className={styles.input}
           min="0"
@@ -114,9 +134,9 @@ export default function MenuInput({ groupNames, onChange, selectedState, onSelec
           maxLength={60}
           className={styles.textarea}
           placeholder="메뉴 구성 또는 설명글 입력 (선택사항)"
-          value={initialData?.menuDescription || ""}
+          value={formData.menuDescription}
           onChange={(e) => {
-            onChange("menuDescription", e.target.value);
+            handleChange("menuDescription", e.target.value);
             setDescriptionLength(e.target.value.length);
           }}
         />

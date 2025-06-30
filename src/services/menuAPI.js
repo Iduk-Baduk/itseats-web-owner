@@ -15,7 +15,7 @@ export const menuAPI = {
 
   getMenu: async (id) => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.GET_MENU(id));
+      const response = await apiClient.get(API_ENDPOINTS.GET_MENU(String(id)));
       return response.data;
     } catch (e) {
       console.error("API Error: getMenu", e);
@@ -57,10 +57,21 @@ export const menuAPI = {
 
   updateMenu: async (id, menuData) => {
     try {
-      const response = await apiClient.patch(API_ENDPOINTS.UPDATE_MENU(id), menuData);
+      console.log("Updating menu:", { id, menuData }); // 디버깅용 로그
+      const response = await apiClient.patch(API_ENDPOINTS.UPDATE_MENU(String(id)), menuData);
       return response.data;
     } catch (e) {
       console.error("API Error: updateMenu", e);
+      throw e;
+    }
+  },
+
+  deleteMenu: async (id) => {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.UPDATE_MENU(String(id)));
+      return response.data;
+    } catch (e) {
+      console.error("API Error: deleteMenu", e);
       throw e;
     }
   },

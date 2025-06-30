@@ -1,6 +1,7 @@
 import styles from "./MenuActions.module.css";
+import { PencilIcon, PlusIcon } from "../../components/common/Icons";
 
-export default function MenuAction({ handleAddMenu, handleManageMenuGroup, className }) {
+export default function MenuAction({ handleAddMenu, handleManageMenuGroup, className, selectedMenuId }) {
   return (
     <div className={className}>
       <div className={styles.menuActions}>
@@ -8,7 +9,17 @@ export default function MenuAction({ handleAddMenu, handleManageMenuGroup, class
           onClick={handleAddMenu}
           className={styles.actionLink}
         >
-          <span className={styles.plus}>+</span>메뉴 추가
+          {selectedMenuId ? (
+            <>
+              <PencilIcon className={styles.icon} />
+              메뉴 수정
+            </>
+          ) : (
+            <>
+              <PlusIcon className={styles.icon} />
+              메뉴 추가
+            </>
+          )}
         </div>
         <div 
           onClick={handleManageMenuGroup}

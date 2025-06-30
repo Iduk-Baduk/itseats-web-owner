@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import SortableOptionGroup from "./SortableOptionGroup";
 
-export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: initialGroups, setOptionGroups }) {
+export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: initialGroups, setOptionGroups, modalState }) {
   const [optionGroups, setLocalOptionGroups] = useState(initialGroups || []);
   const [optionGroupName, setOptionGroupName] = useState("");
   const [selectedGroupIndex, setSelectedGroupIndex] = useState("");
@@ -36,6 +36,20 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
   useEffect(() => {
     setLocalOptionGroups(initialGroups || []);
   }, [initialGroups]);
+
+  const handleClose = () => {
+    setOptionGroupName("");
+    setSelectedGroupIndex("");
+    setOptionName("");
+    setOptionPrice("");
+    setIsRequired(false);
+    onClose();
+  };
+
+  const handleSave = () => {
+    onSave(optionGroups);
+    handleClose();
+  };
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -138,6 +152,8 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
     setOptionGroups(updatedGroups);
   };
 
+  if (!modalState) return null;
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContainer}>
@@ -146,7 +162,7 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
           <div className={styles.headerTitle}>
             옵션 그룹 관리
           </div>
-          <div onClick={onClose} className={styles.modalClose}>✕</div>
+          <div onClick={handleClose} className={styles.modalClose}>✕</div>
         </div>
 
         <div className={styles.modalBody}>
@@ -248,21 +264,10 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
 
         {/* 푸터 */}
         <div className={styles.modalFooter}>
-          <button
-            onClick={onClose}
-            className={styles.cancelBtn}
-            style={{ flex: 1 }}
-          >
+          <button onClick={handleClose} className={styles.cancelButton}>
             취소
           </button>
-          <button
-            onClick={() => {
-              onSave(optionGroups);
-              onClose();
-            }}
-            className={styles.saveBtn}
-            style={{ flex: 1, backgroundColor: '#28a745' }}
-          >
+          <button onClick={handleSave} className={styles.saveButton}>
             저장
           </button>
         </div>

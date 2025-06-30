@@ -7,16 +7,9 @@
       "menuStatus": "ONSALE",
       "menuGroupName": "음료",
       "menuPriority": 1,
-      "id": "93cd"
-    },
-    {
-      "menuId": 13,
-      "menuName": "초코라떼",
-      "menuPrice": "2000",
-      "menuStatus": "OUT_OF_STOCK",
-      "menuGroupName": "음료",
-      "menuPriority": 2,
-      "id": "81ac"
+      "id": "93cd",
+      "menuDescription": "ㅁ",
+      "optionGroups": []
     },
     {
       "menuId": 25,
@@ -30,8 +23,17 @@
     {
       "id": "2048",
       "menuName": "1",
-      "menuDescription": "qwe",
+      "menuDescription": "qweㅈ",
       "menuPrice": "2",
+      "menuStatus": "ONSALE",
+      "menuGroupName": "음료",
+      "optionGroups": []
+    },
+    {
+      "id": "4359",
+      "menuName": "12",
+      "menuDescription": "1",
+      "menuPrice": "11",
       "menuStatus": "ONSALE",
       "menuGroupName": "음료",
       "optionGroups": []
