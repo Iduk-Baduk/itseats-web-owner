@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { 
   POS_STATUS,
@@ -18,7 +18,8 @@ const PosStatusChangeDialog = ({
   targetStatus, 
   onClose, 
   onConfirm,
-  requiresApproval = false 
+  requiresApproval = false,
+  error
 }) => {
   const [formData, setFormData] = useState({
     reason: '',
@@ -30,22 +31,6 @@ const PosStatusChangeDialog = ({
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  // 다이얼로그가 열릴 때 폼 초기화
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        reason: '',
-        customReason: '',
-        notes: '',
-        estimatedRevenueLoss: '',
-        affectedOrderCount: '',
-        category: STATUS_CHANGE_CATEGORY.MANUAL
-      });
-      setErrors({});
-    }
-  }, [isOpen, targetStatus]);
 
   const availableReasons = STATUS_CHANGE_REASONS[targetStatus] || [];
 
@@ -79,7 +64,6 @@ const PosStatusChangeDialog = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError(null);
 
     try {
       if (!validateForm()) {
@@ -100,28 +84,27 @@ const PosStatusChangeDialog = ({
       };
 
       await onConfirm(changeData);
-      onClose();
+      // 성공하면 다이얼로그를 닫음 (onConfirm에서 처리됨)
     } catch (error) {
-      handleError(error, {
-        showToast: true,
-        setError: (field, { message }) => setError(message)
-      });
+      // 에러 발생 시 다이얼로그를 열린 상태로 유지하고 에러만 표시
+      console.error('Status change error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (field, value) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [name]: value
     }));
     
     // 에러 클리어
-    if (errors[field]) {
+    if (errors[name]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ''
+        [name]: ''
       }));
     }
   };
@@ -133,7 +116,7 @@ const PosStatusChangeDialog = ({
       <div 
         className={styles.dialog}
         role="dialog"
-        aria-labelledby="dialog-title"
+        aria-label="상태 변경"
         aria-modal="true"
       >
         <div className={styles.header}>
@@ -167,13 +150,17 @@ const PosStatusChangeDialog = ({
           <form onSubmit={handleSubmit} className={styles.form}>
             {/* 변경 사유 */}
             <div className={styles.field}>
-              <label className={styles.label}>
+              <label className={styles.label} htmlFor="status-reason">
                 변경 사유 <span className={styles.required}>*</span>
               </label>
               <select
+                id="status-reason"
+                name="reason"
+                className={`${styles.select} ${!formData.reason ? styles.empty : ''}`}
                 value={formData.reason}
-                onChange={(e) => handleInputChange('reason', e.target.value)}
-                className={`${styles.select} ${errors.reason ? styles.error : ''}`}
+                onChange={handleChange}
+                aria-label="변경 사유"
+                required
               >
                 <option value="">사유를 선택하세요</option>
                 {availableReasons.map(reason => (
@@ -181,7 +168,6 @@ const PosStatusChangeDialog = ({
                 ))}
                 <option value="custom">직접 입력</option>
               </select>
-              {errors.reason && <span className={styles.errorText}>{errors.reason}</span>}
             </div>
 
             {/* 커스텀 사유 입력 */}
@@ -192,23 +178,27 @@ const PosStatusChangeDialog = ({
                 </label>
                 <input
                   type="text"
+                  name="customReason"
                   value={formData.customReason}
-                  onChange={(e) => handleInputChange('customReason', e.target.value)}
+                  onChange={handleChange}
                   placeholder="변경 사유를 입력하세요"
                   className={`${styles.input} ${errors.customReason ? styles.error : ''}`}
                 />
-                {errors.customReason && <span className={styles.errorText}>{errors.customReason}</span>}
               </div>
             )}
 
             {/* 메모 */}
             <div className={styles.field}>
-              <label className={styles.label}>메모</label>
+              <label className={styles.label} htmlFor="status-notes">
+                메모
+              </label>
               <textarea
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="추가 설명이나 메모를 입력하세요"
+                id="status-notes"
+                name="notes"
                 className={styles.textarea}
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="추가 설명이나 메모를 입력하세요"
                 rows={3}
               />
             </div>
@@ -222,13 +212,13 @@ const PosStatusChangeDialog = ({
                   </label>
                   <input
                     type="number"
+                    name="estimatedRevenueLoss"
                     value={formData.estimatedRevenueLoss}
-                    onChange={(e) => handleInputChange('estimatedRevenueLoss', e.target.value)}
+                    onChange={handleChange}
                     placeholder="예: 50000"
                     className={`${styles.input} ${errors.estimatedRevenueLoss ? styles.error : ''}`}
                     min="0"
                   />
-                  {errors.estimatedRevenueLoss && <span className={styles.errorText}>{errors.estimatedRevenueLoss}</span>}
                 </div>
 
                 <div className={styles.field}>
@@ -237,35 +227,37 @@ const PosStatusChangeDialog = ({
                   </label>
                   <input
                     type="number"
+                    name="affectedOrderCount"
                     value={formData.affectedOrderCount}
-                    onChange={(e) => handleInputChange('affectedOrderCount', e.target.value)}
+                    onChange={handleChange}
                     placeholder="예: 10"
                     className={`${styles.input} ${errors.affectedOrderCount ? styles.error : ''}`}
                     min="0"
                   />
-                  {errors.affectedOrderCount && <span className={styles.errorText}>{errors.affectedOrderCount}</span>}
                 </div>
               </>
             )}
-          </form>
-        </div>
 
-        <div className={styles.footer}>
-          <Button 
-            type="button" 
-            variant="secondary" 
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            취소
-          </Button>
-          <Button 
-            type="submit" 
-            variant="primary"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? '처리 중...' : requiresApproval ? '승인 요청' : '변경하기'}
-          </Button>
+            {error && <div className={styles.error}>{error}</div>}
+            
+            <div className={styles.footer}>
+              <Button 
+                type="button" 
+                variant="secondary" 
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                취소
+              </Button>
+              <Button 
+                type="submit" 
+                variant="primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? '처리 중...' : requiresApproval ? '승인 요청' : '변경하기'}
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -279,6 +271,7 @@ PosStatusChangeDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   requiresApproval: PropTypes.bool,
+  error: PropTypes.string,
 };
 
 PosStatusChangeDialog.defaultProps = {

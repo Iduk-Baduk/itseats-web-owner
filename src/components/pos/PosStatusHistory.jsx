@@ -4,12 +4,20 @@ import { POS_STATUS, STATUS_CHANGE_CATEGORY_LABEL } from '../../constants/posSta
 import PosStatusBadge from './PosStatusBadge';
 import styles from './PosStatusHistory.module.css';
 import { formatRelativeTime, formatDate } from '../../utils/dateUtils';
+import { parseISO, format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 const ITEMS_PER_PAGE = 10;
 
 const getDateString = (timestamp) => {
-  const date = new Date(timestamp);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const date = parseISO(timestamp);
+  return format(date, 'yyyy-MM-dd');
+};
+
+const formatTimeForDisplay = (timestamp) => {
+  // UTC 시간을 그대로 표시하기 위해 직접 파싱
+  const utcTime = timestamp.substring(11, 16); // 'T' 이후 HH:mm 부분 추출
+  return utcTime;
 };
 
 const formatDateForDisplay = (dateString) => {
@@ -39,7 +47,7 @@ const generateHistoryItemKey = (item, index) => {
 };
 
 const PosStatusHistory = ({ history }) => {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedItems, setExpandedItems] = useState(new Set());
 
@@ -57,9 +65,10 @@ const PosStatusHistory = ({ history }) => {
     // 날짜 목록 생성 및 정렬
     const dates = Object.keys(groupedHistory).sort((a, b) => b.localeCompare(a));
 
-    // 선택된 날짜 또는 가장 최근 날짜의 기록 필터링
-    const targetDate = selectedDate || dates[0];
-    const filtered = targetDate ? groupedHistory[targetDate] || [] : [];
+    // 선택된 날짜의 기록 필터링 (선택된 날짜가 없으면 전체 기록 반환)
+    const filtered = selectedDate 
+      ? (groupedHistory[selectedDate] || [])
+      : history;
 
     // 시간순 정렬 (내림차순)
     filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -72,6 +81,10 @@ const PosStatusHistory = ({ history }) => {
 
   // 현재 페이지의 아이템만 선택
   const paginatedHistory = useMemo(() => {
+    // 전체 항목이 ITEMS_PER_PAGE보다 적으면 페이지네이션 없이 모든 항목 표시
+    if (filteredHistory.length <= ITEMS_PER_PAGE) {
+      return filteredHistory;
+    }
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredHistory.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredHistory, currentPage]);
@@ -110,19 +123,20 @@ const PosStatusHistory = ({ history }) => {
         <h3 className={styles.title}>상태 변경 기록</h3>
         <select
           className={styles.dateSelect}
-          value={selectedDate || availableDates[0] || ''}
+          value={selectedDate}
           onChange={handleDateChange}
           aria-label="날짜 선택"
         >
+          <option value="">전체 기록</option>
           {availableDates.map(date => (
             <option key={date} value={date}>
-              {formatDateForDisplay(date)}
+              {format(parseISO(date), 'yyyy년 MM월 dd일', { locale: ko })}
             </option>
           ))}
         </select>
       </div>
 
-      <div className={styles.historyList}>
+      <div className={styles.historyList} role="list">
         {paginatedHistory.map((item, index) => {
           const isExpanded = expandedItems.has(item.id);
           const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
@@ -131,14 +145,15 @@ const PosStatusHistory = ({ history }) => {
             <div 
               key={generateHistoryItemKey(item, index)} 
               className={styles.historyItem}
+              role="listitem"
             >
               <div className={styles.historyHeader}>
                 <time 
                   className={styles.timestamp}
                   dateTime={item.timestamp}
-                  title={formatDate(item.timestamp)}
+                  title={format(parseISO(item.timestamp), 'yyyy-MM-dd HH:mm:ss', { timeZone: 'UTC', locale: ko })}
                 >
-                  {formatRelativeTime(item.timestamp)}
+                  {formatTimeForDisplay(item.timestamp)}
                 </time>
                 <PosStatusBadge status={item.status} />
                 {hasMetadata && (
@@ -162,6 +177,11 @@ const PosStatusHistory = ({ history }) => {
                 {item.userName && (
                   <span className={styles.userName}>
                     👤 {item.userName}
+                  </span>
+                )}
+                {item.requiresApproval && !item.approvedBy && (
+                  <span className={styles.approvalStatus}>
+                    ⏳ 승인 대기 중
                   </span>
                 )}
               </div>
@@ -229,7 +249,8 @@ const PosStatusHistory = ({ history }) => {
               key={page}
               className={`${styles.pageButton} ${page === currentPage ? styles.active : ''}`}
               onClick={() => handlePageChange(page)}
-              disabled={page === currentPage}
+              aria-label={`${page}페이지로 이동`}
+              aria-current={page === currentPage ? 'page' : undefined}
             >
               {page}
             </button>
@@ -244,20 +265,18 @@ PosStatusHistory.propTypes = {
   history: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string,
-      status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
       timestamp: PropTypes.string.isRequired,
+      status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
       reason: PropTypes.string,
-      userId: PropTypes.string,
-      userName: PropTypes.string,
       notes: PropTypes.string,
+      userName: PropTypes.string,
+      category: PropTypes.string,
       estimatedRevenueLoss: PropTypes.number,
       affectedOrderCount: PropTypes.number,
-      category: PropTypes.string,
       requiresApproval: PropTypes.bool,
-      approvedBy: PropTypes.string,
-      approvedAt: PropTypes.string
+      approvedBy: PropTypes.string
     })
-  ).isRequired,
+  ).isRequired
 };
 
-export default PosStatusHistory; 
+export default PosStatusHistory;
