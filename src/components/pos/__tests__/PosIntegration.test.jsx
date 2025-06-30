@@ -6,13 +6,12 @@ import PosStatusControl from '../PosStatusControl';
 import PosStatusHistory from '../PosStatusHistory';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
 import * as posAutoScheduler from '../../../utils/posAutoScheduler';
-import POS_API from '../../../services/posAPI';
+import * as posAPI from '../../../services/posAPI';
 
 // API 모킹
-vi.mock('../../../services/posAPI');
-
-const mockUpdatePosStatus = vi.fn().mockResolvedValue({});
-POS_API.updatePosStatus = mockUpdatePosStatus;
+vi.mock('../../../services/posAPI', () => ({
+  updatePosStatus: vi.fn(),
+}));
 
 describe('POS Status Management Integration', () => {
   const mockOnStatusChange = vi.fn();
@@ -21,6 +20,8 @@ describe('POS Status Management Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    // 각 테스트마다 성공 응답으로 초기화
+    posAPI.updatePosStatus.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -59,7 +60,7 @@ describe('POS Status Management Integration', () => {
       fireEvent.click(breakButton);
     });
 
-    expect(mockUpdatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
+    expect(posAPI.updatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.BREAK);
     
     rerender(
@@ -114,7 +115,6 @@ describe('POS Status Management Integration', () => {
   });
 
   test('status changes based on operating hours', () => {
-    // 현재 시간을 영업 시간 외로 설정
     const mockDate = new Date('2024-03-20T23:00:00Z');
     vi.setSystemTime(mockDate);
 
@@ -125,7 +125,6 @@ describe('POS Status Management Integration', () => {
       autoCloseTime: '22:00'
     };
 
-    // 자동화 관련 함수들을 모킹
     const isWithinOperatingHoursSpy = vi.spyOn(posAutoScheduler, 'isWithinOperatingHours');
     isWithinOperatingHoursSpy.mockReturnValue(false);
 
@@ -151,7 +150,6 @@ describe('POS Status Management Integration', () => {
       </>
     );
 
-    // 상태 변경 트리거
     act(() => {
       const status = determineCurrentStatusSpy(autoSettings);
       if (status && status !== currentStatus) {
@@ -161,7 +159,6 @@ describe('POS Status Management Integration', () => {
 
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.CLOSED);
 
-    // 스파이 정리
     isWithinOperatingHoursSpy.mockRestore();
     determineCurrentStatusSpy.mockRestore();
   });
