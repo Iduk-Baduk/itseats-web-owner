@@ -27,7 +27,7 @@ describe('PosStatusHistory', () => {
 
   test('renders history items correctly', () => {
     render(<PosStatusHistory history={mockHistory} />);
-    const statusBadges = screen.getAllByRole('status');
+    const statusBadges = screen.getAllByRole('img');
     // 초기에는 가장 최근 날짜(2024-03-21)의 기록만 표시되므로 1개
     expect(statusBadges).toHaveLength(1);
   });
@@ -45,7 +45,7 @@ describe('PosStatusHistory', () => {
     fireEvent.change(dateSelect, { target: { value: '2024-03-20' } });
     
     // 변경된 날짜의 데이터만 표시되는지 확인 (2024-03-20의 데이터는 2개)
-    const statusBadges = screen.getAllByRole('status');
+    const statusBadges = screen.getAllByRole('img');
     expect(statusBadges).toHaveLength(2);
   });
 
@@ -60,7 +60,7 @@ describe('PosStatusHistory', () => {
     render(<PosStatusHistory history={longHistory} />);
 
     // 첫 페이지에서는 10개의 항목만 표시되어야 함
-    const initialStatusBadges = screen.getAllByRole('status');
+    const initialStatusBadges = screen.getAllByRole('img');
     expect(initialStatusBadges).toHaveLength(10);
 
     // 다음 페이지로 이동
@@ -68,7 +68,7 @@ describe('PosStatusHistory', () => {
     fireEvent.click(nextPageButton);
 
     // 두 번째 페이지에서는 나머지 5개의 항목만 표시되어야 함
-    const nextPageStatusBadges = screen.getAllByRole('status');
+    const nextPageStatusBadges = screen.getAllByRole('img');
     expect(nextPageStatusBadges).toHaveLength(5);
   });
 

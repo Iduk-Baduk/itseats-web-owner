@@ -14,7 +14,7 @@ const PosStatusBadge = ({ status, className }) => {
     <div 
       className={`${styles.badge} ${className || ''}`}
       style={style}
-      role="status"
+      role="img"
       aria-label={`매장 상태: ${label}`}
     >
       {label}

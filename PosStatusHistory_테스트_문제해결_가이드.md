@@ -58,20 +58,25 @@ const longHistory = Array(15).fill(null).map((_, index) => ({
 
 ## 🛠️ 해결 방법
 
-### 1. 중복 Role 속성 제거
+### 1. 중복 Role 속성 제거 및 적절한 ARIA 역할 적용
 
 ```jsx
-// 수정 전
+// 수정 전 (문제점들)
 <div className={styles.historyItem}>
-  <div className={styles.timestamp} role="timestamp">
+  <div className={styles.timestamp} role="timestamp">  // 🚨 잘못된 ARIA 역할
     {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
   </div>
-  <div role="status">  // 🚨 불필요한 래퍼
+  <div role="status">  // 🚨 불필요한 래퍼 + 라이브 리전 오남용
     <PosStatusBadge status={item.status} />
   </div>
 </div>
 
-// 수정 후 (시맨틱 HTML 사용)
+// PosStatusBadge.jsx 내부에서도
+<div role="status" ...>  // 🚨 정적 요소에 라이브 리전 사용
+  {label}
+</div>
+
+// 수정 후 (시맨틱 HTML + 적절한 ARIA 역할)
 <div className={styles.historyItem}>
   <time
     className={styles.timestamp}
@@ -81,6 +86,11 @@ const longHistory = Array(15).fill(null).map((_, index) => ({
     {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
   </time>
   <PosStatusBadge status={item.status} />  // ✅ 직접 사용
+</div>
+
+// PosStatusBadge.jsx 내부
+<div role="img" aria-label={`매장 상태: ${label}`} ...>  // ✅ 정적 시각 요소에 적합
+  {label}
 </div>
 ```
 
@@ -100,11 +110,12 @@ timestamp: new Date(2024, 2, 20, 10, 0, index).toISOString()
 // 수정된 테스트 케이스들
 
 test('renders history items correctly', () => {
-  render(<PosStatusHistory history={mockHistory} />);
-  const statusBadges = screen.getAllByRole('status');
-  // 초기에는 가장 최근 날짜(2024-03-21)의 기록만 표시되므로 1개
-  expect(statusBadges).toHaveLength(1);
-});
+    render(<PosStatusHistory history={mockHistory} />);
+    // role="status"에서 role="img"로 변경하여 접근성 개선
+    const statusBadges = screen.getAllByRole('img');
+    // 초기에는 가장 최근 날짜(2024-03-21)의 기록만 표시되므로 1개
+    expect(statusBadges).toHaveLength(1);
+  });
 
 test('filters history by date', () => {
   render(<PosStatusHistory history={mockHistory} />);
@@ -157,10 +168,13 @@ Tests  5 passed (5)
 
 ## 🎓 학습 포인트
 
-### 1. 접근성 속성 중복 주의
+### 1. 접근성 속성 올바른 사용
 - 컴포넌트를 감쌀 때는 내부 컴포넌트의 `role`, `aria-*` 속성을 확인
 - 중복된 접근성 속성은 테스트뿐만 아니라 스크린 리더 사용자에게도 혼란을 줄 수 있음
 - **시맨틱 HTML 사용**: `role="timestamp"` 같은 잘못된 ARIA 역할 대신 `<time>` 요소 사용
+- **적절한 ARIA 역할 선택**: 
+  - `role="status"` → 라이브 리전용, 즉시 알림이 필요한 동적 상태에만 사용
+  - `role="img"` → 정적 상태 표시용, 반복되는 시각적 요소에 적합
 - ARIA 스펙에 없는 역할을 사용하면 보조 기술이 요소를 인식하지 못해 접근성이 저하됨
 
 ### 2. 날짜/시간 계산 주의사항
@@ -188,4 +202,6 @@ Tests  5 passed (5)
 
 ---
 
-**결론**: 이 문제는 작은 실수들이 쌓여서 발생한 복합적인 이슈였습니다. 각각은 간단해 보이지만, 조합되면 디버깅이 어려워질 수 있으므로 꼼꼼한 검토가 중요합니다. 🧐 
+**결론**: 이 문제는 작은 실수들이 쌓여서 발생한 복합적인 이슈였습니다. 각각은 간단해 보이지만, 조합되면 디버깅이 어려워질 수 있으므로 꼼꼼한 검토가 중요합니다. 
+
+특히 **접근성 개선**은 단순히 테스트 통과를 위한 것이 아니라, 실제 사용자 경험 향상을 위한 필수 요소임을 인식하게 되었습니다. ARIA 역할의 올바른 사용은 보조 기술 사용자들에게 더 나은 웹 경험을 제공합니다. 🧐♿ 
