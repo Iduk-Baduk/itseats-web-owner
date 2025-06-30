@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 상태별 버튼 스타일 */
+.openButton {
+  composes: button;
+  background-color: #2E7D32;
+  color: white;
+}
+
+.closeButton {
+  composes: button;
+  background-color: #D32F2F;
+  color: white;
+}
+
+.breakButton {
+  composes: button;
+  background-color: #F57C00;
+  color: white;
+}
+
+.preparingButton {
+  composes: button;
+  background-color: #1976D2;
+  color: white;
+} 
