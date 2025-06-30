@@ -6,6 +6,19 @@ import { updatePosStatus } from '../store/posSlice';
 import { retryApiCall } from '../utils/errorHandler';
 
 /**
+ * 특정 시간에 트리거해야 하는지 확인
+ * @param {string} currentTime - 현재 시간 (HH:mm 형식)
+ * @param {string} targetTime - 목표 시간 (HH:mm 형식)
+ * @returns {boolean} 트리거 여부
+ */
+const shouldTriggerAtTime = (currentTime, targetTime) => {
+  const current = new Date(`1970-01-01T${currentTime}:00`);
+  const target = new Date(`1970-01-01T${targetTime}:00`);
+  const diff = Math.abs(current.getTime() - target.getTime());
+  return diff < 60000; // 1분 이내
+};
+
+/**
  * POS 자동화 스케줄러 훅
  * @returns {Object} 스케줄러 컨트롤 함수들
  */
@@ -49,9 +62,14 @@ export const usePosAutoScheduler = () => {
         hour12: false
       });
 
-      if (settings.autoOpen && currentTime === settings.autoOpenTime) {
+      const isTimeToOpen = settings.autoOpen && 
+        shouldTriggerAtTime(currentTime, settings.autoOpenTime);
+      const isTimeToClose = settings.autoClose && 
+        shouldTriggerAtTime(currentTime, settings.autoCloseTime);
+      
+      if (isTimeToOpen) {
         await autoUpdatePosStatus('OPEN');
-      } else if (settings.autoClose && currentTime === settings.autoCloseTime) {
+      } else if (isTimeToClose) {
         await autoUpdatePosStatus('CLOSED');
       }
     } catch (error) {
