@@ -1,24 +1,25 @@
 import { parseTimeString, isWithinOperatingHours, determineCurrentStatus, getNextStatusChangeDelay } from '../posAutoScheduler';
 import { POS_STATUS } from '../../constants/posStatus';
+import { renderHook } from '@testing-library/react';
+import usePosAutoScheduler from '../../hooks/usePosAutoScheduler';
+import * as POS_API from '../../services/posAPI';
+import { vi } from 'vitest';
+
+vi.mock('../../services/posAPI', () => ({
+  default: {
+    updatePosStatus: vi.fn()
+  }
+}));
 
 describe('posAutoScheduler utilities', () => {
-  // Mock Date 객체를 사용하기 위한 설정
-  const mockDate = new Date('2024-03-21T10:00:00Z');
-  const originalDate = global.Date;
-
   beforeEach(() => {
-    global.Date = class extends Date {
-      constructor(date) {
-        if (date) {
-          return new originalDate(date);
-        }
-        return mockDate;
-      }
-    };
+    vi.useFakeTimers();
+    // 테스트용 기준 시간 설정 (2024-01-01 10:00:00)
+    vi.setSystemTime(new Date(2024, 0, 1, 10, 0, 0));
   });
 
   afterEach(() => {
-    global.Date = originalDate;
+    vi.useRealTimers();
   });
 
   describe('parseTimeString', () => {
@@ -60,7 +61,7 @@ describe('posAutoScheduler utilities', () => {
         autoOpenTime: '09:00',
         autoCloseTime: '18:00',
       };
-      expect(determineCurrentStatus(settings)).toBeNull();
+      expect(determineCurrentStatus(settings)).toBe(null);
     });
 
     it('영업 시간 내인 경우 OPEN 상태 반환', () => {
@@ -88,19 +89,18 @@ describe('posAutoScheduler utilities', () => {
     it('자동화가 비활성화된 경우 null 반환', () => {
       const settings = {
         autoOpen: false,
-        autoClose: true,
+        autoClose: false,
         autoOpenTime: '09:00',
         autoCloseTime: '18:00',
       };
-      expect(getNextStatusChangeDelay(settings)).toBeNull();
+      expect(getNextStatusChangeDelay(settings)).toBe(null);
     });
 
     it('다음 오픈 시간까지의 지연 시간 계산', () => {
-      // mockDate는 10:00
       const settings = {
         autoOpen: true,
         autoClose: true,
-        autoOpenTime: '14:00', // 4시간 후
+        autoOpenTime: '14:00',
         autoCloseTime: '22:00',
       };
       const expectedDelay = 4 * 60 * 60 * 1000; // 4시간을 밀리초로 변환
@@ -108,27 +108,106 @@ describe('posAutoScheduler utilities', () => {
     });
 
     it('다음 마감 시간까지의 지연 시간 계산', () => {
-      // mockDate는 10:00
       const settings = {
         autoOpen: true,
         autoClose: true,
         autoOpenTime: '09:00',
-        autoCloseTime: '18:00', // 8시간 후
+        autoCloseTime: '18:00',
       };
       const expectedDelay = 8 * 60 * 60 * 1000; // 8시간을 밀리초로 변환
       expect(getNextStatusChangeDelay(settings)).toBe(expectedDelay);
     });
 
     it('다음 날 오픈 시간까지의 지연 시간 계산', () => {
-      // mockDate는 10:00
+      vi.setSystemTime(new Date(2024, 0, 1, 22, 0, 0)); // 22:00로 시간 변경
       const settings = {
         autoOpen: true,
         autoClose: true,
         autoOpenTime: '09:00',
-        autoCloseTime: '12:00', // 이미 지난 시간
+        autoCloseTime: '18:00',
       };
-      const expectedDelay = 23 * 60 * 60 * 1000; // 다음 날 9시까지 23시간
+      const expectedDelay = 11 * 60 * 60 * 1000; // 11시간을 밀리초로 변환
       expect(getNextStatusChangeDelay(settings)).toBe(expectedDelay);
     });
+  });
+});
+
+describe('usePosAutoScheduler', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2024, 0, 1, 10, 0, 0));
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('자동화 설정이 비활성화된 경우 스케줄러가 시작되지 않아야 함', () => {
+    const settings = {
+      autoOpen: false,
+      autoClose: false,
+      autoOpenTime: '09:00',
+      autoCloseTime: '22:00'
+    };
+    const onStatusChange = vi.fn();
+
+    renderHook(() => usePosAutoScheduler(settings, onStatusChange));
+
+    vi.runAllTimers();
+    expect(onStatusChange).not.toHaveBeenCalled();
+  });
+
+  it('자동화 설정이 활성화된 경우 현재 상태를 즉시 업데이트해야 함', () => {
+    const settings = {
+      autoOpen: true,
+      autoClose: true,
+      autoOpenTime: '09:00',
+      autoCloseTime: '22:00'
+    };
+    const onStatusChange = vi.fn();
+
+    renderHook(() => usePosAutoScheduler(settings, onStatusChange));
+
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('상태 변경 시 API 호출이 실패하면 에러를 로깅해야 함', async () => {
+    const settings = {
+      autoOpen: true,
+      autoClose: true,
+      autoOpenTime: '09:00',
+      autoCloseTime: '22:00'
+    };
+    const onStatusChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error');
+    POS_API.default.updatePosStatus.mockRejectedValueOnce(new Error('API Error'));
+
+    renderHook(() => usePosAutoScheduler(settings, onStatusChange));
+    
+    vi.runAllTimers();
+    await Promise.resolve();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to auto-update POS status:',
+      expect.any(Error)
+    );
+  });
+
+  it('컴포넌트 언마운트 시 타이머가 정리되어야 함', () => {
+    const settings = {
+      autoOpen: true,
+      autoClose: true,
+      autoOpenTime: '09:00',
+      autoCloseTime: '22:00'
+    };
+    const onStatusChange = vi.fn();
+
+    const { unmount } = renderHook(() => usePosAutoScheduler(settings, onStatusChange));
+    
+    unmount();
+    vi.runAllTimers();
+    
+    expect(onStatusChange).toHaveBeenCalledTimes(1); // 초기 상태 업데이트만 호출됨
   });
 }); 

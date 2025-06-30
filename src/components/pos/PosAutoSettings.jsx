@@ -1,20 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './PosAutoSettings.module.css';
-import { CheckBox } from '../basic/CheckBox';
+import CheckBox from '../basic/CheckBox';
 
 const PosAutoSettings = ({ settings, onSettingsChange }) => {
-  const handleAutoOpenChange = (checked) => {
+  const handleAutoOpenChange = (e) => {
     onSettingsChange({
       ...settings,
-      autoOpen: checked,
+      autoOpen: e.target.checked,
     });
   };
 
-  const handleAutoCloseChange = (checked) => {
+  const handleAutoCloseChange = (e) => {
     onSettingsChange({
       ...settings,
-      autoClose: checked,
+      autoClose: e.target.checked,
     });
   };
 
