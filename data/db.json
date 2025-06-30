@@ -305,16 +305,7 @@
         "severity": "WARNING",
         "relatedStatusChangeId": "id_1751313279400_9y5wvexau"
       },
-      {
-        "id": "id_1751313253044_ogmq76ffp",
-        "type": "STATUS_CHANGE",
-        "title": "POS 상태 변경",
-        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
-        "timestamp": "2025-06-30T19:54:13.044Z",
-        "isRead": false,
-        "severity": "WARNING",
-        "relatedStatusChangeId": "id_1751313253038_zd250ahpt"
-      },
+
       {
         "id": "id_1751313253041_8vt25ay4l",
         "type": "STATUS_CHANGE",
