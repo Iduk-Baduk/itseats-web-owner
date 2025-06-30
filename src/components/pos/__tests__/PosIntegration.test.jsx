@@ -15,6 +15,14 @@ vi.mock('../../../services/posAPI', () => ({
   }
 }));
 
+// react-hot-toast 모킹
+vi.mock('react-hot-toast', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn()
+  }
+}));
+
 describe('POS Status Management Integration', () => {
   const mockOnStatusChange = vi.fn();
   const mockOnAutoSettingsChange = vi.fn();
@@ -58,11 +66,37 @@ describe('POS Status Management Integration', () => {
     );
 
     const breakButton = screen.getByRole('button', { name: POS_STATUS_LABEL[POS_STATUS.BREAK] });
+    await fireEvent.click(breakButton);
+
+    // 다이얼로그가 열리는지 확인
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    // 필수 필드 입력
+    const reasonSelect = screen.getByRole('combobox');
+    await fireEvent.change(reasonSelect, { target: { value: '점심시간 휴게' } });
+
+    const revenueLossInput = screen.getByPlaceholderText('예: 50000');
+    await fireEvent.change(revenueLossInput, { target: { value: '50000' } });
+
+    const orderCountInput = screen.getByPlaceholderText('예: 10');
+    await fireEvent.change(orderCountInput, { target: { value: '5' } });
+
+    // 확인 버튼 클릭
+    const confirmButton = screen.getByRole('button', { name: '승인 요청' });
     await act(async () => {
-      await fireEvent.click(breakButton);
+      await fireEvent.click(confirmButton);
     });
 
-    expect(posAPI.default.updatePosStatus).toHaveBeenCalledWith(POS_STATUS.BREAK);
+    expect(posAPI.default.updatePosStatus).toHaveBeenCalledWith(
+      POS_STATUS.BREAK,
+      expect.objectContaining({
+        reason: '점심시간 휴게',
+        estimatedRevenueLoss: 50000,
+        affectedOrderCount: 5,
+        userId: expect.any(String),
+        userName: expect.any(String)
+      })
+    );
     expect(mockOnStatusChange).toHaveBeenCalledWith(POS_STATUS.BREAK);
     
     rerender(

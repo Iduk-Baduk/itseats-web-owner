@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { POS_STATUS } from '../../constants/posStatus';
+import { POS_STATUS, STATUS_CHANGE_CATEGORY_LABEL } from '../../constants/posStatus';
 import PosStatusBadge from './PosStatusBadge';
 import styles from './PosStatusHistory.module.css';
 
@@ -16,9 +16,17 @@ const formatDateForDisplay = (dateString) => {
   return `${year}년 ${month}월 ${day}일`;
 };
 
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: 'KRW'
+  }).format(amount);
+};
+
 const PosStatusHistory = ({ history }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedItems, setExpandedItems] = useState(new Set());
 
   const { filteredHistory, availableDates } = useMemo(() => {
     // 날짜별로 그룹화
@@ -65,6 +73,18 @@ const PosStatusHistory = ({ history }) => {
     setCurrentPage(newPage);
   };
 
+  const toggleItemExpansion = (itemId) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
   if (history.length === 0) {
     return <div className={styles.emptyState}>상태 변경 기록이 없습니다.</div>;
   }
@@ -88,18 +108,100 @@ const PosStatusHistory = ({ history }) => {
       </div>
 
       <div className={styles.historyList}>
-        {paginatedHistory.map((item, index) => (
-          <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
-            <time
-              className={styles.timestamp}
-              dateTime={item.timestamp}
-              aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-            >
-              {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
-            </time>
-            <PosStatusBadge status={item.status} />
-          </div>
-        ))}
+        {paginatedHistory.map((item, index) => {
+          const isExpanded = expandedItems.has(item.id);
+          const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
+
+          return (
+            <div key={`${item.timestamp}-${index}`} className={styles.historyItem}>
+              <div className={styles.historyHeader}>
+                <time
+                  className={styles.timestamp}
+                  dateTime={item.timestamp}
+                  aria-label={new Date(item.timestamp).toLocaleTimeString('ko-KR')}
+                >
+                  {new Date(item.timestamp).toLocaleTimeString('ko-KR')}
+                </time>
+                <PosStatusBadge status={item.status} />
+                {hasMetadata && (
+                  <button
+                    className={styles.expandButton}
+                    onClick={() => toggleItemExpansion(item.id)}
+                    aria-label={isExpanded ? '접기' : '펼치기'}
+                  >
+                    {isExpanded ? '▼' : '▶'}
+                  </button>
+                )}
+              </div>
+
+              {/* 기본 정보 (항상 표시) */}
+              <div className={styles.basicInfo}>
+                {item.reason && (
+                  <span className={styles.reason}>
+                    📋 {item.reason}
+                  </span>
+                )}
+                {item.userName && (
+                  <span className={styles.userName}>
+                    👤 {item.userName}
+                  </span>
+                )}
+              </div>
+
+              {/* 확장 정보 */}
+              {isExpanded && hasMetadata && (
+                <div className={styles.expandedInfo}>
+                  {item.notes && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>메모:</span>
+                      <span className={styles.metadataValue}>{item.notes}</span>
+                    </div>
+                  )}
+                  
+                  {item.category && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>분류:</span>
+                      <span className={styles.categoryBadge}>
+                        {STATUS_CHANGE_CATEGORY_LABEL[item.category] || item.category}
+                      </span>
+                    </div>
+                  )}
+
+                  {item.estimatedRevenueLoss > 0 && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>예상 손실:</span>
+                      <span className={styles.revenueLoss}>
+                        {formatCurrency(item.estimatedRevenueLoss)}
+                      </span>
+                    </div>
+                  )}
+
+                  {item.affectedOrderCount > 0 && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>영향받은 주문:</span>
+                      <span className={styles.orderCount}>
+                        {item.affectedOrderCount}건
+                      </span>
+                    </div>
+                  )}
+
+                  {item.requiresApproval && (
+                    <div className={styles.metadataRow}>
+                      <span className={styles.metadataLabel}>승인 정보:</span>
+                      <span className={styles.approvalInfo}>
+                        {item.approvedBy ? (
+                          <>✅ {item.approvedBy}님이 승인</>
+                        ) : (
+                          <>⏳ 승인 대기 중</>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {totalPages > 1 && (
@@ -121,10 +223,23 @@ const PosStatusHistory = ({ history }) => {
 };
 
 PosStatusHistory.propTypes = {
-  history: PropTypes.arrayOf(PropTypes.shape({
-    status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
-    timestamp: PropTypes.string.isRequired
-  })).isRequired
+  history: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      status: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
+      timestamp: PropTypes.string.isRequired,
+      reason: PropTypes.string,
+      userId: PropTypes.string,
+      userName: PropTypes.string,
+      notes: PropTypes.string,
+      estimatedRevenueLoss: PropTypes.number,
+      affectedOrderCount: PropTypes.number,
+      category: PropTypes.string,
+      requiresApproval: PropTypes.bool,
+      approvedBy: PropTypes.string,
+      approvedAt: PropTypes.string
+    })
+  ).isRequired,
 };
 
 export default PosStatusHistory; 
