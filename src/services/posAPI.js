@@ -8,17 +8,49 @@ const RETRY_DELAY = 1000; // 1초
 
 // 타임스탬프 처리를 위한 유틸리티 함수들
 const dateUtils = {
+  /**
+   * 타임스탬프를 Date 객체로 변환
+   * @param {string|number|Date} timestamp - 변환할 타임스탬프
+   * @returns {Date} 변환된 Date 객체
+   */
   toDate: (timestamp) => {
     if (!timestamp) return new Date();
-    return new Date(timestamp);
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid timestamp: ${timestamp}, using current date instead`);
+      return new Date();
+    }
+    return date;
   },
 
+  /**
+   * 타임스탬프를 ISO 문자열로 변환
+   * @param {string|number|Date} timestamp - 변환할 타임스탬프
+   * @returns {string} ISO 8601 형식의 문자열
+   */
   toISOString: (timestamp) => {
     return dateUtils.toDate(timestamp).toISOString();
   },
 
+  /**
+   * 타임스탬프를 지정된 형식으로 포맷팅
+   * @param {string|number|Date} timestamp - 변환할 타임스탬프
+   * @param {string} formatStr - 날짜 형식 문자열
+   * @returns {string} 포맷팅된 날짜 문자열
+   */
   format: (timestamp, formatStr = 'yyyy-MM-dd HH:mm:ss') => {
     return format(dateUtils.toDate(timestamp), formatStr);
+  },
+
+  /**
+   * 타임스탬프 유효성 검사
+   * @param {string|number|Date} timestamp - 검사할 타임스탬프
+   * @returns {boolean} 유효성 여부
+   */
+  isValid: (timestamp) => {
+    if (!timestamp) return false;
+    const date = new Date(timestamp);
+    return !isNaN(date.getTime());
   }
 };
 
@@ -198,7 +230,7 @@ export const updatePosStatus = withPosErrorHandling(
       status: statusData.status,
       statusMetadata: {
         ...statusData,
-        timestamp: toISOString(statusData.timestamp)
+        timestamp: dateUtils.toISOString(statusData.timestamp)
       }
     }));
   },
@@ -251,70 +283,32 @@ const posAPI = {
 
   // POS 상태 업데이트 (확장된 메타데이터 포함)
   updatePosStatus: withPosErrorHandling(async (status, metadata = {}) => {
-    // 전체 데이터 조회 후 상태만 업데이트
-    const currentData = await apiClient.get('/pos');
-    const timestamp = dateUtils.toISOString(new Date());
-    
-    // 새로운 히스토리 항목 생성
-    const newHistoryItem = {
-      id: generateId(),
-      status: status,
-      timestamp: timestamp,
-      reason: metadata.reason || '사유 없음',
-      userId: metadata.userId || 'system',
-      userName: metadata.userName || '시스템',
-      notes: metadata.notes || '',
-      estimatedRevenueLoss: metadata.estimatedRevenueLoss || 0,
-      affectedOrderCount: metadata.affectedOrderCount || 0,
-      category: metadata.category || 'MANUAL',
-      requiresApproval: metadata.requiresApproval || false,
-      approvedBy: metadata.approvedBy || null,
-      approvedAt: metadata.approvedAt ? dateUtils.toISOString(metadata.approvedAt) : null
-    };
-
-    // 기존 히스토리의 타임스탬프 형식 수정
-    const updatedHistory = currentData.data.statusHistory.map(item => ({
-      ...item,
-      timestamp: dateUtils.toISOString(item.timestamp),
-      approvedAt: item.approvedAt ? dateUtils.toISOString(item.approvedAt) : null
-    }));
-
-    const updatedData = {
-      ...currentData.data,
-      currentStatus: status,
-      lastUpdated: timestamp,
-      statusHistory: [
-        newHistoryItem,
-        ...updatedHistory
-      ]
-    };
-    
-    // 분석 데이터 업데이트
-    if (updatedData.analytics) {
-      updatedData.analytics.todayStatusChanges = (updatedData.analytics.todayStatusChanges || 0) + 1;
+    return updatePosData(currentData => {
+      const timestamp = dateUtils.toISOString(new Date());
       
-      // 매출 손실 누적
-      if (newHistoryItem.estimatedRevenueLoss > 0) {
-        updatedData.analytics.totalRevenueLossThisWeek = 
-          (updatedData.analytics.totalRevenueLossThisWeek || 0) + newHistoryItem.estimatedRevenueLoss;
-      }
-      
-      // 가장 빈번한 사유 업데이트 (간단한 구현)
-      updatedData.analytics.mostFrequentReason = newHistoryItem.reason;
-    }
-    
-    const response = await apiClient.put('/pos', updatedData);
-    
-    // 알림 생성
-    await posAPI.createNotification({
-      type: 'STATUS_CHANGE',
-      title: 'POS 상태 변경',
-      message: `매장이 '${newHistoryItem.reason}'으로 인해 '${status}' 상태로 변경되었습니다.`,
-      severity: status === 'CLOSED' ? 'WARNING' : 'INFO',
-      relatedStatusChangeId: newHistoryItem.id
+      const newHistoryItem = {
+        id: generateId(),
+        status,
+        timestamp,
+        reason: metadata.reason || '사유 없음',
+        userId: metadata.userId || 'system',
+        userName: metadata.userName || '시스템',
+        notes: metadata.notes || '',
+        estimatedRevenueLoss: metadata.estimatedRevenueLoss || 0,
+        affectedOrderCount: metadata.affectedOrderCount || 0,
+        category: metadata.category || 'MANUAL',
+        requiresApproval: metadata.requiresApproval || false,
+        approvedBy: metadata.approvedBy || null,
+        approvedAt: metadata.approvedAt ? dateUtils.toISOString(metadata.approvedAt) : null
+      };
+
+      return {
+        ...currentData,
+        currentStatus: status,
+        lastUpdated: timestamp,
+        statusHistory: [newHistoryItem, ...(currentData.statusHistory || [])]
+      };
     });
-    
-    return response.data;
   }, 'updatePosStatus'),
 
   // POS 설정 조회
@@ -387,27 +381,29 @@ const posAPI = {
 
   // 알림 생성
   createNotification: withPosErrorHandling(async (notificationData) => {
-    const newNotification = {
-      id: generateId(),
-      type: notificationData.type,
-      title: notificationData.title,
-      message: notificationData.message,
-      timestamp: dateUtils.toISOString(new Date()),
-      isRead: false,
-      severity: notificationData.severity || 'INFO',
-      relatedStatusChangeId: notificationData.relatedStatusChangeId || null
-    };
+    return updatePosData(currentData => {
+      const newNotification = {
+        id: generateId(),
+        type: notificationData.type,
+        title: notificationData.title,
+        message: notificationData.message,
+        timestamp: dateUtils.toISOString(new Date()),
+        isRead: false,
+        severity: notificationData.severity || 'INFO',
+        relatedStatusChangeId: notificationData.relatedStatusChangeId || null
+      };
 
-    return updatePosData(currentData => ({
-      ...currentData,
-      notifications: [
-        newNotification,
-        ...(currentData.notifications || []).map(notification => ({
-          ...notification,
-          timestamp: dateUtils.toISOString(notification.timestamp)
-        }))
-      ]
-    }));
+      return {
+        ...currentData,
+        notifications: [
+          newNotification,
+          ...(currentData.notifications || []).map(notification => ({
+            ...notification,
+            timestamp: dateUtils.toISOString(notification.timestamp)
+          }))
+        ]
+      };
+    });
   }, 'createNotification'),
 
   // 알림 목록 조회

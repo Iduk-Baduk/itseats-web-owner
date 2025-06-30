@@ -1,25 +1,34 @@
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { toISOString } from '../src/utils/dateUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-function toISOString(date) {
-  if (!date) return new Date().toISOString();
-  try {
-    return new Date(date).toISOString();
-  } catch (error) {
-    console.warn('Invalid date:', date);
-    return new Date().toISOString();
-  }
-}
+// 고유 ID 생성 헬퍼
+const generateId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+// 상태 이력 항목의 기본값
+const DEFAULT_HISTORY_ITEM = {
+  reason: '사유 없음',
+  userId: 'system',
+  userName: '시스템',
+  notes: '',
+  estimatedRevenueLoss: 0,
+  affectedOrderCount: 0,
+  category: 'MANUAL',
+  requiresApproval: false,
+  approvedBy: null
+};
 
 async function fixTimestamps(data) {
-  // POS 상태 이력의 타임스탬프 수정
+  // POS 상태 이력의 타임스탬프 수정 및 누락 필드 보완
   if (data.pos?.statusHistory) {
     data.pos.statusHistory = data.pos.statusHistory.map(item => ({
-      ...item,
+      ...DEFAULT_HISTORY_ITEM,  // 기본값 적용
+      ...item,  // 기존 데이터 유지
+      id: item.id || generateId(),  // ID가 없는 경우 생성
       timestamp: toISOString(item.timestamp),
       approvedAt: item.approvedAt ? toISOString(item.approvedAt) : null
     }));
@@ -34,6 +43,7 @@ async function fixTimestamps(data) {
   if (data.pos?.notifications) {
     data.pos.notifications = data.pos.notifications.map(item => ({
       ...item,
+      id: item.id || generateId(),  // ID가 없는 경우 생성
       timestamp: toISOString(item.timestamp)
     }));
   }
@@ -66,6 +76,15 @@ async function migrateDatabase() {
       new Date().toISOString(),
       'utf8'
     );
+
+    // 마이그레이션 결과 로깅
+    console.log('📊 마이그레이션 통계:');
+    if (database.pos?.statusHistory) {
+      console.log(`- 상태 이력 항목: ${database.pos.statusHistory.length}개`);
+    }
+    if (database.pos?.notifications) {
+      console.log(`- 알림: ${database.pos.notifications.length}개`);
+    }
   } catch (error) {
     console.error('❌ 마이그레이션 중 오류가 발생했습니다:', error);
     process.exit(1);

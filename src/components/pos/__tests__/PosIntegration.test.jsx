@@ -7,13 +7,15 @@ import PosStatusHistory from '../PosStatusHistory';
 import PosStatusBadge from '../PosStatusBadge';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
 import * as posAutoScheduler from '../../../utils/posAutoScheduler';
-import * as posAPI from '../../../services/posAPI';
+import posAPI from '../../../services/posAPI';
 import { AuthProvider } from '../../../contexts/AuthContext';
 
 // API 모킹
 vi.mock('../../../services/posAPI', () => ({
-  updatePosStatus: vi.fn(),
-  fetchPosHistory: vi.fn()
+  default: {
+    updatePosStatus: vi.fn(),
+    fetchPosHistory: vi.fn()
+  }
 }));
 
 // react-hot-toast 모킹
@@ -123,7 +125,7 @@ describe('POS Status Management Integration', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     // 각 테스트마다 성공 응답으로 초기화
-    posAPI.default.updatePosStatus.mockResolvedValue({});
+    posAPI.updatePosStatus.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -179,7 +181,7 @@ describe('POS Status Management Integration', () => {
       await fireEvent.click(confirmButton);
     });
 
-    expect(posAPI.default.updatePosStatus).toHaveBeenCalledWith(
+    expect(posAPI.updatePosStatus).toHaveBeenCalledWith(
       POS_STATUS.BREAK,
       expect.objectContaining({
         reason: '점심시간 휴게',
