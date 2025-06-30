@@ -129,6 +129,76 @@ export const logError = (error, context = '') => {
 };
 
 /**
+ * 네트워크 연결 복구를 기다리는 함수
+ * @param {number} timeout - 타임아웃 시간 (밀리초)
+ * @returns {Promise} 네트워크 연결 복구 Promise
+ */
+const waitForNetworkRecovery = (timeout = 30000) => {
+  return new Promise((resolve) => {
+    if (navigator.onLine) {
+      resolve();
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      window.removeEventListener('online', checkConnection);
+      resolve();
+    }, timeout);
+
+    const checkConnection = () => {
+      if (navigator.onLine) {
+        clearTimeout(timeoutId);
+        window.removeEventListener('online', checkConnection);
+        resolve();
+      }
+    };
+
+    window.addEventListener('online', checkConnection);
+  });
+};
+
+/**
+ * API 호출 재시도 함수
+ * @param {Function} apiCall - API 호출 함수
+ * @param {number} maxRetries - 최대 재시도 횟수
+ * @param {number} delay - 재시도 간격 (밀리초)
+ * @returns {Promise} API 호출 결과
+ */
+const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await apiCall();
+    } catch (error) {
+      lastError = error;
+      
+      // 재시도가 의미 없는 에러인 경우 즉시 실패 처리
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 401 || status === 403 || status === 404) {
+          throw error;
+        }
+      }
+
+      // 네트워크 에러인 경우 연결 복구 대기
+      if (error.request && !navigator.onLine) {
+        await waitForNetworkRecovery();
+      }
+
+      // 마지막 시도가 아닌 경우 대기 후 재시도
+      if (attempt < maxRetries) {
+        console.warn(`API 호출 실패 (${attempt}번째 시도): ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay * attempt));
+      }
+    }
+  }
+
+  console.error(`API 호출 실패 (${maxRetries}회 재시도 후): ${lastError.message}`);
+  throw lastError;
+};
+
+/**
  * 에러 처리 래퍼 함수
  * @param {Function} fn - 래핑할 함수
  * @param {string} context - 에러 발생 컨텍스트
@@ -137,7 +207,7 @@ export const logError = (error, context = '') => {
 export const withErrorHandling = (fn, context = '') => {
   return async (...args) => {
     try {
-      return await fn(...args);
+      return await retryApiCall(() => fn(...args));
     } catch (error) {
       logError(error, context);
       throw error;

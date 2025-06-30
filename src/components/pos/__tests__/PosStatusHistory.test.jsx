@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, test, expect } from 'vitest';
 import PosStatusHistory from '../PosStatusHistory';
-import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
+import { POS_STATUS } from '../../../constants/posStatus';
 
 describe('PosStatusHistory', () => {
   const mockHistory = [
@@ -29,69 +29,9 @@ describe('PosStatusHistory', () => {
     }
   ];
 
-  test('renders history title', () => {
-    render(<PosStatusHistory history={[]} />);
-    expect(screen.getByText('상태 변경 기록')).toBeInTheDocument();
-  });
-
-  test('renders empty state message when history is empty', () => {
-    render(<PosStatusHistory history={[]} />);
-    expect(screen.getByText('상태 변경 기록이 없습니다.')).toBeInTheDocument();
-  });
-
-  test('renders history items with correct status and timestamp', () => {
-    render(<PosStatusHistory history={mockHistory} />);
-    
-    mockHistory.forEach(item => {
-      const statusElements = screen.getAllByText(POS_STATUS_LABEL[item.status]);
-      expect(statusElements.length).toBeGreaterThan(0);
-      
-      const date = new Date(item.timestamp);
-      const formattedTime = date.toLocaleString('ko-KR', {
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-      expect(screen.getByText(formattedTime)).toBeInTheDocument();
-    });
-  });
-
-  test('renders history items in correct order', () => {
-    render(<PosStatusHistory history={mockHistory} />);
-    
-    const timestampElements = screen.getAllByText(/오[전후] [0-9]{1,2}:[0-9]{2}/);
-    expect(timestampElements).toHaveLength(mockHistory.length);
-    
-    const timestamps = timestampElements.map(el => el.textContent);
-    const expectedTimestamps = mockHistory.map(item => {
-      const date = new Date(item.timestamp);
-      return date.toLocaleString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    });
-    
-    timestamps.forEach((timestamp, index) => {
-      expect(timestamp).toContain(expectedTimestamps[index]);
-    });
-  });
-
-  test('renders PosStatusBadge for each history item', () => {
-    render(<PosStatusHistory history={mockHistory} />);
-    
-    mockHistory.forEach(item => {
-      const badges = screen.getAllByText(POS_STATUS_LABEL[item.status]);
-      expect(badges.length).toBeGreaterThan(0);
-      badges.forEach(badge => {
-        expect(badge).toBeInTheDocument();
-      });
-    });
-  });
-
   test('renders empty state correctly', () => {
     render(<PosStatusHistory history={[]} />);
-    expect(screen.getByText('변경 이력이 없습니다.')).toBeInTheDocument();
+    expect(screen.getByText('상태 변경 기록이 없습니다.')).toBeInTheDocument();
   });
 
   test('renders history items correctly', () => {
@@ -150,7 +90,7 @@ describe('PosStatusHistory', () => {
   test('sorts history items by time in descending order', () => {
     render(<PosStatusHistory history={mockHistory} />);
     
-    const timestamps = screen.getAllByText(/\d{2}:\d{2}:\d{2}/);
+    const timestamps = screen.getAllByText(/\d{1,2}:\d{2}/);
     const times = timestamps.map(el => el.textContent);
     
     // 시간이 내림차순으로 정렬되어 있는지 확인

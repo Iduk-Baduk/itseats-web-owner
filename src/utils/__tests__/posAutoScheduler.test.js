@@ -43,19 +43,54 @@ describe('posAutoScheduler utilities', () => {
   });
 
   describe('isWithinOperatingHours', () => {
+    beforeEach(() => {
+      // 테스트용 시간 고정 (10:00)
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2024, 2, 20, 10, 0));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('영업 시간 내인 경우', () => {
-      // mockDate는 10:00
-      expect(isWithinOperatingHours('09:00', '18:00')).toBe(true);
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '09:00',
+        autoClose: true,
+        autoCloseTime: '18:00'
+      };
+      expect(isWithinOperatingHours(settings)).toBe(true);
     });
 
     it('영업 시간 외인 경우', () => {
-      // mockDate는 10:00
-      expect(isWithinOperatingHours('14:00', '22:00')).toBe(false);
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '14:00',
+        autoClose: true,
+        autoCloseTime: '22:00'
+      };
+      expect(isWithinOperatingHours(settings)).toBe(false);
     });
 
     it('자정을 넘어가는 영업 시간 처리', () => {
-      // mockDate는 10:00
-      expect(isWithinOperatingHours('22:00', '02:00')).toBe(false);
+      const settings = {
+        autoOpen: true,
+        autoOpenTime: '22:00',
+        autoClose: true,
+        autoCloseTime: '02:00'
+      };
+      expect(isWithinOperatingHours(settings)).toBe(false);
+    });
+
+    it('자동화 설정이 비활성화된 경우', () => {
+      const settings = {
+        autoOpen: false,
+        autoOpenTime: '09:00',
+        autoClose: false,
+        autoCloseTime: '18:00'
+      };
+      expect(isWithinOperatingHours(settings)).toBe(false);
     });
   });
 
