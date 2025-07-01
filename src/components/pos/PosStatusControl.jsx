@@ -7,7 +7,7 @@ import posAPI from '../../services/posAPI';
 import { useAuth } from '../../contexts/AuthContext';
 
 const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [targetStatus, setTargetStatus] = useState(null);
   const [error, setError] = useState(null);
@@ -21,12 +21,16 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
 
   const handleStatusChange = async (formData) => {
     try {
+      if (!currentUser) {
+        throw new Error('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+      }
+
       const statusData = {
         status: targetStatus,
         reason: formData.reason,
         notes: formData.notes,
-        userId: user.id,
-        userName: user.name,
+        userId: currentUser.userId,
+        userName: currentUser.userName,
         category: 'MANUAL',
         requiresApproval: false,
         estimatedRevenueLoss: formData.estimatedRevenueLoss || 0,
@@ -39,6 +43,7 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
       setError(null);
     } catch (err) {
       setError(err.message);
+      console.error('Status change error:', err);
     }
   };
 
