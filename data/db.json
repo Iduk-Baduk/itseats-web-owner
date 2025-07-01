@@ -100,8 +100,68 @@
   },
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-06-30T21:29:02.990Z",
+    "lastUpdated": "2025-07-01T00:51:32.015Z",
     "statusHistory": [
+      {
+        "id": "mcjtbb5b-s8xusr",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T00:51:32.015Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcjtbabz-v5eoew",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T00:51:30.959Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcjta1nd-gqidl4",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T00:50:33.049Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcjt9ks6-wyebb0",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T00:50:11.190Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "id_1751314604945_jlnt9z2q4",
         "status": "CLOSED",
@@ -223,19 +283,8 @@
         "approvedAt": null
       },
       {
-        "id": "id_1751313942990_xkw9p2mnt",
         "status": "CLOSED",
-        "timestamp": "2025-06-30T21:29:02.990Z",
-        "reason": "사유 없음",
-        "userId": "system",
-        "userName": "시스템",
-        "notes": "",
-        "estimatedRevenueLoss": 0,
-        "affectedOrderCount": 0,
-        "category": "MANUAL",
-        "requiresApproval": false,
-        "approvedBy": null,
-        "approvedAt": null
+        "timestamp": "2025-06-30T19:35:48.3NZ"
       }
     ],
     "settings": {
@@ -245,6 +294,76 @@
       "autoOpenTime": "09:00"
     },
     "notifications": [
+      {
+        "id": "mcjtbb69-aefetf",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:51:32.049Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjtbb60-oa1z7z"
+      },
+      {
+        "id": "mcjtbb5z-dslafo",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:51:32.039Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjtbb5n-m06nps"
+      },
+      {
+        "id": "mcjtback-171xr9",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:51:30.980Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjtbaca-kfsfq0"
+      },
+      {
+        "id": "mcjta1oi-jalhqb",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:50:33.090Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjta1o9-4bhlca"
+      },
+      {
+        "id": "mcjta1o8-k6ixu8",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:50:33.080Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjta1nv-2z4mtr"
+      },
+      {
+        "id": "mcjt9kti-w7hwv8",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:50:11.238Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjt9kt5-jn5gk9"
+      },
+      {
+        "id": "mcjt9kt4-klrm9i",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T00:50:11.224Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjt9ksr-yslqx9"
+      },
       {
         "id": "id_1751314604948_omuax5qlk",
         "type": "STATUS_CHANGE",
@@ -305,7 +424,16 @@
         "severity": "WARNING",
         "relatedStatusChangeId": "id_1751313279400_9y5wvexau"
       },
-
+      {
+        "id": "id_1751313253044_ogmq76ffp",
+        "type": "STATUS_CHANGE",
+        "title": "POS 상태 변경",
+        "message": "매장이 '사유 없음'으로 인해 'CLOSED' 상태로 변경되었습니다.",
+        "timestamp": "2025-06-30T19:54:13.044Z",
+        "isRead": false,
+        "severity": "WARNING",
+        "relatedStatusChangeId": "id_1751313253042_c3cuabzwb"
+      },
       {
         "id": "id_1751313253041_8vt25ay4l",
         "type": "STATUS_CHANGE",
@@ -324,8 +452,15 @@
         "timestamp": "2025-06-30T19:54:13.025Z",
         "isRead": false,
         "severity": "WARNING",
-        "relatedStatusChangeId": "id_1751313253019_mrpue4vy3"
+        "relatedStatusChangeId": "id_1751313253019_ntvrphgue"
       }
-    ]
+    ],
+    "status": "CLOSED",
+    "statusMetadata": {
+      "status": "CLOSED",
+      "reason": "자동 상태 변경: CLOSED",
+      "category": "AUTO",
+      "timestamp": null
+    }
   }
 }

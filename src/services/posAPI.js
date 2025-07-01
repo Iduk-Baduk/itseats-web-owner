@@ -2,6 +2,7 @@ import apiClient from './apiClient';
 import { retryApiCall, handleError } from '../utils/errorHandler';
 import { format } from 'date-fns';
 import { toISOString } from '../utils/dateUtils';
+import { generateId } from '../utils/idGenerator';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1초
@@ -14,11 +15,18 @@ const dateUtils = {
    * @returns {Date} 변환된 Date 객체
    */
   toDate: (timestamp) => {
-    if (!timestamp) return new Date();
-    const date = new Date(timestamp);
+    if (!timestamp) return null;
+    
+    // 'NZ' 같은 비표준 시간대를 표준 'Z'로 변환 시도
+    const standardizedTimestamp = typeof timestamp === 'string' 
+      ? timestamp.replace(/(\.\d{1,3})?N?Z$/, '$1Z') 
+      : timestamp;
+
+    const date = new Date(standardizedTimestamp);
+
     if (isNaN(date.getTime())) {
-      console.warn(`Invalid timestamp: ${timestamp}, using current date instead`);
-      return new Date();
+      console.warn(`Invalid timestamp: ${timestamp}, returning null`);
+      return null;
     }
     return date;
   },
@@ -26,10 +34,11 @@ const dateUtils = {
   /**
    * 타임스탬프를 ISO 문자열로 변환
    * @param {string|number|Date} timestamp - 변환할 타임스탬프
-   * @returns {string} ISO 8601 형식의 문자열
+   * @returns {string|null} ISO 8601 형식의 문자열 또는 null
    */
   toISOString: (timestamp) => {
-    return dateUtils.toDate(timestamp).toISOString();
+    const date = dateUtils.toDate(timestamp);
+    return date ? date.toISOString() : null;
   },
 
   /**
@@ -39,7 +48,8 @@ const dateUtils = {
    * @returns {string} 포맷팅된 날짜 문자열
    */
   format: (timestamp, formatStr = 'yyyy-MM-dd HH:mm:ss') => {
-    return format(dateUtils.toDate(timestamp), formatStr);
+    const date = dateUtils.toDate(timestamp);
+    return date ? format(date, formatStr) : 'N/A';
   },
 
   /**
@@ -53,9 +63,6 @@ const dateUtils = {
     return !isNaN(date.getTime());
   }
 };
-
-// 고유 ID 생성 헬퍼
-const generateId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
 // 타임스탬프 마이그레이션 상태 확인
 const checkTimestampMigrationNeeded = async () => {
@@ -213,59 +220,6 @@ const updateSettings = (currentData, newSettings, settingsKey = 'settings') => (
     updatedAt: dateUtils.toISOString(new Date())
   }
 });
-
-// API 메서드들
-export const getPosStatus = withPosErrorHandling(
-  async (posId) => {
-    const response = await apiClient.get(`/pos/${posId}`);
-    return response.data;
-  },
-  'GET_STATUS'
-);
-
-export const updatePosStatus = withPosErrorHandling(
-  async (posId, statusData) => {
-    return updatePosData(currentData => ({
-      ...currentData,
-      status: statusData.status,
-      statusMetadata: {
-        ...statusData,
-        timestamp: dateUtils.toISOString(statusData.timestamp)
-      }
-    }));
-  },
-  'UPDATE_STATUS'
-);
-
-export const updatePosSettings = withPosErrorHandling(
-  async (settings) => {
-    return updatePosData(currentData => updateSettings(currentData, settings));
-  },
-  'updatePosSettings'
-);
-
-export const updatePosAutoSettings = withPosErrorHandling(
-  async (settings) => {
-    return updatePosData(currentData => updateSettings(currentData, settings, 'autoSettings'));
-  },
-  'updatePosAutoSettings'
-);
-
-export const getPosStatusHistory = withPosErrorHandling(
-  async (posId, params = {}) => {
-    const response = await apiClient.get(`/pos/${posId}/history`, { params });
-    return response.data;
-  },
-  'getPosStatusHistory'
-);
-
-export const retryFailedTransaction = withPosErrorHandling(
-  async (transactionId) => {
-    const response = await apiClient.post(`/transactions/${transactionId}/retry`);
-    return response.data;
-  },
-  'retryFailedTransaction'
-);
 
 const posAPI = {
   // POS 상태 조회 (타임스탬프 형식 검증 개선)
@@ -437,7 +391,36 @@ const posAPI = {
         isRead: true
       }))
     }));
-  }, 'markAllNotificationsAsRead')
+  }, 'markAllNotificationsAsRead'),
+
+  updatePosStatusWithNotification: withPosErrorHandling(
+    async (posId, statusData) => {
+      try {
+        // posId는 현재 구현에서 사용되지 않지만, API 일관성을 위해 유지
+        await posAPI.updatePosStatus(statusData.status, statusData);
+
+        const notificationData = {
+          type: 'STATUS_CHANGE',
+          title: '매장 상태 변경',
+          message: `매장 상태가 ${statusData.status}(으)로 변경되었습니다. (${
+            statusData.reason || '사유 없음'
+          })`,
+          severity: 'INFO',
+          relatedStatusChangeId: generateId(),
+        };
+
+        await posAPI.createNotification(notificationData);
+
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to update POS status with notification:', error);
+        throw error;
+      }
+    },
+    'UPDATE_STATUS_WITH_NOTIFICATION'
+  ),
 };
 
-export default posAPI; 
+export default posAPI;
+
+export const { updatePosStatusWithNotification } = posAPI; 

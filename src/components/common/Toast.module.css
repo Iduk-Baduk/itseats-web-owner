@@ -1,0 +1,47 @@
+.container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 300px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: white;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-in-out;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.hidden {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.info {
+  background-color: #2196F3;
+}
+
+.success {
+  background-color: #4CAF50;
+}
+
+.warning {
+  background-color: #FFA000;
+}
+
+.error {
+  background-color: #F44336;
+} 

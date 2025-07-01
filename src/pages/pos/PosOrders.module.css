@@ -1,12 +1,28 @@
 .container {
+  padding: 24px;
+  height: 100%;
+  background-color: white;
   display: flex;
-  height: 100vh;
-  background: #f9f9f9;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.content {
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #f44336;
+  font-size: 18px;
+  text-align: center;
+}
+
+.statsSection {
+  flex: 0 0 auto;
+}
+
+.ordersSection {
   flex: 1;
-  background: #fff;
-  overflow-y: auto;
-  margin-left: 120px; /* 사이드바 너비만큼 왼쪽 여백 */
+  min-height: 0;
+  overflow: hidden;
 }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../constants/posStatus';
 import PosStatusChangeDialog from './PosStatusChangeDialog';
 import styles from './PosStatusControl.module.css';
-import { updatePosStatusWithNotification } from '../../services/posAPI';
+import posAPI from '../../services/posAPI';
 import { useAuth } from '../../contexts/AuthContext';
 
 const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
@@ -33,7 +33,7 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
         affectedOrderCount: formData.affectedOrderCount || 0
       };
 
-      await updatePosStatusWithNotification(posId, statusData);
+      await posAPI.updatePosStatusWithNotification(posId, statusData);
       onStatusChange(targetStatus);
       setIsDialogOpen(false);
       setError(null);

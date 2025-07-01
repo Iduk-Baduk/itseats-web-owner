@@ -1,4 +1,5 @@
 import { POS_STATUS } from '../constants/posStatus';
+import posAPI from '../services/posAPI';
 
 /**
  * @typedef {Object} AutoSettings
@@ -76,7 +77,7 @@ export const isWithinOperatingHours = (settings) => {
   }
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   const openMinutes = convertTimeStringToMinutes(settings.autoOpenTime);
   const closeMinutes = convertTimeStringToMinutes(settings.autoCloseTime);
 
@@ -122,7 +123,7 @@ export const getNextStatusChangeDelay = (settings) => {
   }
 
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   const openMinutes = convertTimeStringToMinutes(settings.autoOpenTime);
   const closeMinutes = convertTimeStringToMinutes(settings.autoCloseTime);
 
@@ -130,20 +131,19 @@ export const getNextStatusChangeDelay = (settings) => {
   const isCurrentlyOpen = isWithinOperatingHours(settings);
 
   if (isCurrentlyOpen) {
-    // 영업 중인 경우 다음 마감 시간까지의 지연
     nextChangeMinutes = closeMinutes;
     if (closeMinutes <= currentMinutes) {
       nextChangeMinutes += 24 * 60;
     }
   } else {
-    // 영업 종료 중인 경우 다음 오픈 시간까지의 지연
     nextChangeMinutes = openMinutes;
     if (openMinutes <= currentMinutes) {
       nextChangeMinutes += 24 * 60;
     }
   }
 
-  return (nextChangeMinutes - currentMinutes) * 60 * 1000;
+  const delayMinutes = nextChangeMinutes - currentMinutes;
+  return delayMinutes * 60 * 1000;
 };
 
 // 시간 문자열을 Date 객체로 변환
@@ -160,4 +160,40 @@ export const parseTimeString = (timeString) => {
     0
   );
   return result;
+};
+
+/**
+ * 다음 상태 변경을 스케줄링
+ * @param {string} posId - POS ID
+ * @param {Object} settings - 자동화 설정
+ * @returns {number|null} 타이머 ID
+ */
+export const scheduleNextStatusChange = (posId, settings) => {
+  const delay = getNextStatusChangeDelay(settings);
+  if (!delay) return null;
+
+  const currentlyOpen = isWithinOperatingHours(settings);
+  const nextStatus = currentlyOpen ? POS_STATUS.CLOSED : POS_STATUS.OPEN;
+  
+  const timeoutId = setTimeout(() => {
+    posAPI.updatePosStatusWithNotification(posId, {
+      status: nextStatus,
+      category: 'AUTO',
+      reason: `자동 ${nextStatus === POS_STATUS.OPEN ? '영업 시작' : '영업 종료'}`
+    }).catch((error) => {
+      console.error('Failed to auto-update POS status:', error);
+    });
+  }, delay);
+
+  return timeoutId;
+};
+
+/**
+ * 예약된 상태 변경 취소
+ * @param {number} timeoutId - 타이머 ID
+ */
+export const cancelScheduledChange = (timeoutId) => {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
 }; 
