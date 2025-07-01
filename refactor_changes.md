@@ -49,3 +49,61 @@ POS API 관련 코드의 안정성과 유지보수성을 향상시키기 위한 
 - 타임스탬프 정규화 이슈
 - POS 상태 변경 알림 개선
 - 자동화 스케줄러 안정성 향상 
+
+# 거절된 주문 숨김 처리 및 주문 아이템 관리 개선
+
+## 개요
+주문 관리 시스템의 사용성 개선을 위해 거절된 주문을 화면에서 숨기고, 주문 아이템 표시 관련 버그를 수정했습니다.
+
+## 주요 변경사항
+
+### 1. 거절된 주문 숨김 처리
+- 주문 목록에서 거절(REJECTED) 상태의 주문을 자동으로 숨김 처리
+- 기존 조리완료(READY) 상태 주문 숨김 로직과 통합
+- 필터링 로직 개선으로 UI 클린업 효과
+
+### 2. 주문 아이템 Key 중복 문제 해결
+- 주문 아이템 렌더링 시 발생하는 key 중복 경고 해결
+- 고유한 key 생성 로직 개선
+  - 기존: `${order.orderId}-${item.name}-${item.quantity}`
+  - 개선: `${order.orderId}-${item.name}-${item.quantity}-${index}`
+- React 렌더링 성능 및 안정성 향상
+
+## 구현 상세
+
+### PosOrderList 컴포넌트 수정
+```jsx
+// 필터링된 주문 목록
+const filteredOrders = orders.filter(order => 
+  (filter === 'ALL' || order.status === filter) &&
+  order.status !== 'READY' && // 조리완료된 주문은 제외
+  order.status !== 'REJECTED' // 거절된 주문도 제외
+);
+
+// 주문 아이템 렌더링
+{order.items.map((item, index) => (
+  <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
+    <span>{item.name}</span>
+    <span>x {item.quantity}</span>
+  </div>
+))}
+```
+
+## 테스트 방법
+1. 개발 서버 실행: `npm run dev:full`
+2. 주문 시뮬레이션을 통한 테스트 주문 생성
+3. 주문 거절 기능 테스트
+   - 주문 거절 후 목록에서 자동으로 사라지는지 확인
+   - 거절된 주문이 통계에는 반영되는지 확인
+4. 동일한 메뉴/수량의 주문 아이템 처리 확인
+   - 콘솔에 key 중복 경고가 없는지 확인
+   - 아이템이 정상적으로 표시되는지 확인
+
+## 영향 받는 컴포넌트
+- PosOrderList
+- PosOrderDetailModal (간접적 영향)
+
+## 주의사항
+1. 거절된 주문은 UI에서만 숨겨지며, API 응답에는 여전히 포함됨
+2. 필터 설정이 'ALL'이어도 거절된 주문은 표시되지 않음
+3. 주문 통계는 모든 상태의 주문을 포함하여 계산됨 

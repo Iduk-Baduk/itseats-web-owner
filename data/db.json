@@ -377,6 +377,449 @@
       ],
       "totalAmount": 55,
       "createdAt": "2025-07-01T01:44:24.919Z"
+    },
+    {
+      "id": "order-1751334294919",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 3,
+          "price": 33
+        }
+      ],
+      "totalAmount": 33,
+      "createdAt": "2025-07-01T01:44:54.919Z"
+    },
+    {
+      "id": "order-1751334324920",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        },
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        }
+      ],
+      "totalAmount": 16500,
+      "createdAt": "2025-07-01T01:45:24.920Z"
+    },
+    {
+      "id": "order-1751334354921",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 1,
+          "price": 2000
+        }
+      ],
+      "totalAmount": 2000,
+      "createdAt": "2025-07-01T01:45:54.921Z"
+    },
+    {
+      "id": "order-1751334384921",
+      "storeId": "store001",
+      "status": "READY",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 3,
+          "price": 33
+        }
+      ],
+      "totalAmount": 6037,
+      "createdAt": "2025-07-01T01:46:24.921Z",
+      "updatedAt": "2025-07-01T01:47:18.016Z"
+    },
+    {
+      "id": "order-1751334414922",
+      "storeId": "store001",
+      "status": "READY",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 1,
+          "price": 2
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 46,
+      "createdAt": "2025-07-01T01:46:54.922Z",
+      "updatedAt": "2025-07-01T01:47:18.941Z"
+    },
+    {
+      "id": "order-1751334444921",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        }
+      ],
+      "totalAmount": 6006,
+      "createdAt": "2025-07-01T01:47:24.921Z"
+    },
+    {
+      "id": "order-1751334474922",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        },
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 2,
+          "price": 7000
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 17522,
+      "createdAt": "2025-07-01T01:47:54.922Z"
+    },
+    {
+      "id": "order-1751334488829",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 3,
+          "price": 33
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        }
+      ],
+      "totalAmount": 6055,
+      "createdAt": "2025-07-01T01:48:08.829Z"
+    },
+    {
+      "id": "order-1751334504923",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        },
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 1,
+          "price": 3500
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        }
+      ],
+      "totalAmount": 3517,
+      "createdAt": "2025-07-01T01:48:24.923Z"
+    },
+    {
+      "id": "order-1751334518841",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 3,
+          "price": 33
+        }
+      ],
+      "totalAmount": 37,
+      "createdAt": "2025-07-01T01:48:38.841Z"
+    },
+    {
+      "id": "order-1751334534923",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 10533,
+      "createdAt": "2025-07-01T01:48:54.923Z"
+    },
+    {
+      "id": "order-1751334548843",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 2,
+          "price": 7000
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        }
+      ],
+      "totalAmount": 13000,
+      "createdAt": "2025-07-01T01:49:08.843Z"
+    },
+    {
+      "id": "order-1751334564924",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 22,
+      "createdAt": "2025-07-01T01:49:24.924Z"
+    },
+    {
+      "id": "order-1751334578928",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 1,
+          "price": 2000
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 2,
+          "price": 4000
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 3,
+          "price": 33
+        }
+      ],
+      "totalAmount": 6033,
+      "createdAt": "2025-07-01T01:49:38.928Z"
+    },
+    {
+      "id": "order-1751334608942",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 1,
+          "price": 2
+        }
+      ],
+      "totalAmount": 12,
+      "createdAt": "2025-07-01T01:50:08.943Z"
+    },
+    {
+      "id": "order-1751334638943",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        }
+      ],
+      "totalAmount": 10522,
+      "createdAt": "2025-07-01T01:50:38.943Z"
+    },
+    {
+      "id": "order-1751334668944",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 1,
+          "price": 2000
+        },
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        }
+      ],
+      "totalAmount": 12500,
+      "createdAt": "2025-07-01T01:51:08.944Z"
+    },
+    {
+      "id": "order-1751334698945",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 44,
+      "createdAt": "2025-07-01T01:51:38.945Z"
+    },
+    {
+      "id": "order-1751334728946",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        }
+      ],
+      "totalAmount": 32,
+      "createdAt": "2025-07-01T01:52:08.946Z"
     }
   ],
   "daily_stats": [
@@ -385,9 +828,9 @@
       "totalOrders": 150,
       "totalSales": 750000,
       "averageOrderAmount": 5000,
-      "pendingOrders": 0,
+      "pendingOrders": 4,
       "processingOrders": 0,
-      "completedOrders": 9,
+      "completedOrders": 11,
       "topMenus": [
         {
           "id": "93cd",
@@ -462,8 +905,23 @@
   ],
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-07-01T01:36:31.432Z",
+    "lastUpdated": "2025-07-01T01:47:21.107Z",
     "statusHistory": [
+      {
+        "id": "mcjvb3bn-vjuvc3",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T01:47:21.107Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "mcjux614-i18xb4",
         "status": "CLOSED",
@@ -547,6 +1005,16 @@
       "autoOpenTime": "09:00"
     },
     "notifications": [
+      {
+        "id": "mcjvb3cu-s14xlv",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T01:47:21.150Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjvb3cj-jztgpd"
+      },
       {
         "id": "mcjux61o-3wvymw",
         "type": "STATUS_CHANGE",
@@ -914,5 +1382,28 @@
       "name": "테스트 사용자",
       "storeId": "store001"
     }
-  ]
+  ],
+  "menuStats": {
+    "totalMenus": 4,
+    "activeMenus": 3,
+    "hiddenMenus": 1,
+    "menusByCategory": {
+      "음료": 3,
+      "베이커리": 1
+    },
+    "popularMenus": [
+      {
+        "id": "93cd",
+        "name": "아메리카노",
+        "orderCount": 5,
+        "totalRevenue": 10000
+      },
+      {
+        "id": "df19",
+        "name": "커피번",
+        "orderCount": 3,
+        "totalRevenue": 10500
+      }
+    ]
+  }
 }
