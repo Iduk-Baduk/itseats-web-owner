@@ -820,6 +820,126 @@
       ],
       "totalAmount": 32,
       "createdAt": "2025-07-01T01:52:08.946Z"
+    },
+    {
+      "id": "order-1751334758946",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 1,
+          "price": 2
+        },
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        }
+      ],
+      "totalAmount": 13,
+      "createdAt": "2025-07-01T01:52:38.946Z"
+    },
+    {
+      "id": "order-1751334788948",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 3,
+          "price": 6
+        }
+      ],
+      "totalAmount": 34,
+      "createdAt": "2025-07-01T01:53:08.948Z"
+    },
+    {
+      "id": "order-1751334818948",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 1,
+          "price": 11
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 1,
+          "price": 2000
+        }
+      ],
+      "totalAmount": 2011,
+      "createdAt": "2025-07-01T01:53:38.948Z"
+    },
+    {
+      "id": "order-1751334848948",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 1,
+          "price": 2
+        }
+      ],
+      "totalAmount": 2,
+      "createdAt": "2025-07-01T01:54:08.948Z"
+    },
+    {
+      "id": "order-1751334878949",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 2,
+          "price": 4000
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        }
+      ],
+      "totalAmount": 10000,
+      "createdAt": "2025-07-01T01:54:38.949Z"
+    },
+    {
+      "id": "order-1751334908949",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "df19",
+          "name": "커피번",
+          "quantity": 3,
+          "price": 10500
+        }
+      ],
+      "totalAmount": 10500,
+      "createdAt": "2025-07-01T01:55:08.949Z"
     }
   ],
   "daily_stats": [
@@ -904,9 +1024,39 @@
     }
   ],
   "pos": {
-    "currentStatus": "CLOSED",
-    "lastUpdated": "2025-07-01T01:47:21.107Z",
+    "currentStatus": "OPEN",
+    "lastUpdated": "2025-07-01T01:54:41.386Z",
     "statusHistory": [
+      {
+        "id": "mcjvkj1m-075g8a",
+        "status": "OPEN",
+        "timestamp": "2025-07-01T01:54:41.386Z",
+        "reason": "정상 영업 시작",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "1",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcjvi4mh-hm2t78",
+        "status": "CLOSED",
+        "timestamp": "2025-07-01T01:52:49.385Z",
+        "reason": "자동 상태 변경: CLOSED",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "AUTO",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "mcjvb3bn-vjuvc3",
         "status": "CLOSED",
@@ -1005,6 +1155,36 @@
       "autoOpenTime": "09:00"
     },
     "notifications": [
+      {
+        "id": "mcjvkj2a-e2ssum",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 OPEN(으)로 변경되었습니다. (정상 영업 시작)",
+        "timestamp": "2025-07-01T01:54:41.410Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjvkj27-dbzk2z"
+      },
+      {
+        "id": "mcjvi4mz-0la0fm",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T01:52:49.403Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjvi4mr-wm3eka"
+      },
+      {
+        "id": "mcjvi4mq-9kzrr2",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "timestamp": "2025-07-01T01:52:49.394Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcjvi4mh-f62c1u"
+      },
       {
         "id": "mcjvb3cu-s14xlv",
         "type": "STATUS_CHANGE",
