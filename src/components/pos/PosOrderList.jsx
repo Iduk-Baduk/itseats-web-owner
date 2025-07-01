@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './PosOrderList.module.css';
-import { orderAPI } from '../../services/orderAPI';
-import { ORDER_STATUS, ORDER_STATUS_LABEL, ORDER_STATUS_COLOR, ORDER_FILTERS } from '../../constants/orderTypes';
-import { NOTIFICATION_SOUNDS } from '../../constants/sounds';
-import ComboBox from '../basic/ComboBox';
 import Button from '../basic/Button';
+import ComboBox from '../basic/ComboBox';
+import { ORDER_STATUS, ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, ORDER_FILTERS } from '../../constants/orderTypes';
+import { orderAPI } from '../../services/orderAPI';
+import { NOTIFICATION_SOUNDS } from '../../constants/sounds';
 import { PosOrderDetailModal } from './PosOrderDetailModal';
 import { useToast } from '../../contexts/ToastContext';
+import apiClient from '../../services/apiClient';
 
 export const PosOrderList = ({ storeId }) => {
   const [orders, setOrders] = useState([]);
@@ -25,9 +26,9 @@ export const PosOrderList = ({ storeId }) => {
       const newOrders = response.data.orders || [];
       
       // 새로운 주문 확인
-      const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.orderId));
+      const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.id));
       const newPendingOrders = newOrders.filter(
-        order => order.status === ORDER_STATUS.PENDING && !prevOrderIds.has(order.orderId)
+        order => order.status === ORDER_STATUS.PENDING && !prevOrderIds.has(order.id)
       );
 
       // 새로운 주문이 있으면 알림
@@ -52,6 +53,14 @@ export const PosOrderList = ({ storeId }) => {
 
   // 주문 상태 업데이트 처리
   const handleOrderAction = async (orderId, action) => {
+    if (!orderId) {
+      addToast({
+        message: '주문 ID가 없습니다.',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       let response;
       switch (action) {
@@ -103,8 +112,33 @@ export const PosOrderList = ({ storeId }) => {
 
   // 필터링된 주문 목록
   const filteredOrders = orders.filter(order => 
-    filter === 'ALL' || order.status === filter
+    (filter === 'ALL' || order.status === filter) &&
+    order.status !== 'READY' && // 조리완료된 주문은 제외
+    order.status !== 'REJECTED' // 거절된 주문도 제외
   );
+
+  // 주문 상태별 개수 계산
+  const orderCounts = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 주문처리현황 업데이트
+  useEffect(() => {
+    const updateStats = async () => {
+      try {
+        await apiClient.patch(`/daily_stats/${storeId}`, {
+          pendingOrders: orderCounts['PENDING'] || 0,
+          processingOrders: orderCounts['ACCEPTED'] || 0,
+          completedOrders: orderCounts['READY'] || 0
+        });
+      } catch (error) {
+        console.error('Failed to update order stats:', error);
+      }
+    };
+
+    updateStats();
+  }, [orderCounts, storeId]);
 
   // 컴포넌트 마운트 시 주문 목록 조회
   useEffect(() => {
@@ -144,7 +178,7 @@ export const PosOrderList = ({ storeId }) => {
         <div className={styles.orderList}>
           {filteredOrders.map((order) => (
             <div 
-              key={order.orderId} 
+              key={`order-${order.orderId}-${order.status}`} 
               className={styles.orderCard}
               onClick={() => setSelectedOrderId(order.orderId)}
             >
@@ -159,8 +193,8 @@ export const PosOrderList = ({ storeId }) => {
               </div>
               
               <div className={styles.orderItems}>
-                {order.items.map((item, index) => (
-                  <div key={index} className={styles.item}>
+                {order.items.map((item) => (
+                  <div key={`${order.orderId}-${item.name}-${item.quantity}`} className={styles.item}>
                     <span>{item.name}</span>
                     <span>x {item.quantity}</span>
                   </div>
