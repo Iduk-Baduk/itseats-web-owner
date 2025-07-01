@@ -193,8 +193,8 @@ export const PosOrderList = ({ storeId }) => {
               </div>
               
               <div className={styles.orderItems}>
-                {order.items.map((item) => (
-                  <div key={`${order.orderId}-${item.name}-${item.quantity}`} className={styles.item}>
+                {order.items.map((item, index) => (
+                  <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
                     <span>{item.name}</span>
                     <span>x {item.quantity}</span>
                   </div>
