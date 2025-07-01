@@ -47,34 +47,45 @@ export default function MenusAdd() {
   }, [dispatch, isEditMode]);
 
   useEffect(() => {
-    if (isEditMode && menus && menus.length > 0) {
-      const menuToEdit = findMenuById(menus, id);
-      
-      if (menuToEdit) {
-        console.log("Found menu to edit:", menuToEdit);
-        setMenuData({
-          menuGroupName: menuToEdit.menuGroupName || "",
-          menuName: menuToEdit.menuName || "",
-          menuPrice: menuToEdit.menuPrice || "",
-          menuStatus: menuToEdit.menuStatus || "ONSALE",
-          menuDescription: menuToEdit.menuDescription || "",
-        });
-        if (menuToEdit.optionGroups) {
-          setOptionGroups(menuToEdit.optionGroups.map(group => ({
-            groupName: group.optionGroupName,
-            isRequired: group.isRequired || false,
-            options: group.options ? group.options.map(opt => ({
-              name: opt.optionName,
-              price: opt.optionPrice || 0,
-              optionStatus: opt.optionStatus || "ONSALE",
-            })) : []
-          })));
-        } else {
-          setOptionGroups([]);
+    if (isEditMode) {
+      // 개별 메뉴 데이터를 가져오는 API 호출
+      const fetchMenuData = async () => {
+        try {
+          const response = await menuAPI.getMenu(id);
+          const menuToEdit = response.data;
+          
+          if (menuToEdit) {
+            console.log("Found menu to edit:", menuToEdit);
+            setMenuData({
+              menuGroupName: menuToEdit.menuGroupName || "",
+              menuName: menuToEdit.menuName || "",
+              menuPrice: menuToEdit.menuPrice || "",
+              menuStatus: menuToEdit.menuStatus || "ONSALE",
+              menuDescription: menuToEdit.menuDescription || "",
+            });
+            if (menuToEdit.optionGroups) {
+              setOptionGroups(menuToEdit.optionGroups.map(group => ({
+                groupName: group.optionGroupName,
+                isRequired: group.isRequired || false,
+                options: group.options ? group.options.map(opt => ({
+                  name: opt.optionName,
+                  price: opt.optionPrice || 0,
+                  optionStatus: opt.optionStatus || "ONSALE",
+                })) : []
+              })));
+            } else {
+              setOptionGroups([]);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch menu data:", error);
+          alert("메뉴 데이터를 불러오는데 실패했습니다.");
         }
-      }
+      };
+
+      fetchMenuData();
     }
-  }, [isEditMode, id, menus]);
+  }, [isEditMode, id]);
 
   const handleMenuInputChange = (field, value) => {
     console.log("Changing field:", field, "to value:", value);
