@@ -1,0 +1,10 @@
+{
+  "/api/owner/:storeId/orders": "/api/owner/:storeId/orders",
+  "/api/owner/orders/:orderId": "/api/owner/orders/:orderId",
+  "/api/owner/:storeId/stats/daily": "/api/owner/:storeId/stats/daily",
+  "/api/owner/:storeId/stats/summary": "/api/owner/:storeId/stats/summary",
+  "/api/owner/:storeId/pos": "/api/owner/:storeId/pos",
+  "/api/auth/login": "/users",
+  "/pos/analytics": "/pos_analytics",
+  "/pos": "/pos_notifications"
+} 

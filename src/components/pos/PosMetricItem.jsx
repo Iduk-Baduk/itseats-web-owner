@@ -1,6 +1,22 @@
 import styles from "./PosMetricItem.module.css";
+import PropTypes from 'prop-types';
 
-export default function PosMetricItem({ metricName, metricValue, className }) {
+export default function PosMetricItem({ metricName, metricValue = {}, className }) {
+  // 기본값 설정
+  const defaultMetrics = {
+    customerRating: 0,
+    avgCookTime: "0분",
+    cookTimeAccuracy: "0%",
+    pickupTime: "0초",
+    orderAcceptanceRate: "0%"
+  };
+
+  // metricValue가 없거나 일부 값이 누락된 경우 기본값으로 대체
+  const metrics = {
+    ...defaultMetrics,
+    ...metricValue
+  };
+
   return (
     <div className={className}>
       <div className={styles.storeName}>{metricName}</div>
@@ -9,10 +25,10 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
         <div className={`${styles.item} ${styles.itemWithDivider}`}>
           <div className={styles.ratingContainer}>
             <p className={styles.title}>고객 별점</p>
-            <div>{checkRating(metricValue.customerRating)}</div>
+            <div>{checkRating(metrics.customerRating)}</div>
             <p className={styles.subTitle}>
               {(() => {
-                const rating = Number(metricValue.customerRating);
+                const rating = Number(metrics.customerRating);
                 return isNaN(rating) ? "N/A" : rating.toFixed(1);
               })()}
             </p>
@@ -23,8 +39,8 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
         <div className={`${styles.item} ${styles.itemWithDivider}`}>
           <div className={styles.cookTimeContainer}>
             <p className={styles.title}>조리시간</p>
-            <div>{checkCookTime(metricValue.avgCookTime)}</div>
-            <p className={styles.subTitle}>{metricValue.avgCookTime}</p>
+            <div>{checkCookTime(metrics.avgCookTime)}</div>
+            <p className={styles.subTitle}>{metrics.avgCookTime}</p>
           </div>
         </div>
 
@@ -32,8 +48,8 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
         <div className={`${styles.item} ${styles.itemWithDivider}`}>
           <div className={styles.ratingContainer}>
             <p className={styles.title}>조리시간 정확도</p>
-            <div>{checkAccuracy(metricValue.cookTimeAccuracy)}</div>
-            <p className={styles.subTitle}>{metricValue.cookTimeAccuracy}</p>
+            <div>{checkAccuracy(metrics.cookTimeAccuracy)}</div>
+            <p className={styles.subTitle}>{metrics.cookTimeAccuracy}</p>
           </div>
         </div>
 
@@ -41,8 +57,8 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
         <div className={`${styles.item} ${styles.itemWithDivider}`}>
           <div className={styles.ratingContainer}>
             <p className={styles.title}>조리 수락 시간</p>
-            <div>{checkPickupTime(metricValue.pickupTime)}</div>
-            <p className={styles.subTitle}>{metricValue.pickupTime}</p>
+            <div>{checkPickupTime(metrics.pickupTime)}</div>
+            <p className={styles.subTitle}>{metrics.pickupTime}</p>
           </div>
         </div>
 
@@ -50,14 +66,31 @@ export default function PosMetricItem({ metricName, metricValue, className }) {
         <div className={`${styles.item} ${styles.itemWithDivider}`}>
           <div className={styles.ratingContainer}>
             <p className={styles.title}>주문 수락률</p>
-            <div>{checkOrderAcceptanceRate(metricValue.orderAcceptanceRate)}</div>
-            <p className={styles.subTitle}>{metricValue.orderAcceptanceRate}</p>
+            <div>{checkOrderAcceptanceRate(metrics.orderAcceptanceRate)}</div>
+            <p className={styles.subTitle}>{metrics.orderAcceptanceRate}</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+PosMetricItem.propTypes = {
+  metricName: PropTypes.string.isRequired,
+  metricValue: PropTypes.shape({
+    customerRating: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    avgCookTime: PropTypes.string,
+    cookTimeAccuracy: PropTypes.string,
+    pickupTime: PropTypes.string,
+    orderAcceptanceRate: PropTypes.string
+  }),
+  className: PropTypes.string
+};
+
+PosMetricItem.defaultProps = {
+  metricValue: {},
+  className: ''
+};
 
 const parseMetricValue = (value, unit) => {
   if (!value) {
