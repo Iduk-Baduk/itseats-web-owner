@@ -15,16 +15,25 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((message, type = 'info', playNotification = false) => {
+  const addToast = useCallback((messageOrObject, type = 'info', sound = null) => {
     const id = Date.now();
+    let message, toastType, toastSound;
+
+    if (typeof messageOrObject === 'object') {
+      message = messageOrObject.message;
+      toastType = messageOrObject.type || type;
+      toastSound = messageOrObject.sound;
+    } else {
+      message = messageOrObject;
+      toastType = type;
+      toastSound = sound;
+    }
     
-    if (playNotification) {
-      const soundType = type === 'error' ? 'ERROR' : 
-                       type === 'success' ? 'STATUS_CHANGE' : 'NEW_ORDER';
-      playSound(soundType);
+    if (toastSound) {
+      playSound(toastSound);
     }
 
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type: toastType }]);
   }, []);
 
   const removeToast = useCallback((id) => {

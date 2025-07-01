@@ -117,13 +117,13 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
           <div className={styles.itemList}>
             <h4>주문 항목</h4>
             {order.items.map((item, index) => (
-              <div key={index} className={styles.item}>
+              <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
                 <div className={styles.itemInfo}>
                   <span className={styles.itemName}>{item.name}</span>
                   <span className={styles.itemQuantity}>x {item.quantity}</span>
                 </div>
                 {item.options?.map((option, optIndex) => (
-                  <div key={optIndex} className={styles.itemOption}>
+                  <div key={`${order.orderId}-${item.name}-${option.name}-${option.value}`} className={styles.itemOption}>
                     - {option.name}: {option.value}
                   </div>
                 ))}

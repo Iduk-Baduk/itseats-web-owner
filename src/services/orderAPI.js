@@ -1,6 +1,7 @@
 import { API_ENDPOINTS } from "../config/api";
 import apiClient from "./apiClient";
 import { handleError } from "../utils/errorHandler";
+import { useAuth } from "../contexts/AuthContext";
 
 // 에러 처리 래퍼
 const withOrderErrorHandling = (fn, operationName) => async (...args) => {
@@ -19,32 +20,50 @@ const withOrderErrorHandling = (fn, operationName) => async (...args) => {
 export const orderAPI = {
   // 주문 목록 조회
   getOrders: withOrderErrorHandling(async (storeId) => {
-    const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
-    return response.data;
+    const response = await apiClient.get(`/orders?storeId=${storeId}`);
+    // id를 orderId로 매핑
+    const orders = response.data.map(order => ({
+      ...order,
+      orderId: order.id
+    }));
+    return { data: { orders } };
   }, 'GET_ORDERS'),
 
   // 주문 상세 조회
   getOrderDetail: withOrderErrorHandling(async (orderId) => {
-    const response = await apiClient.get(API_ENDPOINTS.ORDERS.DETAIL(orderId));
-    return response.data;
+    const response = await apiClient.get(`/orders/${orderId}`);
+    return { ...response.data, orderId: response.data.id };
   }, 'GET_ORDER_DETAIL'),
 
   // 주문 수락
   acceptOrder: withOrderErrorHandling(async (orderId) => {
-    const response = await apiClient.post(API_ENDPOINTS.ORDERS.ACCEPT(orderId));
-    return response.data;
+    if (!orderId) {
+      throw new Error('주문 ID가 필요합니다.');
+    }
+    const response = await apiClient.patch(`/orders/${orderId}`, {
+      status: 'ACCEPTED',
+      updatedAt: new Date().toISOString()
+    });
+    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
   }, 'ACCEPT_ORDER'),
 
   // 주문 거절
   rejectOrder: withOrderErrorHandling(async (orderId, reason) => {
-    const response = await apiClient.post(API_ENDPOINTS.ORDERS.REJECT(orderId), { reason });
-    return response.data;
+    const response = await apiClient.patch(`/orders/${orderId}`, {
+      status: 'REJECTED',
+      rejectionReason: reason,
+      updatedAt: new Date().toISOString()
+    });
+    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
   }, 'REJECT_ORDER'),
 
   // 조리 완료 처리
   markOrderAsReady: withOrderErrorHandling(async (orderId) => {
-    const response = await apiClient.post(API_ENDPOINTS.ORDERS.READY(orderId));
-    return response.data;
+    const response = await apiClient.patch(`/orders/${orderId}`, {
+      status: 'READY',
+      updatedAt: new Date().toISOString()
+    });
+    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
   }, 'MARK_ORDER_READY'),
 
   // 예상 조리 시간 설정
@@ -98,33 +117,54 @@ export const orderAPI = {
 };
 
 // 주문 관련 API
-export const fetchOrders = async (params) => {
-  const response = await apiClient.get('/orders', { params });
+export const fetchOrders = async (storeId) => {
+  const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
   return response.data;
 };
 
 export const updateOrderStatus = async (orderId, status) => {
-  const response = await apiClient.patch(`/orders/${orderId}/status`, { status });
+  const response = await apiClient.patch(API_ENDPOINTS.ORDERS.DETAIL(orderId), { status });
   return response.data;
 };
 
 // 통계 관련 API
-export const fetchDailyStats = async () => {
-  const response = await apiClient.get('/orders/stats/daily');
+export const fetchDailyStats = async (storeId) => {
+  if (!storeId) {
+    throw new Error('매장 ID가 필요합니다.');
+  }
+  const response = await apiClient.get(`/daily_stats?id=${storeId}`);
+  return response.data[0] || {
+    totalOrders: 0,
+    totalSales: 0,
+    averageOrderAmount: 0,
+    pendingOrders: 0,
+    processingOrders: 0,
+    completedOrders: 0,
+    topMenus: []
+  };
+};
+
+export const fetchWeeklyStats = async (storeId) => {
+  if (!storeId) {
+    throw new Error('매장 ID가 필요합니다.');
+  }
+  const response = await apiClient.get(API_ENDPOINTS.ORDERS.STATS.WEEKLY(storeId));
   return response.data;
 };
 
-export const fetchWeeklyStats = async () => {
-  const response = await apiClient.get('/orders/stats/weekly');
+export const fetchMonthlyStats = async (storeId) => {
+  if (!storeId) {
+    throw new Error('매장 ID가 필요합니다.');
+  }
+  const response = await apiClient.get(API_ENDPOINTS.ORDERS.STATS.MONTHLY(storeId));
   return response.data;
 };
 
-export const fetchMonthlyStats = async () => {
-  const response = await apiClient.get('/orders/stats/monthly');
-  return response.data;
-};
-
-export const fetchTopMenus = async (params) => {
-  const response = await apiClient.get('/orders/stats/top-menus', { params });
-  return response.data;
+export const fetchTopMenus = async (storeId) => {
+  if (!storeId) {
+    throw new Error('매장 ID가 필요합니다.');
+  }
+  const response = await apiClient.get(`/stats_summary?id=${storeId}`);
+  const summary = response.data[0] || { topMenus: [] };
+  return summary.topMenus;
 }; 

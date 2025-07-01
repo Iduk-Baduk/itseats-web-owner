@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import styles from './PosStatsDashboard.module.css';
 import { fetchDailyStats, fetchTopMenus } from '../../services/orderAPI';
-import PosMetricItem from './PosMetricItem';
+import { useAuth } from '../../contexts/AuthContext';
+
+const StatCard = ({ title, value, icon }) => (
+  <div className={styles.statCard}>
+    <div className={styles.statIcon}>{icon}</div>
+    <div className={styles.statTitle}>{title}</div>
+    <div className={styles.statValue}>{value}</div>
+  </div>
+);
 
 const PosStatsDashboard = () => {
+  const { currentUser } = useAuth();
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalSales: 0,
@@ -11,14 +20,26 @@ const PosStatsDashboard = () => {
     pendingOrders: 0,
     processingOrders: 0,
     completedOrders: 0,
-    topMenus: []
+    topMenus: [],
+    metrics: {
+      customerRating: 0,
+      avgCookTime: "0분",
+      cookTimeAccuracy: "0%",
+      pickupTime: "0초",
+      orderAcceptanceRate: "0%"
+    }
   });
 
   const fetchStats = async () => {
+    if (!currentUser?.storeId) {
+      console.error('매장 정보가 없습니다.');
+      return;
+    }
+
     try {
       const [dailyStats, topMenusData] = await Promise.all([
-        fetchDailyStats(),
-        fetchTopMenus()
+        fetchDailyStats(currentUser.storeId),
+        fetchTopMenus(currentUser.storeId)
       ]);
 
       setStats({
@@ -32,24 +53,32 @@ const PosStatsDashboard = () => {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 300000); // 5분마다 갱신
+    const interval = setInterval(fetchStats, 10000); // 10초마다 갱신
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser?.storeId]);
+
+  if (!currentUser?.storeId) {
+    return (
+      <div className={styles.error}>
+        매장 정보를 찾을 수 없습니다.
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboard}>
       <div className={styles.metricsGrid}>
-        <PosMetricItem
+        <StatCard
           title="오늘의 주문"
           value={stats.totalOrders}
           icon="📊"
         />
-        <PosMetricItem
+        <StatCard
           title="매출액"
           value={`₩${stats.totalSales.toLocaleString()}`}
           icon="💰"
         />
-        <PosMetricItem
+        <StatCard
           title="평균 주문금액"
           value={`₩${stats.averageOrderAmount.toLocaleString()}`}
           icon="📈"
