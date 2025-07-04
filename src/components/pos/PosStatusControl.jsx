@@ -19,6 +19,21 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
     }
   };
 
+  const getButtonClassName = (status) => {
+    switch (status) {
+      case POS_STATUS.OPEN:
+        return styles.openButton;
+      case POS_STATUS.CLOSED:
+        return styles.closeButton;
+      case POS_STATUS.BREAK:
+        return styles.breakButton;
+      case POS_STATUS.PREPARING:
+        return styles.preparingButton;
+      default:
+        return '';
+    }
+  };
+
   const handleStatusChange = async (formData) => {
     try {
       if (!currentUser) {
@@ -55,18 +70,16 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.statusButtons}>
-        {Object.entries(POS_STATUS).map(([key, value]) => (
-          <button
-            key={key}
-            className={`${styles.statusButton} ${currentStatus === value ? styles.active : ''}`}
-            onClick={() => handleStatusButtonClick(value)}
-            disabled={currentStatus === value}
-          >
-            {POS_STATUS_LABEL[value]}
-          </button>
-        ))}
-      </div>
+      {Object.entries(POS_STATUS).map(([key, value]) => (
+        <button
+          key={key}
+          className={getButtonClassName(value)}
+          onClick={() => handleStatusButtonClick(value)}
+          disabled={currentStatus === value}
+        >
+          {POS_STATUS_LABEL[value]}
+        </button>
+      ))}
       <PosStatusChangeDialog
         isOpen={isDialogOpen}
         currentStatus={currentStatus}
