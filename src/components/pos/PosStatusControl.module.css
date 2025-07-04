@@ -1,8 +1,8 @@
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
   background-color: #f8f9fa;
   border: 1px solid #e9ecef;
@@ -13,7 +13,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 12px 16px;
+  min-height: 48px;
+  width: 100%;
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -21,6 +23,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .button:hover {
@@ -81,14 +86,29 @@
   background-color: #0D47A1;
 }
 
-@media (max-width: 768px) {
+/* 태블릿 */
+@media (max-width: 1024px) {
   .container {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .button {
+    padding: 12px;
+    font-size: 13px;
+  }
 }
 
+/* 모바일 */
 @media (max-width: 480px) {
   .container {
     grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .button {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 12px;
   }
 } 
