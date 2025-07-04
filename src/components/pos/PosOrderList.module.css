@@ -12,6 +12,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .header h2 {
@@ -70,6 +72,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .orderId {
@@ -98,6 +102,8 @@
   justify-content: space-between;
   margin-bottom: 8px;
   color: #666;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .item:last-child {
@@ -108,6 +114,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .total {
@@ -118,6 +126,7 @@
 .actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .loading {
@@ -139,4 +148,88 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 태블릿 */
+@media (max-width: 1024px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    margin-bottom: 16px;
+  }
+
+  .header h2 {
+    font-size: 20px;
+  }
+
+  .filter {
+    width: 180px;
+  }
+
+  .orderList {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .orderCard {
+    padding: 14px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .filter {
+    width: 100%;
+  }
+
+  .orderList {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-right: 0;
+  }
+
+  .orderCard {
+    padding: 12px;
+  }
+
+  .orderHeader {
+    gap: 6px;
+  }
+
+  .orderItems {
+    max-height: none;
+  }
+
+  .orderFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .loading,
+  .error,
+  .empty {
+    padding: 24px 16px;
+  }
 } 
