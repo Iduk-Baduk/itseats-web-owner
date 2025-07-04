@@ -57,6 +57,43 @@ const updateOrderStats = (db, storeId, order) => {
 };
 
 module.exports = (req, res, next) => {
+  // API 라우팅 처리
+  if (req.path.startsWith('/api/owner/')) {
+    const parts = req.path.split('/');
+    if (parts[3] === 'orders') {
+      const storeId = parts[2];
+      if (req.method === 'GET') {
+        // 주문 목록 조회
+        const orders = req.app.db.get('orders').filter({ storeId: storeId }).value();
+        res.json(orders);
+        return;
+      }
+    } else if (parts[2] === 'orders' && parts[3]) {
+      const orderId = parts[3];
+      if (req.method === 'GET') {
+        // 주문 상세 조회
+        const order = req.app.db.get('orders').find({ id: orderId }).value();
+        if (order) {
+          res.json(order);
+        } else {
+          res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+        }
+        return;
+      } else if (req.method === 'PATCH') {
+        // 주문 상태 업데이트
+        const order = req.app.db.get('orders').find({ id: orderId }).value();
+        if (order) {
+          const updatedOrder = { ...order, ...req.body };
+          req.app.db.get('orders').find({ id: orderId }).assign(updatedOrder).write();
+          res.json(updatedOrder);
+        } else {
+          res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+        }
+        return;
+      }
+    }
+  }
+
   if (req.method === 'POST' && req.path === '/api/auth/login') {
     const { username, password } = req.body;
     const users = req.app.db.get('users').value();
@@ -100,4 +137,4 @@ module.exports = (req, res, next) => {
   setTimeout(() => {
     next();
   }, 300);
-} 
+}; 

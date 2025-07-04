@@ -2,16 +2,14 @@ import { API_ENDPOINTS } from "../config/api";
 import apiClient from "./apiClient";
 import { handleError } from "../utils/errorHandler";
 import { useAuth } from "../contexts/AuthContext";
+import { ORDER_STATUS } from '../constants/orderTypes';
 
 // 에러 처리 래퍼
-const withOrderErrorHandling = (fn, operationName) => async (...args) => {
+const withOrderErrorHandling = (fn, actionType) => async (...args) => {
   try {
     return await fn(...args);
   } catch (error) {
-    handleError(error, {
-      showToast: true,
-      context: `ORDER_${operationName}`
-    });
+    console.error(`Error in ORDER_${actionType}:`, error);
     throw error;
   }
 };
@@ -20,51 +18,56 @@ const withOrderErrorHandling = (fn, operationName) => async (...args) => {
 export const orderAPI = {
   // 주문 목록 조회
   getOrders: withOrderErrorHandling(async (storeId) => {
-    const response = await apiClient.get(`/orders?storeId=${storeId}`);
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
     // id를 orderId로 매핑
-    const orders = response.data.map(order => ({
-      ...order,
-      orderId: order.id
-    }));
-    return { data: { orders } };
+    const orders = Array.isArray(response.data) ? response.data : [];
+    return { 
+      data: { 
+        orders: orders.map(order => ({
+          ...order,
+          orderId: order.id
+        }))
+      } 
+    };
   }, 'GET_ORDERS'),
 
   // 주문 상세 조회
   getOrderDetail: withOrderErrorHandling(async (orderId) => {
-    const response = await apiClient.get(`/orders/${orderId}`);
-    return { ...response.data, orderId: response.data.id };
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.DETAIL(orderId));
+    return { data: { ...response.data, orderId: response.data.id } };
   }, 'GET_ORDER_DETAIL'),
 
-  // 주문 수락
-  acceptOrder: withOrderErrorHandling(async (orderId) => {
+  // 주문 상태 변경 (통합 메서드)
+  updateOrderStatus: withOrderErrorHandling(async (orderId, status) => {
     if (!orderId) {
       throw new Error('주문 ID가 필요합니다.');
     }
-    const response = await apiClient.patch(`/orders/${orderId}`, {
-      status: 'ACCEPTED',
+    const response = await apiClient.patch(API_ENDPOINTS.ORDERS.DETAIL(orderId), {
+      status: status,
       updatedAt: new Date().toISOString()
     });
-    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
-  }, 'ACCEPT_ORDER'),
+    return { 
+      data: { 
+        success: true, 
+        order: { ...response.data, orderId: response.data.id } 
+      } 
+    };
+  }, 'UPDATE_STATUS'),
+
+  // 주문 수락
+  acceptOrder: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.ACCEPTED);
+  },
 
   // 주문 거절
-  rejectOrder: withOrderErrorHandling(async (orderId, reason) => {
-    const response = await apiClient.patch(`/orders/${orderId}`, {
-      status: 'REJECTED',
-      rejectionReason: reason,
-      updatedAt: new Date().toISOString()
-    });
-    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
-  }, 'REJECT_ORDER'),
+  rejectOrder: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.REJECTED);
+  },
 
   // 조리 완료 처리
-  markOrderAsReady: withOrderErrorHandling(async (orderId) => {
-    const response = await apiClient.patch(`/orders/${orderId}`, {
-      status: 'READY',
-      updatedAt: new Date().toISOString()
-    });
-    return { data: { success: true, order: { ...response.data, orderId: response.data.id } } };
-  }, 'MARK_ORDER_READY'),
+  markOrderAsReady: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.READY);
+  },
 
   // 예상 조리 시간 설정
   setCookTime: withOrderErrorHandling(async (orderId, cookTimeMinutes) => {
@@ -114,6 +117,16 @@ export const orderAPI = {
     const response = await apiClient.get(API_ENDPOINTS.ORDERS.STATS.SUMMARY(storeId));
     return response.data;
   }, 'GET_STATS_SUMMARY'),
+
+  // 배차 신청
+  requestDelivery: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERY_REQUESTED);
+  },
+
+  // 배차 완료
+  assignDelivery: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERY_ASSIGNED);
+  }
 };
 
 // 주문 관련 API
@@ -122,25 +135,49 @@ export const fetchOrders = async (storeId) => {
   return response.data;
 };
 
-export const updateOrderStatus = async (orderId, status) => {
-  const response = await apiClient.patch(API_ENDPOINTS.ORDERS.DETAIL(orderId), { status });
-  return response.data;
-};
-
 // 통계 관련 API
 export const fetchDailyStats = async (storeId) => {
   if (!storeId) {
     throw new Error('매장 ID가 필요합니다.');
   }
-  const response = await apiClient.get(`/daily_stats?id=${storeId}`);
-  return response.data[0] || {
-    totalOrders: 0,
-    totalSales: 0,
-    averageOrderAmount: 0,
-    pendingOrders: 0,
-    processingOrders: 0,
-    completedOrders: 0,
-    topMenus: []
+
+  // 오늘 날짜의 시작과 끝
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // 모든 주문 데이터 조회
+  const response = await apiClient.get(`/orders?storeId=${storeId}`);
+  const orders = response.data;
+
+  // 오늘의 주문만 필터링
+  const todayOrders = orders.filter(order => {
+    const orderDate = new Date(order.createdAt);
+    return orderDate >= today && orderDate < tomorrow;
+  });
+
+  // 상태별 주문 수 계산
+  const pendingOrders = todayOrders.filter(order => order.status === 'PENDING').length;
+  const processingOrders = todayOrders.filter(order => order.status === 'ACCEPTED').length;
+  const completedOrders = todayOrders.filter(order => order.status === 'READY').length;
+
+  // 총 매출액 계산 (READY 상태의 주문만)
+  const completedOrdersData = todayOrders.filter(order => order.status === 'READY');
+  const totalSales = completedOrdersData.reduce((sum, order) => sum + order.totalAmount, 0);
+
+  // 평균 주문금액 계산
+  const averageOrderAmount = completedOrdersData.length > 0
+    ? Math.round(totalSales / completedOrdersData.length)
+    : 0;
+
+  return {
+    totalOrders: todayOrders.length,
+    totalSales,
+    averageOrderAmount,
+    pendingOrders,
+    processingOrders,
+    completedOrders
   };
 };
 
@@ -164,7 +201,44 @@ export const fetchTopMenus = async (storeId) => {
   if (!storeId) {
     throw new Error('매장 ID가 필요합니다.');
   }
-  const response = await apiClient.get(`/stats_summary?id=${storeId}`);
-  const summary = response.data[0] || { topMenus: [] };
-  return summary.topMenus;
+
+  // 오늘 날짜의 시작과 끝
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // 모든 주문 데이터 조회
+  const response = await apiClient.get(`/orders?storeId=${storeId}`);
+  const orders = response.data;
+
+  // 오늘의 완료된 주문만 필터링
+  const completedOrders = orders.filter(order => {
+    const orderDate = new Date(order.createdAt);
+    return orderDate >= today && orderDate < tomorrow && order.status === 'READY';
+  });
+
+  // 메뉴별 주문 횟수 집계
+  const menuCounts = {};
+  completedOrders.forEach(order => {
+    order.items.forEach(item => {
+      const menuId = item.menuId;
+      const menuName = item.name;
+      if (!menuCounts[menuId]) {
+        menuCounts[menuId] = {
+          id: menuId,
+          name: menuName,
+          orderCount: 0
+        };
+      }
+      menuCounts[menuId].orderCount += item.quantity;
+    });
+  });
+
+  // 상위 5개 메뉴 추출
+  const topMenus = Object.values(menuCounts)
+    .sort((a, b) => b.orderCount - a.orderCount)
+    .slice(0, 5);
+
+  return topMenus;
 }; 

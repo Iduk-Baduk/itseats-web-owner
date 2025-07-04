@@ -49,68 +49,15 @@ export const PosOrderList = ({ storeId }) => {
     }
   };
 
-  // 주문 상태 업데이트 처리
-  const handleOrderAction = async (orderId, action) => {
-    if (!orderId) {
-      addToast({
-        message: '주문 ID가 없습니다.',
-        type: 'error'
-      });
-      return;
-    }
-
-    try {
-      let response;
-      switch (action) {
-        case 'accept':
-          response = await orderAPI.acceptOrder(orderId);
-          if (response.data.success) {
-            addToast({
-              message: '주문이 수락되었습니다.',
-              type: 'success'
-            });
-          }
-          break;
-        case 'reject':
-          response = await orderAPI.rejectOrder(orderId);
-          if (response.data.success) {
-            addToast({
-              message: '주문이 거절되었습니다.',
-              type: 'warning'
-            });
-          }
-          break;
-        case 'ready':
-          response = await orderAPI.markOrderAsReady(orderId);
-          if (response.data.success) {
-            addToast({
-              message: '조리가 완료되었습니다.',
-              type: 'success'
-            });
-          }
-          break;
-        default:
-          throw new Error('Invalid action');
-      }
-
-      if (response.data.success) {
-        await fetchOrders();
-      }
-    } catch (err) {
-      console.error('Failed to update order status:', err);
-      addToast({
-        message: '주문 처리 중 오류가 발생했습니다.',
-        type: 'error'
-      });
-    }
-  };
-
   // 필터링된 주문 목록
-  const filteredOrders = orders.filter(order => 
-    (filter === 'ALL' || order.status === filter) &&
-    order.status !== 'READY' && // 조리완료된 주문은 제외
-    order.status !== 'REJECTED' // 거절된 주문도 제외
-  );
+  const filteredOrders = orders.filter(order => {
+    // 완료된 주문과 거절된 주문은 제외
+    if (order.status === ORDER_STATUS.COMPLETED || order.status === ORDER_STATUS.REJECTED) {
+      return false;
+    }
+    // 필터가 ALL이면 모든 주문 표시, 아니면 해당 상태의 주문만 표시
+    return filter === 'ALL' || order.status === filter;
+  });
 
   // 주문 상태별 개수 계산
   const orderCounts = orders.reduce((acc, order) => {
@@ -123,9 +70,14 @@ export const PosOrderList = ({ storeId }) => {
     const updateStats = async () => {
       try {
         await apiClient.patch(`/daily_stats/${storeId}`, {
-          pendingOrders: orderCounts['PENDING'] || 0,
-          processingOrders: orderCounts['ACCEPTED'] || 0,
-          completedOrders: orderCounts['READY'] || 0
+          pendingOrders: orderCounts[ORDER_STATUS.PENDING] || 0,
+          processingOrders: (
+            (orderCounts[ORDER_STATUS.ACCEPTED] || 0) +
+            (orderCounts[ORDER_STATUS.READY] || 0) +
+            (orderCounts[ORDER_STATUS.DELIVERY_REQUESTED] || 0) +
+            (orderCounts[ORDER_STATUS.DELIVERY_ASSIGNED] || 0)
+          ),
+          completedOrders: orderCounts[ORDER_STATUS.COMPLETED] || 0
         });
       } catch (error) {
         console.error('Failed to update order stats:', error);
@@ -145,6 +97,61 @@ export const PosOrderList = ({ storeId }) => {
     return () => clearInterval(pollInterval);
   }, [storeId]);
 
+  // 주문 상태 업데이트 처리
+  const handleOrderAction = async (orderId, action) => {
+    if (!orderId) {
+      addToast({
+        message: '주문 ID가 없습니다.',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      let response;
+      let successMessage = '';
+
+      switch (action) {
+        case 'accept':
+          response = await orderAPI.acceptOrder(orderId);
+          successMessage = '주문이 수락되었습니다.';
+          break;
+        case 'reject':
+          response = await orderAPI.rejectOrder(orderId);
+          successMessage = '주문이 거절되었습니다.';
+          break;
+        case 'ready':
+          response = await orderAPI.markOrderAsReady(orderId);
+          successMessage = '조리가 완료되었습니다.';
+          break;
+        case 'requestDelivery':
+          response = await orderAPI.requestDelivery(orderId);
+          successMessage = '배차가 신청되었습니다.';
+          break;
+        case 'assignDelivery':
+          response = await orderAPI.assignDelivery(orderId);
+          successMessage = '배차가 완료되었습니다.';
+          break;
+        default:
+          throw new Error('Invalid action');
+      }
+
+      if (response.data.success) {
+        addToast({
+          message: successMessage,
+          type: 'success'
+        });
+        await fetchOrders();
+      }
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+      addToast({
+        message: '주문 처리 중 오류가 발생했습니다.',
+        type: 'error'
+      });
+    }
+  };
+
   if (loading && orders.length === 0) {
     return <div className={styles.loading}>주문 목록을 불러오는 중...</div>;
   }
@@ -152,6 +159,33 @@ export const PosOrderList = ({ storeId }) => {
   if (error) {
     return <div className={styles.error}>{error}</div>;
   }
+
+  // 주문 상태별 버튼 렌더링
+  const getOrderActions = (order) => {
+    switch (order.status) {
+      case ORDER_STATUS.PENDING:
+        return (
+          <>
+            <Button onClick={() => handleOrderAction(order.orderId || order.id, 'accept')} variant="primary">수락</Button>
+            <Button onClick={() => handleOrderAction(order.orderId || order.id, 'reject')} variant="danger">거절</Button>
+          </>
+        );
+      case ORDER_STATUS.ACCEPTED:
+        return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'ready')} variant="primary">조리완료</Button>
+        );
+      case ORDER_STATUS.READY:
+        return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'requestDelivery')} variant="primary">배차신청</Button>
+        );
+      case ORDER_STATUS.DELIVERY_REQUESTED:
+        return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'assignDelivery')} variant="primary">배차완료</Button>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -197,34 +231,8 @@ export const PosOrderList = ({ storeId }) => {
               </div>
 
               <div className={styles.orderFooter}>
-                <span className={styles.total}>
-                  총 {order.totalAmount.toLocaleString()}원
-                </span>
-                <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
-                  {order.status === ORDER_STATUS.PENDING && (
-                    <>
-                      <Button 
-                        onClick={() => handleOrderAction(order.orderId, 'accept')}
-                        variant="primary"
-                      >
-                        수락
-                      </Button>
-                      <Button 
-                        onClick={() => handleOrderAction(order.orderId, 'reject')}
-                        variant="danger"
-                      >
-                        거절
-                      </Button>
-                    </>
-                  )}
-                  {order.status === ORDER_STATUS.ACCEPTED && (
-                    <Button 
-                      onClick={() => handleOrderAction(order.orderId, 'ready')}
-                      variant="success"
-                    >
-                      조리완료
-                    </Button>
-                  )}
+                <div className={styles.actions}>
+                  {getOrderActions(order)}
                 </div>
               </div>
             </div>
@@ -235,10 +243,7 @@ export const PosOrderList = ({ storeId }) => {
       {selectedOrderId && (
         <PosOrderDetailModal
           orderId={selectedOrderId}
-          onClose={() => {
-            setSelectedOrderId(null);
-            fetchOrders(); // 모달이 닫힐 때 목록 새로고침
-          }}
+          onClose={() => setSelectedOrderId(null)}
         />
       )}
     </div>
