@@ -9,24 +9,52 @@ import PosSelectModal from "../components/common/PosSelectModal";
 
 export default function PosLayout() {
   const { currentUser } = useAuth();
-  const [isReceivingOrders, setIsReceivingOrders] = useState(true);
+  
+  // 로컬 스토리지에서 이전 상태 복원
+  const getInitialStatus = () => {
+    if (typeof window !== 'undefined') {
+      const savedStatus = localStorage.getItem('posStatus');
+      return savedStatus || POS_STATUS.CLOSED;
+    }
+    return POS_STATUS.CLOSED;
+  };
+
+  const getInitialReceivingOrders = () => {
+    if (typeof window !== 'undefined') {
+      const savedReceiving = localStorage.getItem('isReceivingOrders');
+      return savedReceiving ? JSON.parse(savedReceiving) : true;
+    }
+    return true;
+  };
+
+  const [isReceivingOrders, setIsReceivingOrders] = useState(getInitialReceivingOrders);
   const [showPauseModal, setShowPauseModal] = useState(false);
-  const [posStatus, setPosStatus] = useState(POS_STATUS.CLOSED);
+  const [posStatus, setPosStatus] = useState(getInitialStatus);
+  const [isStatusLoading, setIsStatusLoading] = useState(true);
 
   // POS 상태 로드
   useEffect(() => {
     const loadPosStatus = async () => {
       try {
+        setIsStatusLoading(true);
         const status = await posAPI.getPosStatus(currentUser?.posId);
         setPosStatus(status);
         setIsReceivingOrders(status === POS_STATUS.OPEN);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('posStatus', status);
+        localStorage.setItem('isReceivingOrders', JSON.stringify(status === POS_STATUS.OPEN));
       } catch (err) {
         console.error('Failed to load POS status:', err);
+      } finally {
+        setIsStatusLoading(false);
       }
     };
 
     if (currentUser?.posId) {
       loadPosStatus();
+    } else {
+      setIsStatusLoading(false);
     }
   }, [currentUser]);
 
@@ -45,6 +73,10 @@ export default function PosLayout() {
         });
         setPosStatus(POS_STATUS.OPEN);
         setIsReceivingOrders(true);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('posStatus', POS_STATUS.OPEN);
+        localStorage.setItem('isReceivingOrders', 'true');
       } catch (err) {
         console.error('Failed to update POS status:', err);
       }
@@ -64,6 +96,10 @@ export default function PosLayout() {
       setIsReceivingOrders(false);
       setShowPauseModal(false);
       
+      // 로컬 스토리지에 저장
+      localStorage.setItem('posStatus', POS_STATUS.BREAK);
+      localStorage.setItem('isReceivingOrders', 'false');
+      
       // minutes 후에 자동으로 주문 접수 상태로 변경
       setTimeout(async () => {
         try {
@@ -76,6 +112,10 @@ export default function PosLayout() {
           });
           setPosStatus(POS_STATUS.OPEN);
           setIsReceivingOrders(true);
+          
+          // 로컬 스토리지에 저장
+          localStorage.setItem('posStatus', POS_STATUS.OPEN);
+          localStorage.setItem('isReceivingOrders', 'true');
         } catch (err) {
           console.error('Failed to resume POS status:', err);
         }
@@ -88,7 +128,7 @@ export default function PosLayout() {
   return (
     <>
       <PosHeader isReceivingOrders={isReceivingOrders} onToggle={handleToggle} />
-      <Outlet context={{ posStatus, setPosStatus, setIsReceivingOrders }} />
+      <Outlet context={{ posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading }} />
       {showPauseModal && (
         <PosSelectModal
           title="주문 일시 정지"

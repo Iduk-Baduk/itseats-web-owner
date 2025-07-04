@@ -292,11 +292,11 @@
     font-size: 18px;
     padding: 6px;
   }
-
+  
   .content {
     padding: 16px;
   }
-
+  
   .statusChange {
     flex-direction: column;
     gap: 12px;
@@ -307,7 +307,7 @@
     width: 100%;
     text-align: center;
   }
-
+  
   .arrow {
     transform: rotate(90deg);
     margin: 4px 0;

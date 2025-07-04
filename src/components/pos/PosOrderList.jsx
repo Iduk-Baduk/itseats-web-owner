@@ -8,7 +8,7 @@ import { PosOrderDetailModal } from './PosOrderDetailModal';
 import { useToast } from '../../contexts/ToastContext';
 import apiClient from '../../services/apiClient';
 
-export const PosOrderList = ({ storeId }) => {
+export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
@@ -51,41 +51,48 @@ export const PosOrderList = ({ storeId }) => {
 
   // 필터링된 주문 목록
   const filteredOrders = orders.filter(order => {
-    // 완료된 주문과 거절된 주문은 제외
-    if (order.status === ORDER_STATUS.COMPLETED || order.status === ORDER_STATUS.REJECTED) {
+    // 배달완료된 주문은 항상 숨김처리
+    if (order.status === ORDER_STATUS.COMPLETED) {
       return false;
     }
-    // 필터가 ALL이면 모든 주문 표시, 아니면 해당 상태의 주문만 표시
+
+    // 오늘 날짜의 시작과 끝
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // 오늘의 주문만 필터링
+    const orderDate = new Date(order.orderTime || order.createdAt);
+    const isTodayOrder = orderDate >= today && orderDate < tomorrow;
+
+    if (!isTodayOrder) {
+      return false;
+    }
+
+    // 필터가 ALL이면 배달완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
     return filter === 'ALL' || order.status === filter;
   });
 
-  // 주문 상태별 개수 계산
+  // 주문 상태별 개수 계산 (오늘 날짜 기준)
   const orderCounts = orders.reduce((acc, order) => {
-    acc[order.status] = (acc[order.status] || 0) + 1;
+    // 오늘 날짜의 시작과 끝
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // 오늘의 주문만 필터링
+    const orderDate = new Date(order.orderTime || order.createdAt);
+    const isTodayOrder = orderDate >= today && orderDate < tomorrow;
+
+    if (isTodayOrder) {
+      acc[order.status] = (acc[order.status] || 0) + 1;
+    }
     return acc;
   }, {});
 
-  // 주문처리현황 업데이트
-  useEffect(() => {
-    const updateStats = async () => {
-      try {
-        await apiClient.patch(`/daily_stats/${storeId}`, {
-          pendingOrders: orderCounts[ORDER_STATUS.PENDING] || 0,
-          processingOrders: (
-            (orderCounts[ORDER_STATUS.ACCEPTED] || 0) +
-            (orderCounts[ORDER_STATUS.READY] || 0) +
-            (orderCounts[ORDER_STATUS.DELIVERY_REQUESTED] || 0) +
-            (orderCounts[ORDER_STATUS.DELIVERY_ASSIGNED] || 0)
-          ),
-          completedOrders: orderCounts[ORDER_STATUS.COMPLETED] || 0
-        });
-      } catch (error) {
-        console.error('Failed to update order stats:', error);
-      }
-    };
 
-    updateStats();
-  }, [orderCounts, storeId]);
 
   // 컴포넌트 마운트 시 주문 목록 조회
   useEffect(() => {
@@ -132,6 +139,10 @@ export const PosOrderList = ({ storeId }) => {
           response = await orderAPI.assignDelivery(orderId);
           successMessage = '배차가 완료되었습니다.';
           break;
+        case 'completeDelivery':
+          response = await orderAPI.completeDelivery(orderId);
+          successMessage = '배달이 완료되었습니다.';
+          break;
         default:
           throw new Error('Invalid action');
       }
@@ -142,6 +153,10 @@ export const PosOrderList = ({ storeId }) => {
           type: 'success'
         });
         await fetchOrders();
+        // 상위 컴포넌트에 주문 목록 업데이트 알림
+        if (onOrdersUpdate) {
+          onOrdersUpdate();
+        }
       }
     } catch (err) {
       console.error('Failed to update order status:', err);
@@ -182,6 +197,13 @@ export const PosOrderList = ({ storeId }) => {
         return (
           <Button onClick={() => handleOrderAction(order.orderId || order.id, 'assignDelivery')} variant="primary">배차완료</Button>
         );
+      case ORDER_STATUS.DELIVERY_ASSIGNED:
+        return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'completeDelivery')} variant="success">배달완료</Button>
+        );
+      case ORDER_STATUS.COMPLETED:
+      case ORDER_STATUS.REJECTED:
+        return null; // 완료/거절된 주문은 액션 버튼 없음
       default:
         return null;
     }

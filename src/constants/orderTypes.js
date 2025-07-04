@@ -39,5 +39,4 @@ export const ORDER_FILTERS = [
   { value: ORDER_STATUS.READY, label: '조리완료' },
   { value: ORDER_STATUS.DELIVERY_REQUESTED, label: '배차신청' },
   { value: ORDER_STATUS.DELIVERY_ASSIGNED, label: '배차완료' },
-  { value: ORDER_STATUS.COMPLETED, label: '배달완료' },
 ]; 

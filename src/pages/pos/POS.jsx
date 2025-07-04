@@ -16,7 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const POS = () => {
   const { currentUser } = useAuth();
-  const { posStatus, setPosStatus, setIsReceivingOrders } = useOutletContext();
+  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState({
@@ -129,7 +129,7 @@ const POS = () => {
   // 읽지 않은 알림 수
   const unreadNotificationCount = notifications.filter(notif => !notif.isRead).length;
 
-  if (isLoading) {
+  if (isLoading || isStatusLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>

@@ -126,6 +126,11 @@ export const orderAPI = {
   // 배차 완료
   assignDelivery: async (orderId) => {
     return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERY_ASSIGNED);
+  },
+
+  // 배달 완료
+  completeDelivery: async (orderId) => {
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.COMPLETED);
   }
 };
 
