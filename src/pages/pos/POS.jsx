@@ -179,6 +179,8 @@ const POS = () => {
         </button>
       </div>
 
+      <PosQuickAccess className={styles.posQuickAccess} />
+
       <div className={styles.statusSection}>
         <h2>POS 상태 관리</h2>
         {error && <div className={styles.error}>{error}</div>}
@@ -201,8 +203,6 @@ const POS = () => {
         
         <PosStatusHistory history={statusHistory} />
       </div>
-
-      <PosQuickAccess className={styles.posQuickAccess} />
 
       {/* 알림 센터 */}
       <PosNotificationCenter
