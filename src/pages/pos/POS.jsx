@@ -192,21 +192,16 @@ const POS = () => {
           currentStatus={posStatus}
           onStatusChange={handleStatusChange}
         />
-        
-        <PosAutoSettings
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
+
+        <PosMetricItem
+          metricName={currentUser?.storeName || "매장 정보 없음"}
+          metricValue={metrics}
+          className={styles.posMetricItem}
         />
         
         <PosStatusHistory history={statusHistory} />
       </div>
 
-      <PosMetricItem
-        metricName={currentUser?.storeName || "매장 정보 없음"}
-        metricValue={metrics}
-        className={styles.posMetricItem}
-      />
-      
       <PosQuickAccess className={styles.posQuickAccess} />
 
       {/* 알림 센터 */}

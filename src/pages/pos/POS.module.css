@@ -67,11 +67,11 @@
 
 /* 상태 섹션 */
 .statusSection {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 }
 
 .statusSection h2 {
@@ -88,10 +88,6 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 24px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
 }
 
 .currentStatus span:first-child {
@@ -102,10 +98,11 @@
 
 /* 메트릭 아이템 */
 .posMetricItem {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
+  margin: 24px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
 /* 퀵 액세스 */
