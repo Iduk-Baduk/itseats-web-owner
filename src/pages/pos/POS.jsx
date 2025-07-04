@@ -182,7 +182,7 @@ const POS = () => {
       <PosQuickAccess className={styles.posQuickAccess} />
 
       <div className={styles.statusSection}>
-        <h2>{currentUser?.storeName || '매장'} 상태 관리</h2>
+        <h2>{currentUser?.storeName || '매장'}</h2>
         {error && <div className={styles.error}>{error}</div>}
         
         <div className={styles.currentStatus}>
