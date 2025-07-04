@@ -25,6 +25,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .pageTitle {
@@ -32,6 +34,7 @@
   font-size: 28px;
   font-weight: 700;
   color: #333;
+  flex: 1;
 }
 
 .notificationButton {
@@ -48,6 +51,8 @@
   color: #333;
   transition: all 0.2s;
   position: relative;
+  white-space: nowrap;
+  min-width: 100px;
 }
 
 .notificationButton:hover {
@@ -148,15 +153,31 @@
 }
 
 /* 반응형 */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .container {
     padding: 16px;
+    gap: 20px;
+  }
+
+  .pageTitle {
+    font-size: 26px;
+  }
+
+  .notificationButton {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
     gap: 16px;
   }
   
   .header {
-    flex-direction: column;
-    align-items: flex-start;
+    margin-bottom: 20px;
     gap: 12px;
   }
   
@@ -165,22 +186,63 @@
   }
   
   .notificationButton {
-    align-self: flex-end;
-    padding: 10px 14px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 80px;
+    border-width: 1px;
+  }
+
+  .notificationBadge {
+    font-size: 10px;
+    padding: 1px 5px;
+    min-width: 16px;
+    top: -4px;
+    right: -4px;
   }
   
   .statusSection {
-    padding: 20px;
+    padding: 16px;
   }
   
   .statusSection h2 {
     font-size: 20px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
   }
   
   .currentStatus {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .header {
+    margin-bottom: 16px;
+    gap: 10px;
+  }
+
+  .pageTitle {
+    font-size: 22px;
+    width: 100%;
+  }
+
+  .notificationButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .statusSection {
+    padding: 12px;
+  }
+
+  .statusSection h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
   }
 }
