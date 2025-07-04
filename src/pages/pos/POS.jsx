@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
@@ -15,7 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const POS = () => {
   const { currentUser } = useAuth();
-  const [posStatus, setPosStatus] = useState(POS_STATUS.CLOSED);
+  const { posStatus, setPosStatus, setIsReceivingOrders } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState({
@@ -56,6 +57,7 @@ const POS = () => {
     try {
       setError(null);
       setPosStatus(newStatus);
+      setIsReceivingOrders(newStatus === POS_STATUS.OPEN);
       
       // 히스토리 새로고침
       const historyData = await POS_API.getPosStatusHistory();
@@ -70,7 +72,7 @@ const POS = () => {
       setError('상태 변경에 실패했습니다.');
       console.error('Failed to update POS status:', err);
     }
-  }, [loadMetrics]);
+  }, [loadMetrics, setPosStatus, setIsReceivingOrders]);
 
   // 알림 로드
   const loadNotifications = async () => {
