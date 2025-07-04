@@ -4,7 +4,6 @@ import Button from '../basic/Button';
 import ComboBox from '../basic/ComboBox';
 import { ORDER_STATUS, ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, ORDER_FILTERS } from '../../constants/orderTypes';
 import { orderAPI } from '../../services/orderAPI';
-import { NOTIFICATION_SOUNDS } from '../../constants/sounds';
 import { PosOrderDetailModal } from './PosOrderDetailModal';
 import { useToast } from '../../contexts/ToastContext';
 import apiClient from '../../services/apiClient';
@@ -35,8 +34,7 @@ export const PosOrderList = ({ storeId }) => {
       if (newPendingOrders.length > 0) {
         addToast({
           message: `새로운 주문이 ${newPendingOrders.length}건 있습니다.`,
-          type: 'info',
-          sound: NOTIFICATION_SOUNDS.NEW_ORDER,
+          type: 'info'
         });
       }
 
@@ -56,7 +54,7 @@ export const PosOrderList = ({ storeId }) => {
     if (!orderId) {
       addToast({
         message: '주문 ID가 없습니다.',
-        type: 'error',
+        type: 'error'
       });
       return;
     }
@@ -69,8 +67,7 @@ export const PosOrderList = ({ storeId }) => {
           if (response.data.success) {
             addToast({
               message: '주문이 수락되었습니다.',
-              type: 'success',
-              sound: NOTIFICATION_SOUNDS.ORDER_ACCEPTED,
+              type: 'success'
             });
           }
           break;
@@ -79,8 +76,7 @@ export const PosOrderList = ({ storeId }) => {
           if (response.data.success) {
             addToast({
               message: '주문이 거절되었습니다.',
-              type: 'warning',
-              sound: NOTIFICATION_SOUNDS.ORDER_REJECTED,
+              type: 'warning'
             });
           }
           break;
@@ -89,8 +85,7 @@ export const PosOrderList = ({ storeId }) => {
           if (response.data.success) {
             addToast({
               message: '조리가 완료되었습니다.',
-              type: 'success',
-              sound: NOTIFICATION_SOUNDS.ORDER_READY,
+              type: 'success'
             });
           }
           break;
@@ -105,7 +100,7 @@ export const PosOrderList = ({ storeId }) => {
       console.error('Failed to update order status:', err);
       addToast({
         message: '주문 처리 중 오류가 발생했습니다.',
-        type: 'error',
+        type: 'error'
       });
     }
   };

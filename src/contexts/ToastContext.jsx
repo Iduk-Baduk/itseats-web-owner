@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import Toast from '../components/common/Toast';
-import { playSound } from '../constants/sounds';
 
 const ToastContext = createContext(null);
 
@@ -15,22 +14,16 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((messageOrObject, type = 'info', sound = null) => {
+  const addToast = useCallback((messageOrObject, type = 'info') => {
     const id = Date.now();
-    let message, toastType, toastSound;
+    let message, toastType;
 
     if (typeof messageOrObject === 'object') {
       message = messageOrObject.message;
       toastType = messageOrObject.type || type;
-      toastSound = messageOrObject.sound;
     } else {
       message = messageOrObject;
       toastType = type;
-      toastSound = sound;
-    }
-    
-    if (toastSound) {
-      playSound(toastSound);
     }
 
     setToasts(prev => [...prev, { id, message, type: toastType }]);
