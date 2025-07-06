@@ -81,6 +81,9 @@ export const orderAPI = {
 
   // 주문 일시정지
   pauseOrders: withOrderErrorHandling(async (storeId, pauseDurationMinutes) => {
+    if (!pauseDurationMinutes || pauseDurationMinutes <= 0) {
+      throw new Error('유효한 일시정지 시간을 입력해주세요.');
+    }
     const response = await apiClient.post(API_ENDPOINTS.ORDERS.PAUSE(storeId), { 
       pauseDurationMinutes 
     });

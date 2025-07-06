@@ -171,13 +171,14 @@ module.exports = (req, res, next) => {
     }
 
     // 새로운 주문 생성
+    let newOrder;
     try {
       const ordersCollection = req.app.db.get('orders');
       if (!ordersCollection) {
         res.status(500).json({ error: '주문 데이터를 찾을 수 없습니다.' });
         return;
       }
-      const newOrder = generateRandomOrder(storeId);
+      newOrder = generateRandomOrder(storeId);
       ordersCollection.push(newOrder).write();
     } catch (error) {
       console.error('주문 생성 중 오류:', error);
