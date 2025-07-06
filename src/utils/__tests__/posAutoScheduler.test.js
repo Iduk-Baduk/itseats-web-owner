@@ -210,7 +210,10 @@ describe('usePosAutoScheduler', () => {
     expect(onStatusChange).not.toHaveBeenCalled();
   });
 
-  it('자동화 설정이 활성화된 경우 현재 상태를 즉시 업데이트해야 함', () => {
+  it('자동화 설정이 활성화된 경우 현재 상태를 즉시 업데이트해야 함', async () => {
+    // localStorage 초기화
+    localStorage.clear();
+    
     const settings = {
       autoOpen: true,
       autoClose: true,
@@ -221,10 +224,16 @@ describe('usePosAutoScheduler', () => {
 
     renderHook(() => usePosAutoScheduler(settings, onStatusChange));
 
+    // 비동기 처리 대기
+    await vi.runAllTimersAsync();
+
     expect(onStatusChange).toHaveBeenCalledTimes(1);
   });
 
   it('상태 변경 시 API 호출이 실패하면 에러를 로깅해야 함', async () => {
+    // localStorage 초기화
+    localStorage.clear();
+    
     const settings = {
       posId: mockPosId,
       autoOpen: true,
@@ -247,7 +256,10 @@ describe('usePosAutoScheduler', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('컴포넌트 언마운트 시 타이머가 정리되어야 함', () => {
+  it('컴포넌트 언마운트 시 타이머가 정리되어야 함', async () => {
+    // localStorage 초기화
+    localStorage.clear();
+    
     const settings = {
       autoOpen: true,
       autoClose: true,
@@ -257,6 +269,9 @@ describe('usePosAutoScheduler', () => {
     const onStatusChange = vi.fn();
 
     const { unmount } = renderHook(() => usePosAutoScheduler(settings, onStatusChange));
+    
+    // 비동기 처리 대기
+    await vi.runAllTimersAsync();
     
     unmount();
     vi.runAllTimers();

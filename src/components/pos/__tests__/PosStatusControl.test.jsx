@@ -19,9 +19,9 @@ vi.mock('../../../contexts/AuthContext', () => ({
     </div>
   ),
   useAuth: () => ({
-    user: {
-      id: 'user1',
-      name: '사용자1'
+    currentUser: {
+      userId: 'user1',
+      userName: '사용자1'
     }
   })
 }));
