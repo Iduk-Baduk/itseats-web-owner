@@ -1,13 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-
-// 메뉴 목록
-const MENUS = [
-  { id: 'menu001', name: '후라이드 치킨', price: 18000 },
-  { id: 'menu002', name: '양념 치킨', price: 19000 },
-  { id: 'menu003', name: '간장 치킨', price: 19000 },
-  { id: 'menu004', name: '마늘 치킨', price: 19000 },
-  { id: 'menu005', name: '반반 치킨', price: 19000 }
-];
+const MENUS = require('./menus');
 
 // 랜덤 주문 생성 함수
 const generateRandomOrder = (storeId) => {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import MENUS from '../data/menus.js';
 
 const STORE_ID = 'store001';  // 시뮬레이션할 매장 ID
 const SIMULATION_INTERVAL = 30000;  // 30초마다 주문 생성
@@ -14,14 +15,6 @@ async function checkStoreStatus() {
     return 'CLOSED'; // 에러 시 기본값으로 CLOSED 반환
   }
 }
-
-// 메뉴 목록
-const MENUS = [
-  { id: '93cd', name: '아메리카노', price: 2000 },
-  { id: 'df19', name: '커피번', price: 3500 },
-  { id: '2048', name: '1', price: 2 },
-  { id: '4359', name: '12', price: 11 }
-];
 
 function generateRandomOrder() {
   // 1~3개의 메뉴를 랜덤하게 선택
