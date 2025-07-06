@@ -165,7 +165,7 @@ export const fetchDailyStats = async (storeId) => {
 
   // 오늘의 주문만 필터링
   const todayOrders = orders.filter(order => {
-    const orderDate = new Date(order.createdAt);
+    const orderDate = new Date(order.orderTime);
     return orderDate >= today && orderDate < tomorrow;
   });
 
@@ -226,7 +226,7 @@ export const fetchTopMenus = async (storeId) => {
 
   // 오늘의 완료된 주문만 필터링
   const completedOrders = orders.filter(order => {
-    const orderDate = new Date(order.createdAt);
+    const orderDate = new Date(order.orderTime);
     return orderDate >= today && orderDate < tomorrow && order.status === 'READY';
   });
 
