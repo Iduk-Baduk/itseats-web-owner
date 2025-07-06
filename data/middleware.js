@@ -35,16 +35,30 @@ const generateRandomOrder = (storeId) => {
 
 // 주문 통계 업데이트 함수
 const updateOrderStats = (db, storeId, order) => {
-  const stats = db.get('stats').get(storeId).value();
-  
-  if (stats) {
+  try {
+    const statsCollection = db.get('stats');
+    if (!statsCollection) {
+      console.error('Stats collection not found');
+      return;
+    }
+    
+    const storeStats = statsCollection.get(storeId);
+    if (!storeStats) {
+      console.error(`Stats not found for storeId: ${storeId}`);
+      return;
+    }
+    
+    const stats = storeStats.value();
+   
     const daily = stats.daily || {};
     daily.totalOrders = (daily.totalOrders || 0) + 1;
     daily.totalSales = (daily.totalSales || 0) + order.totalAmount;
     daily.averageOrderAmount = Math.floor(daily.totalSales / daily.totalOrders);
     daily.pendingOrders = (daily.pendingOrders || 0) + 1;
 
-    db.get('stats').get(storeId).set('daily', daily).write();
+    storeStats.set('daily', daily).write();
+  } catch (error) {
+    console.error('Failed to update order stats:', error);
   }
 };
 
