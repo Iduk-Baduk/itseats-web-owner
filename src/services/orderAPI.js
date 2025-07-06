@@ -96,7 +96,9 @@ export const orderAPI = {
 
   // 일간 통계 조회
   getDailyStats: withOrderErrorHandling(async (storeId, date) => {
-    const params = date ? { date: date.toISOString().split('T')[0] } : {};
+    const params = (date && date instanceof Date && !isNaN(date)) 
+      ? { date: date.toISOString().split('T')[0] } 
+      : {};
     const response = await apiClient.get(API_ENDPOINTS.ORDERS.STATS.DAILY(storeId), { params });
     return response.data;
   }, 'GET_DAILY_STATS'),
