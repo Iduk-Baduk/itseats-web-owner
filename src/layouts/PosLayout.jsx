@@ -73,7 +73,7 @@ export default function PosLayout() {
           category: 'MANUAL'
         });
         setPosStatus(POS_STATUS.OPEN);
-        setIsReceivingOrders(true);
+      setIsReceivingOrders(true);
         
         // 로컬 스토리지에 저장
         localStorage.setItem('posStatus', POS_STATUS.OPEN);
@@ -94,8 +94,8 @@ export default function PosLayout() {
         category: 'MANUAL'
       });
       setPosStatus(POS_STATUS.BREAK);
-      setIsReceivingOrders(false);
-      setShowPauseModal(false);
+    setIsReceivingOrders(false);
+    setShowPauseModal(false);
       
       // 로컬 스토리지에 저장
       localStorage.setItem('posStatus', POS_STATUS.BREAK);

@@ -24,8 +24,8 @@ export const orderAPI = {
     return { 
       data: { 
         orders: orders.map(order => ({
-          ...order,
-          orderId: order.id
+      ...order,
+      orderId: order.id
         }))
       } 
     };

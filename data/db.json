@@ -21103,8 +21103,23 @@
   ],
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-07-06T10:19:50.656Z",
+    "lastUpdated": "2025-07-06T10:33:28.002Z",
     "statusHistory": [
+      {
+        "id": "mcrjaxtu-zvi45t",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:33:28.002Z",
+        "reason": "정기 휴무",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "12",
+        "estimatedRevenueLoss": 1,
+        "affectedOrderCount": 2,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "mcritf5s-hpg7bd",
         "status": "CLOSED",
@@ -22877,12 +22892,23 @@
       }
     ],
     "settings": {
-      "autoClose": true,
+      "autoClose": false,
       "autoCloseTime": "23:00",
-      "autoOpen": true,
-      "autoOpenTime": "09:00"
+      "autoOpen": false,
+      "autoOpenTime": "09:00",
+      "updatedAt": "2025-07-06T10:33:19.902Z"
     },
     "notifications": [
+      {
+        "id": "mcrjaxuq-wsw2lf",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (정기 휴무)",
+        "timestamp": "2025-07-06T10:33:28.034Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjaxun-bntuqe"
+      },
       {
         "id": "mcritf6c-5r1vi5",
         "type": "STATUS_CHANGE",

@@ -56,6 +56,16 @@ const POS = () => {
   const handleStatusChange = useCallback(async (newStatus) => {
     try {
       setError(null);
+      
+      // API를 통해 상태 업데이트
+      await POS_API.updatePosStatus(newStatus, {
+        reason: '수동 상태 변경',
+        userId: currentUser?.id || 'system',
+        userName: currentUser?.name || '시스템',
+        category: 'MANUAL'
+      });
+      
+      // 로컬 상태 업데이트
       setPosStatus(newStatus);
       setIsReceivingOrders(newStatus === POS_STATUS.OPEN);
       
@@ -72,7 +82,7 @@ const POS = () => {
       setError('상태 변경에 실패했습니다.');
       console.error('Failed to update POS status:', err);
     }
-  }, [loadMetrics, setPosStatus, setIsReceivingOrders]);
+  }, [loadMetrics, setPosStatus, setIsReceivingOrders, currentUser]);
 
   // 알림 로드
   const loadNotifications = async () => {
@@ -101,7 +111,7 @@ const POS = () => {
           })(),
           (async () => {
             const settingsData = await POS_API.getPosAutoSettings();
-            setSettings(settingsData);
+        setSettings(settingsData);
           })()
         ]);
       } catch (err) {
@@ -196,19 +206,19 @@ const POS = () => {
           currentStatus={posStatus}
           onStatusChange={handleStatusChange}
         />
-
+        
         <PosAutoSettings
           settings={settings}
           onSettingsChange={handleSettingsChange}
           onResetDailyProcessing={resetDailyProcessing}
         />
 
-        <PosMetricItem
-          metricName={currentUser?.storeName || "매장 정보 없음"}
-          metricValue={metrics}
-          className={styles.posMetricItem}
-        />
-        
+      <PosMetricItem
+        metricName={currentUser?.storeName || "매장 정보 없음"}
+        metricValue={metrics}
+        className={styles.posMetricItem}
+      />
+      
         <PosStatusHistory history={statusHistory} />
       </div>
 

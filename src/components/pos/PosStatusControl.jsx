@@ -52,7 +52,9 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
         affectedOrderCount: formData.affectedOrderCount || 0
       };
 
-      await posAPI.updatePosStatusWithNotification(posId, statusData);
+      // posId가 없으면 기본값 사용
+      const posIdToUse = posId || 'default';
+      await posAPI.updatePosStatusWithNotification(posIdToUse, statusData);
       onStatusChange(targetStatus);
       setIsDialogOpen(false);
       setError(null);
@@ -93,7 +95,7 @@ const PosStatusControl = ({ posId, currentStatus, onStatusChange }) => {
 };
 
 PosStatusControl.propTypes = {
-  posId: PropTypes.string.isRequired,
+  posId: PropTypes.string,
   currentStatus: PropTypes.oneOf(Object.values(POS_STATUS)).isRequired,
   onStatusChange: PropTypes.func.isRequired
 };
