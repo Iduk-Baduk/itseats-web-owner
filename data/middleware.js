@@ -70,30 +70,60 @@ module.exports = (req, res, next) => {
       const storeId = parts[2];
       if (req.method === 'GET') {
         // 주문 목록 조회
-        const orders = req.app.db.get('orders').filter({ storeId: storeId }).value();
-        res.json(orders);
+        try {
+          const ordersCollection = req.app.db.get('orders');
+          if (!ordersCollection) {
+            res.status(500).json({ error: '주문 데이터를 찾을 수 없습니다.' });
+            return;
+          }
+          const orders = ordersCollection.filter({ storeId: storeId }).value();
+          res.json(orders);
+        } catch (error) {
+          console.error('Failed to fetch orders:', error);
+          res.status(500).json({ error: '주문 목록 조회에 실패했습니다.' });
+        }
         return;
       }
     } else if (parts[2] === 'orders' && parts[3]) {
       const orderId = parts[3];
       if (req.method === 'GET') {
         // 주문 상세 조회
-        const order = req.app.db.get('orders').find({ id: orderId }).value();
-        if (order) {
-          res.json(order);
-        } else {
-          res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+        try {
+          const ordersCollection = req.app.db.get('orders');
+          if (!ordersCollection) {
+            res.status(500).json({ error: '주문 데이터를 찾을 수 없습니다.' });
+            return;
+          }
+          const order = ordersCollection.find({ id: orderId }).value();
+          if (order) {
+            res.json(order);
+          } else {
+            res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+          }
+        } catch (error) {
+          console.error('Failed to fetch order:', error);
+          res.status(500).json({ error: '주문 조회에 실패했습니다.' });
         }
         return;
       } else if (req.method === 'PATCH') {
         // 주문 상태 업데이트
-        const order = req.app.db.get('orders').find({ id: orderId }).value();
-        if (order) {
-          const updatedOrder = { ...order, ...req.body };
-          req.app.db.get('orders').find({ id: orderId }).assign(updatedOrder).write();
-          res.json(updatedOrder);
-        } else {
-          res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+        try {
+          const ordersCollection = req.app.db.get('orders');
+          if (!ordersCollection) {
+            res.status(500).json({ error: '주문 데이터를 찾을 수 없습니다.' });
+            return;
+          }
+          const order = ordersCollection.find({ id: orderId }).value();
+          if (order) {
+            const updatedOrder = { ...order, ...req.body };
+            ordersCollection.find({ id: orderId }).assign(updatedOrder).write();
+            res.json(updatedOrder);
+          } else {
+            res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
+          }
+        } catch (error) {
+          console.error('Failed to update order:', error);
+          res.status(500).json({ error: '주문 업데이트에 실패했습니다.' });
         }
         return;
       }
@@ -141,9 +171,19 @@ module.exports = (req, res, next) => {
     }
 
     // 새로운 주문 생성
-    const newOrder = generateRandomOrder(storeId);
-    const orders = req.app.db.get('orders');
-    orders.push(newOrder).write();
+    try {
+      const ordersCollection = req.app.db.get('orders');
+      if (!ordersCollection) {
+        res.status(500).json({ error: '주문 데이터를 찾을 수 없습니다.' });
+        return;
+      }
+      const newOrder = generateRandomOrder(storeId);
+      ordersCollection.push(newOrder).write();
+    } catch (error) {
+      console.error('Failed to create order:', error);
+      res.status(500).json({ error: '주문 생성에 실패했습니다.' });
+      return;
+    }
 
     // 통계 업데이트
     updateOrderStats(req.app.db, storeId, newOrder);
