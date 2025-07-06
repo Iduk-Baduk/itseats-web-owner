@@ -152,7 +152,7 @@ const PosStatsDashboard = ({ orders = [] }) => {
 
       <div className={styles.topMenus}>
         <h3>인기 메뉴 TOP 5</h3>
-        <ul className={styles.menuList}>
+        <ul className={styles.topMenusList}>
           {stats.topMenus.map((menu, index) => (
             <li key={menu.id} className={styles.menuItem}>
               <span className={styles.menuRank}>{index + 1}</span>
