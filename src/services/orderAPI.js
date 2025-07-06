@@ -71,6 +71,9 @@ export const orderAPI = {
 
   // 예상 조리 시간 설정
   setCookTime: withOrderErrorHandling(async (orderId, cookTimeMinutes) => {
+    if (!cookTimeMinutes || cookTimeMinutes <= 0) {
+      throw new Error('유효한 조리 시간을 입력해주세요.');
+    }
     const response = await apiClient.post(API_ENDPOINTS.ORDERS.COOKTIME(orderId), { 
       cookTimeMinutes 
     });
