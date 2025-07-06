@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './PosAutoSettings.module.css';
 
-const PosAutoSettings = ({ settings, onSettingsChange }) => {
+const PosAutoSettings = ({ settings, onSettingsChange, onResetDailyProcessing }) => {
   const handleAutoOpenChange = (e) => {
     onSettingsChange({
       ...settings,
@@ -67,6 +67,22 @@ const PosAutoSettings = ({ settings, onSettingsChange }) => {
           />
         </div>
       </div>
+      
+      {onResetDailyProcessing && (
+        <div className={styles.resetSection}>
+          <button
+            type="button"
+            onClick={onResetDailyProcessing}
+            className={styles.resetButton}
+            aria-label="일일 자동 처리 재설정"
+          >
+            🔄 일일 자동 처리 재설정
+          </button>
+          <p className={styles.resetDescription}>
+            오늘 자동 상태 변경이 이미 처리된 경우, 다시 실행할 수 있습니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -79,6 +95,7 @@ PosAutoSettings.propTypes = {
     autoCloseTime: PropTypes.string,
   }).isRequired,
   onSettingsChange: PropTypes.func.isRequired,
+  onResetDailyProcessing: PropTypes.func,
 };
 
 export default PosAutoSettings; 

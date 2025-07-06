@@ -6,11 +6,13 @@ import PosStatusBadge from '../PosStatusBadge';
 import PosStatusControl from '../PosStatusControl';
 import PosStatusHistory from '../PosStatusHistory';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
-import * as posAPI from '../../../services/posAPI';
+import posAPI from '../../../services/posAPI';
 
 vi.mock('../../../services/posAPI', () => ({
-  updatePosStatusWithNotification: vi.fn(),
-  getPosStatusHistory: vi.fn()
+  default: {
+    updatePosStatusWithNotification: vi.fn(),
+    getPosStatusHistory: vi.fn()
+  }
 }));
 
 vi.mock('../../../contexts/AuthContext', () => ({
@@ -51,7 +53,7 @@ describe('POS Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    posAPI.getPosStatusHistory.mockResolvedValue(mockHistory);
+    posAPI.getPosStatusHistory.mockResolvedValue({ history: mockHistory });
   });
 
   const renderComponents = () => {

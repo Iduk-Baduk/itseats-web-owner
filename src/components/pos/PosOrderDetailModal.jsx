@@ -1,137 +1,189 @@
-import { useEffect, useState } from "react";
-import PosSelectModal from "../common/PosSelectModal";
+import React, { useState, useEffect } from 'react';
+import styles from './PosOrderDetailModal.module.css';
+import { orderAPI } from '../../services/orderAPI';
+import { ORDER_STATUS, ORDER_STATUS_LABEL } from '../../constants/orderTypes';
+import Button from '../basic/Button';
+import TextInput from '../basic/TextInput';
 
-import styles from "./PosOrderDetailModal.module.css";
-
-export default function PosOrderDetailModal({ orderId, onClose, onAccept, onReject }) {
+export const PosOrderDetailModal = ({ orderId, onClose }) => {
   const [order, setOrder] = useState(null);
-  const [showCookTimeModal, setShowCookTimeModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cookTime, setCookTime] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
 
-  // 예상 조리시간 선택 시
-  const handleCookTimeSelect = (minute) => {
-    setShowCookTimeModal(false);
-    console.log("🕰️ 선택된 조리 시간:", minute, "분");
-    onAccept(minute); // 실제 주문 수락 처리
+  // 주문 상세 정보 조회
+  const fetchOrderDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await orderAPI.getOrderDetail(orderId);
+      setOrder(response.data);
+      setError(null);
+    } catch (err) {
+      setError('주문 정보를 불러오는데 실패했습니다.');
+      console.error('Failed to fetch order detail:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // TODO: 실제 API 호출로 주문 상세 정보 가져오기
+  // 주문 처리 핸들러
+  const handleOrderAction = async (action) => {
+    try {
+      let response;
+      switch (action) {
+        case 'accept':
+          if (!cookTime) {
+            alert('예상 조리 시간을 입력해주세요.');
+            return;
+          }
+          await orderAPI.setCookTime(orderId, parseInt(cookTime));
+          response = await orderAPI.acceptOrder(orderId);
+          break;
+        case 'reject':
+          if (!rejectReason) {
+            alert('거절 사유를 입력해주세요.');
+            return;
+          }
+          response = await orderAPI.rejectOrder(orderId, rejectReason);
+          break;
+        case 'ready':
+          response = await orderAPI.markOrderAsReady(orderId);
+          break;
+        default:
+          throw new Error('Invalid action');
+      }
+
+      if (response.data.success) {
+        onClose();
+      }
+    } catch (err) {
+      console.error('Failed to process order:', err);
+      alert('주문 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   useEffect(() => {
-    // 임시 데이터 (API 대신) -> orderId로 fetch
-    // 예시: setOrder(fetchOrderById(orderId));
-    // 여기서는 하드코딩된 데이터를 사용합니다.
-    // 실제로는 API 호출을 통해 주문 정보를 가져와야 합니다.
-    setOrder({
-      orderId: 3,
-      orderNumber: "GRMT0N",
-      customerName: "구름톤",
-      orderStatus: "waiting",
-      time: "2025-05-05T00:00:00",
-      totalPrice: 34000,
-      items: [
-        {
-          menuId: 11,
-          name: "아메리카노",
-          qty: 2,
-          price: 4000,
-          options: ["샷추가", "샷추가", "사이즈업"],
-        },
-        {
-          menuId: 12,
-          name: "에스프레소",
-          qty: 1,
-          price: 1500,
-          options: [],
-        },
-      ],
-      memo: "크림 적게 주세요~",
-    });
+    fetchOrderDetail();
   }, [orderId]);
 
-  if (!order) {
-    return <div>로딩중..</div>;
+  if (loading) {
+    return (
+      <div className={styles.modalOverlay}>
+        <div className={styles.modal}>
+          <div className={styles.loading}>주문 정보를 불러오는 중...</div>
+        </div>
+      </div>
+    );
   }
 
+  if (error) {
+    return (
+      <div className={styles.modalOverlay}>
+        <div className={styles.modal}>
+          <div className={styles.error}>{error}</div>
+          <Button onClick={onClose} variant="secondary">닫기</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) return null;
+
   return (
-    <div className={styles.backdrop}>
+    <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <div className={styles.header}>
-          <span>주문 상세</span>
-          <button className={styles.closeButton} onClick={onClose}>
-            ✕
-          </button>
+          <h3>주문 상세 정보</h3>
+          <button className={styles.closeButton} onClick={onClose}>&times;</button>
         </div>
-        <div className={styles.body}>
+
+        <div className={styles.content}>
           <div className={styles.orderInfo}>
-            <div className={styles.orderNumber}>
-              <span style={{ fontSize: "1.4rem", marginRight: "0.5rem" }}>{order.orderNumber}</span>
-              {order.customerName}
+            <div className={styles.infoRow}>
+              <span>주문 번호:</span>
+              <span>#{order.orderId}</span>
             </div>
-            <span className={styles.time}>
-              {new Date(order.time).toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
+            <div className={styles.infoRow}>
+              <span>주문 상태:</span>
+              <span>{ORDER_STATUS_LABEL[order.status]}</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span>주문 시간:</span>
+              <span>{new Date(order.createdAt).toLocaleString()}</span>
+            </div>
           </div>
-          {order.memo && <div className={styles.memo}>{order.memo}</div>}
-          <table className={styles.table}>
-            <thead className={styles.tableHeader}>
-              <tr>
-                <th>메뉴</th>
-                <th>수량</th>
-                <th>금액</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.items?.map((item, idx) => (
-                <tr key={idx}>
-                  <td>
-                    <span className={styles.mainTitle}>
-                      {item.name}
-                      {item.options && (
-                        <div className={styles.options}>
-                          {item.options.map((opt, i) => (
-                            <div className={styles.option} key={i}>
-                              {opt}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </span>
-                  </td>
-                  <td>{item.qty}</td>
-                  <td>{item.price.toLocaleString()}원</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className={styles.total}>
-            합계{" "}
-            <b>{order.items?.reduce((sum, i) => sum + i.price * i.qty, 0).toLocaleString()}원</b>
-            <span style={{ marginLeft: "1rem", fontWeight: 400, color: "#888" }}>
-              ({order.items ? order.items.reduce((sum, i) => sum + i.qty, 0) : 0}개)
-            </span>
+
+          <div className={styles.itemList}>
+            <h4>주문 항목</h4>
+            {order.items.map((item, index) => (
+              <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
+                <div className={styles.itemInfo}>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemQuantity}>x {item.quantity}</span>
+                </div>
+                {item.options?.map((option, optIndex) => (
+                  <div key={`${order.orderId}-${item.name}-${option.name}-${option.value}`} className={styles.itemOption}>
+                    - {option.name}: {option.value}
+                  </div>
+                ))}
+                <div className={styles.itemPrice}>
+                  {(item.price * item.quantity).toLocaleString()}원
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-        <div className={styles.footer}>
-          <button className={styles.reject} onClick={onReject}>
-            주문 거절
-          </button>
-          <button className={styles.accept} onClick={() => setShowCookTimeModal(true)}>
-            주문 수락
-          </button>
-          {showCookTimeModal && (
-            <PosSelectModal
-              title="예상 조리 시간"
-              description="‘최대한 짧고 정확한’ 조리시간을 선택해 주세요."
-              options={[5, 10, 15]}
-              optionUnit="분"
-              onSelect={handleCookTimeSelect}
-              onClose={() => setShowCookTimeModal(false)}
-            />
+
+          <div className={styles.totalPrice}>
+            <span>총 결제 금액</span>
+            <span>{order.totalAmount.toLocaleString()}원</span>
+          </div>
+
+          {order.status === ORDER_STATUS.PENDING && (
+            <div className={styles.actions}>
+              <div className={styles.inputGroup}>
+                <TextInput
+                  type="number"
+                  value={cookTime}
+                  onChange={(e) => setCookTime(e.target.value)}
+                  placeholder="예상 조리 시간 (분)"
+                />
+                <Button 
+                  onClick={() => handleOrderAction('accept')}
+                  variant="primary"
+                >
+                  주문 수락
+                </Button>
+              </div>
+              <div className={styles.inputGroup}>
+                <TextInput
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="거절 사유"
+                />
+                <Button 
+                  onClick={() => handleOrderAction('reject')}
+                  variant="danger"
+                >
+                  주문 거절
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {order.status === ORDER_STATUS.ACCEPTED && (
+            <div className={styles.actions}>
+              <Button 
+                onClick={() => handleOrderAction('ready')}
+                variant="success"
+                fullWidth
+              >
+                조리 완료
+              </Button>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
-}
+};

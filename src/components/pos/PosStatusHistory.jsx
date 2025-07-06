@@ -10,16 +10,25 @@ import { ko } from 'date-fns/locale';
 const ITEMS_PER_PAGE = 10;
 
 const getDateString = (timestamp) => {
-  const date = parseISO(timestamp);
-  return format(date, 'yyyy-MM-dd');
+  if (!timestamp) return 'Invalid Date';
+  try {
+    const date = parseISO(timestamp);
+    return format(date, 'yyyy-MM-dd');
+  } catch (error) {
+    return 'Invalid Date';
+  }
 };
 
 const formatTimeForDisplay = (timestamp) => {
-  // UTC 시간을 안전하게 추출하기 위해 Date 객체의 UTC 메서드 사용
-  const date = parseISO(timestamp);
-  const hours = date.getUTCHours().toString().padStart(2, '0');
-  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+  if (!timestamp) return '--:--';
+  try {
+    const date = parseISO(timestamp);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  } catch (error) {
+    return '--:--';
+  }
 };
 
 const formatDateForDisplay = (dateString) => {
@@ -56,24 +65,37 @@ const PosStatusHistory = ({ history }) => {
   const { filteredHistory, availableDates } = useMemo(() => {
     // 날짜별로 그룹화
     const groupedHistory = history.reduce((acc, item) => {
-      const date = getDateString(item.timestamp);
-      if (!acc[date]) {
-        acc[date] = [];
+      const dateString = getDateString(item.timestamp);
+      // 유효하지 않은 날짜는 그룹화에서 제외
+      if (dateString === 'Invalid Date') {
+        return acc;
       }
-      acc[date].push(item);
+      if (!acc[dateString]) {
+        acc[dateString] = [];
+      }
+      acc[dateString].push(item);
       return acc;
     }, {});
 
     // 날짜 목록 생성 및 정렬
     const dates = Object.keys(groupedHistory).sort((a, b) => b.localeCompare(a));
+    
+    // 시간순 정렬을 위한 안전한 날짜 변환 함수
+    const safeNewDate = (timestamp) => {
+        try {
+            return new Date(timestamp);
+        } catch (e) {
+            return new Date(0); // 유효하지 않은 경우 맨 뒤로 보내기 위한 값
+        }
+    };
 
     // 선택된 날짜의 기록 필터링 (선택된 날짜가 없으면 전체 기록 반환)
     const filtered = selectedDate 
       ? (groupedHistory[selectedDate] || [])
-      : history;
+      : history.filter(item => getDateString(item.timestamp) !== 'Invalid Date');
 
     // 시간순 정렬 (내림차순)
-    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    filtered.sort((a, b) => safeNewDate(b.timestamp) - safeNewDate(a.timestamp));
 
     return {
       filteredHistory: filtered,
@@ -130,11 +152,19 @@ const PosStatusHistory = ({ history }) => {
           aria-label="날짜 선택"
         >
           <option value="">전체 기록</option>
-          {availableDates.map(date => (
-            <option key={date} value={date}>
-              {format(parseISO(date), 'yyyy년 MM월 dd일', { locale: ko })}
-            </option>
-          ))}
+          {availableDates.map(date => {
+            let formattedDate;
+            try {
+              formattedDate = format(parseISO(date), 'yyyy년 MM월 dd일', { locale: ko });
+            } catch (error) {
+              formattedDate = '유효하지 않은 날짜';
+            }
+            return (
+              <option key={date} value={date}>
+                {formattedDate}
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -143,6 +173,13 @@ const PosStatusHistory = ({ history }) => {
           const itemKey = generateHistoryItemKey(item, index);
           const isExpanded = expandedItems.has(itemKey);
           const hasMetadata = item.reason || item.notes || item.estimatedRevenueLoss > 0;
+          
+          let timeTitle;
+          try {
+            timeTitle = format(parseISO(item.timestamp), 'yyyy-MM-dd HH:mm:ss', { timeZone: 'UTC', locale: ko });
+          } catch (error) {
+            timeTitle = '유효하지 않은 시간';
+          }
 
           return (
             <div 
@@ -154,7 +191,7 @@ const PosStatusHistory = ({ history }) => {
                 <time 
                   className={styles.timestamp}
                   dateTime={item.timestamp}
-                  title={format(parseISO(item.timestamp), 'yyyy-MM-dd HH:mm:ss', { timeZone: 'UTC', locale: ko })}
+                  title={timeTitle}
                 >
                   {formatTimeForDisplay(item.timestamp)}
                 </time>

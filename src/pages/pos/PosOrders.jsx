@@ -1,68 +1,96 @@
-import { useSelector } from "react-redux";
-import { useState } from "react";
-import PosOrderItem from "../../components/pos/PosOrderCard";
-import PosSideBar from "../../components/pos/PosSideBar";
-import PosOrderDetailModal from "../../components/pos/PosOrderDetailModal";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import styles from './PosOrders.module.css';
+import { PosOrderList } from '../../components/pos/PosOrderList';
+import PosStatsDashboard from '../../components/pos/PosStatsDashboard';
+import { useAuth } from '../../contexts/AuthContext';
+import { POS_STATUS } from '../../constants/posStatus';
+import PosStatusBadge from '../../components/pos/PosStatusBadge';
+import PosStatusControl from '../../components/pos/PosStatusControl';
+import { orderAPI } from '../../services/orderAPI';
+import POS_API from '../../services/posAPI';
 
-import styles from "./PosOrders.module.css";
+export const PosOrders = () => {
+  const { currentUser: user } = useAuth();
+  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading } = useOutletContext();
+  const storeId = user?.storeId;
+  const [orders, setOrders] = useState([]);
 
-export default function PosOrders() {
-  const orders = useSelector((state) => state.order);
-  const [currentTab, setCurrentTab] = useState("접수대기");
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  // 상태 변경 핸들러
+  const handleStatusChange = useCallback(async (newStatus) => {
+    try {
+      setPosStatus(newStatus);
+      setIsReceivingOrders(newStatus === POS_STATUS.OPEN);
+      
+      // 로컬 스토리지에 저장
+      localStorage.setItem('posStatus', newStatus);
+      localStorage.setItem('isReceivingOrders', JSON.stringify(newStatus === POS_STATUS.OPEN));
+    } catch (err) {
+      console.error('Failed to update POS status:', err);
+    }
+  }, [setPosStatus, setIsReceivingOrders]);
 
-  // 탭별로 주문 필터링
-  const filteredOrders = orders.filter((order) => {
-    if (currentTab === "접수대기") return order.deliveryStatus === "COOKING";
-    if (currentTab === "진행중") return order.deliveryStatus === "DELIVERING";
-    if (currentTab === "주문내역") return order.deliveryStatus === "COMPLETED";
-    return true;
-  });
-
-  // 주문 카드 클릭 시 모달 오픈
-  const handleOrderClick = (orderId) => {
-    setSelectedOrderId(orderId);
+  // 주문 목록 조회
+  const fetchOrders = async () => {
+    if (!storeId) return;
+    
+    try {
+      const response = await orderAPI.getOrders(storeId);
+      const newOrders = response.data.orders || [];
+      setOrders(newOrders);
+    } catch (error) {
+      console.error('❌ Failed to fetch orders:', error);
+    }
   };
 
-  // 모달 닫기
-  const handleCloseModal = () => setSelectedOrderId(null);
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000); // 30초마다 갱신
+    return () => clearInterval(interval);
+  }, [storeId]);
 
-  // 주문 수락/거절 예시 핸들러
-  const handleAccept = () => {
-    // 주문 수락 로직
-    setSelectedOrderId(null);
-  };
-  const handleReject = () => {
-    // 주문 거절 로직
-    setSelectedOrderId(null);
-  };
+  if (!storeId) {
+    return (
+      <div className={styles.error}>
+        매장 정보를 찾을 수 없습니다.
+      </div>
+    );
+  }
+
+  // 로딩 중이어도 저장된 상태가 있으면 즉시 표시
+  if (isStatusLoading && !localStorage.getItem('posStatus')) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner}></div>
+        <span>매장 상태를 불러오는 중...</span>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      <PosSideBar currentTab={currentTab} onSelect={setCurrentTab} />
-      <div className={styles.content}>
-        {filteredOrders.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>현재 {currentTab} 주문이 없습니다.</p>
+      <div className={styles.header}>
+        <h1>{user?.storeName || '매장'}</h1>
+        <div className={styles.statusSection}>
+          <div className={styles.statusBadge}>
+            <PosStatusBadge status={posStatus} />
           </div>
-        ) : (
-          filteredOrders.map((order) => (
-            <PosOrderItem
-              key={order.orderNumber}
-              order={order}
-              onClick={() => handleOrderClick(order.orderId)}
-            />
-          ))
-        )}
+          <PosStatusControl
+            currentStatus={posStatus}
+            onStatusChange={handleStatusChange}
+          />
+        </div>
       </div>
-      {selectedOrderId && (
-        <PosOrderDetailModal
-          order={selectedOrderId}
-          onClose={handleCloseModal}
-          onAccept={handleAccept}
-          onReject={handleReject}
+      <div className={styles.statsSection}>
+        <PosStatsDashboard orders={orders} />
+      </div>
+      <div className={styles.ordersSection}>
+        <PosOrderList 
+          storeId={storeId} 
+          isReceivingOrders={posStatus === POS_STATUS.OPEN}
+          onOrdersUpdate={fetchOrders}
         />
-      )}
+      </div>
     </div>
   );
-}
+};

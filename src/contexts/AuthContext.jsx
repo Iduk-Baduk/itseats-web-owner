@@ -74,7 +74,9 @@ const mockLoginAPI = async (credentials) => {
       user: {
         userId: 'admin001',
         userName: '관리자',
-        role: 'ADMIN'
+        role: 'ADMIN',
+        storeId: 'store001',
+        storeName: '테스트 매장'
       }
     };
   }

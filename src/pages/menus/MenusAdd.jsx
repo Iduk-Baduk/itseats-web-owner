@@ -39,6 +39,7 @@ export default function MenusAdd() {
   const [optionGroups, setOptionGroups] = useState([]);
   const [groupOpenStates, setGroupOpenStates] = useState({});
   const [isEditMode] = useState(!!id);
+  const [actualMenuId, setActualMenuId] = useState(null);
 
   useEffect(() => {
     if (isEditMode) {
@@ -47,34 +48,50 @@ export default function MenusAdd() {
   }, [dispatch, isEditMode]);
 
   useEffect(() => {
-    if (isEditMode && menus && menus.length > 0) {
-      const menuToEdit = findMenuById(menus, id);
-      
-      if (menuToEdit) {
-        console.log("Found menu to edit:", menuToEdit);
-        setMenuData({
-          menuGroupName: menuToEdit.menuGroupName || "",
-          menuName: menuToEdit.menuName || "",
-          menuPrice: menuToEdit.menuPrice || "",
-          menuStatus: menuToEdit.menuStatus || "ONSALE",
-          menuDescription: menuToEdit.menuDescription || "",
-        });
-        if (menuToEdit.optionGroups) {
-          setOptionGroups(menuToEdit.optionGroups.map(group => ({
-            groupName: group.optionGroupName,
-            isRequired: group.isRequired || false,
-            options: group.options ? group.options.map(opt => ({
-              name: opt.optionName,
-              price: opt.optionPrice || 0,
-              optionStatus: opt.optionStatus || "ONSALE",
-            })) : []
-          })));
-        } else {
-          setOptionGroups([]);
+    if (isEditMode) {
+      // 먼저 전체 메뉴 목록을 가져와서 실제 ID를 찾습니다
+      const fetchMenuData = async () => {
+        try {
+          const menusResponse = await menuAPI.getMenus();
+          const menuToEdit = menusResponse.find(menu => String(menu.menuId) === String(id));
+          
+          if (!menuToEdit) {
+            throw new Error('메뉴를 찾을 수 없습니다.');
+          }
+
+          setActualMenuId(menuToEdit.id);
+          console.log("Found menu to edit:", menuToEdit);
+          setMenuData({
+            menuGroupName: menuToEdit.menuGroupName || "",
+            menuName: menuToEdit.menuName || "",
+            menuPrice: menuToEdit.menuPrice || "",
+            menuStatus: menuToEdit.menuStatus || "ONSALE",
+            menuDescription: menuToEdit.menuDescription || "",
+          });
+          
+          if (menuToEdit.optionGroups) {
+            setOptionGroups(menuToEdit.optionGroups.map(group => ({
+              groupName: group.optionGroupName,
+              isRequired: group.isRequired || false,
+              options: group.options ? group.options.map(opt => ({
+                name: opt.optionName,
+                price: opt.optionPrice || 0,
+                optionStatus: opt.optionStatus || "ONSALE",
+              })) : []
+            })));
+          } else {
+            setOptionGroups([]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch menu data:", error);
+          alert("메뉴 데이터를 불러오는데 실패했습니다.");
+          navigate("/menus"); // 실패 시 메뉴 목록으로 이동
         }
-      }
+      };
+
+      fetchMenuData();
     }
-  }, [isEditMode, id, menus]);
+  }, [isEditMode, id, navigate]);
 
   const handleMenuInputChange = (field, value) => {
     console.log("Changing field:", field, "to value:", value);
@@ -142,10 +159,11 @@ export default function MenusAdd() {
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        const menuToEdit = findMenuById(menus, id);
-        const menuId = getMenuId(menuToEdit) || id;
-        console.log("Updating menu with ID:", menuId, "Payload:", payload);
-        await menuAPI.updateMenu(menuId, payload);
+        if (!actualMenuId) {
+          throw new Error('메뉴 ID가 없습니다.');
+        }
+        console.log("Updating menu with ID:", actualMenuId, "Payload:", payload);
+        await menuAPI.updateMenu(actualMenuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
         await menuAPI.addMenu(payload);
@@ -163,9 +181,11 @@ export default function MenusAdd() {
     if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
     
     try {
-      const menuToEdit = findMenuById(menus, id);
-      const menuId = getMenuId(menuToEdit) || id;
-      await menuAPI.deleteMenu(menuId);
+      if (!actualMenuId) {
+        throw new Error('메뉴 ID가 없습니다.');
+      }
+
+      await menuAPI.deleteMenu(actualMenuId);
       alert("메뉴가 성공적으로 삭제되었습니다.");
       navigate("/menus");
     } catch (error) {

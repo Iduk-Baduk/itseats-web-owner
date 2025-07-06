@@ -1,12 +1,102 @@
 .container {
+  padding: 20px;
   display: flex;
-  height: 100vh;
-  background: #f9f9f9;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.content {
-  flex: 1;
-  background: #fff;
-  overflow-y: auto;
-  margin-left: 120px; /* 사이드바 너비만큼 왼쪽 여백 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.error {
+  color: #ef4444;
+  text-align: center;
+  padding: 20px;
+  font-weight: 500;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.statsSection {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ordersSection {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-grow: 1;
+  min-height: 400px;
+}
+
+/* 태블릿 */
+@media (max-width: 1024px) {
+  .container {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .error {
+    font-size: 16px;
+    padding: 0 16px;
+  }
 }

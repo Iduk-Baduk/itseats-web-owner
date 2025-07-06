@@ -22,7 +22,6 @@
 .dialog {
   background: white;
   border-radius: 8px;
-  padding: 20px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
@@ -65,18 +64,23 @@
   font-size: 24px;
   color: #666;
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .closeButton:hover {
   background-color: #e0e0e0;
+  transform: scale(1.1);
+}
+
+.closeButton:active {
+  transform: scale(0.95);
 }
 
 /* 컨텐츠 */
@@ -239,24 +243,90 @@
   cursor: not-allowed;
 }
 
-/* 반응형 */
-@media (max-width: 768px) {
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
   .dialog {
-    width: 95%;
-    margin: 10px;
+    max-width: 90%;
+    margin: 20px;
+  }
+
+  .closeButton {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .footer {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .statusChange {
+    flex-direction: row;
+    padding: 12px;
+  }
+
+  .arrow {
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog {
+    max-width: 100%;
+    margin: 16px;
+    border-radius: 6px;
+  }
+
+  .header {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    padding: 6px;
   }
   
   .content {
-    max-height: 70vh;
+    padding: 16px;
   }
   
   .statusChange {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .statusText {
+    width: 100%;
+    text-align: center;
   }
   
   .arrow {
     transform: rotate(90deg);
-    margin: 8px 0;
+    margin: 4px 0;
+  }
+
+  .footer {
+    padding: 12px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .label {
+    font-size: 14px;
   }
 } 

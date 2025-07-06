@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
@@ -11,9 +12,11 @@ import PosNotificationCenter from '../../components/pos/PosNotificationCenter';
 import POS_API from '../../services/posAPI';
 import usePosAutoScheduler from '../../hooks/usePosAutoScheduler';
 import { POS_STATUS } from '../../constants/posStatus';
+import { useAuth } from '../../contexts/AuthContext';
 
 const POS = () => {
-  const [posStatus, setPosStatus] = useState(POS_STATUS.CLOSED);
+  const { currentUser } = useAuth();
+  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading, handleStatusChange: layoutHandleStatusChange } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState({
@@ -25,12 +28,45 @@ const POS = () => {
   const [statusHistory, setStatusHistory] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
+  const [metrics, setMetrics] = useState({
+    customerRating: 0,
+    avgCookTime: "0분",
+    cookTimeAccuracy: "0%",
+    pickupTime: "0초",
+    orderAcceptanceRate: "0%"
+  });
+
+  // 메트릭 데이터 로드
+  const loadMetrics = useCallback(async () => {
+    try {
+      const analytics = await POS_API.getPosAnalytics();
+      setMetrics(analytics.metrics || {
+        customerRating: 0,
+        avgCookTime: "0분",
+        cookTimeAccuracy: "0%",
+        pickupTime: "0초",
+        orderAcceptanceRate: "0%"
+      });
+    } catch (err) {
+      console.error('Failed to load metrics:', err);
+    }
+  }, []);
 
   // 상태 변경 핸들러
   const handleStatusChange = useCallback(async (newStatus) => {
     try {
       setError(null);
-      setPosStatus(newStatus);
+      
+      // API를 통해 상태 업데이트
+      await POS_API.updatePosStatus(newStatus, {
+        reason: '수동 상태 변경',
+        userId: currentUser?.id || 'system',
+        userName: currentUser?.name || '시스템',
+        category: 'MANUAL'
+      });
+      
+      // PosLayout의 상태 업데이트 함수 호출
+      layoutHandleStatusChange(newStatus);
       
       // 히스토리 새로고침
       const historyData = await POS_API.getPosStatusHistory();
@@ -38,11 +74,14 @@ const POS = () => {
       
       // 알림 새로고침
       await loadNotifications();
+      
+      // 메트릭 새로고침
+      await loadMetrics();
     } catch (err) {
       setError('상태 변경에 실패했습니다.');
       console.error('Failed to update POS status:', err);
     }
-  }, []);
+  }, [loadMetrics, layoutHandleStatusChange, currentUser]);
 
   // 알림 로드
   const loadNotifications = async () => {
@@ -55,37 +94,35 @@ const POS = () => {
   };
 
   // 자동화 스케줄러 적용
-  usePosAutoScheduler(settings, handleStatusChange);
+  const { resetDailyProcessing } = usePosAutoScheduler(settings, handleStatusChange);
 
-  // 초기 데이터 로딩
+  // 초기 데이터 로드
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const loadInitialData = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-
-        // 병렬로 데이터 요청
-        const [statusData, settingsData, historyData, notificationsData] = await Promise.all([
-          POS_API.getPosStatus(),
-          POS_API.getPosSettings(),
-          POS_API.getPosStatusHistory(),
-          POS_API.getNotifications(),
-        ]);
-
-        setPosStatus(statusData.status);
+        await Promise.all([
+          loadMetrics(),
+          loadNotifications(),
+          (async () => {
+            const historyData = await POS_API.getPosStatusHistory();
+            setStatusHistory(historyData.history);
+          })(),
+          (async () => {
+            const settingsData = await POS_API.getPosAutoSettings();
         setSettings(settingsData);
-        setStatusHistory(historyData.history);
-        setNotifications(notificationsData);
+          })()
+        ]);
       } catch (err) {
-        setError('데이터를 불러오는데 실패했습니다.');
-        console.error('Failed to fetch POS data:', err);
+        console.error('Failed to load initial data:', err);
+        setError('데이터 로드에 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchInitialData();
-  }, []);
+    loadInitialData();
+  }, [loadMetrics]);
 
   const handleSettingsChange = async (newSettings) => {
     try {
@@ -101,7 +138,7 @@ const POS = () => {
   // 읽지 않은 알림 수
   const unreadNotificationCount = notifications.filter(notif => !notif.isRead).length;
 
-  if (isLoading) {
+  if (isLoading || isStatusLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
@@ -153,8 +190,10 @@ const POS = () => {
         </button>
       </div>
 
+      <PosQuickAccess className={styles.posQuickAccess} />
+
       <div className={styles.statusSection}>
-        <h2>POS 상태 관리</h2>
+        <h2>{currentUser?.storeName || '매장'}</h2>
         {error && <div className={styles.error}>{error}</div>}
         
         <div className={styles.currentStatus}>
@@ -170,18 +209,17 @@ const POS = () => {
         <PosAutoSettings
           settings={settings}
           onSettingsChange={handleSettingsChange}
+          onResetDailyProcessing={resetDailyProcessing}
         />
-        
-        <PosStatusHistory history={statusHistory} />
-      </div>
 
       <PosMetricItem
-        metricName={dummyData.storeName}
-        metricValue={dummyData.metrics}
+        metricName={currentUser?.storeName || "매장 정보 없음"}
+        metricValue={metrics}
         className={styles.posMetricItem}
       />
       
-      <PosQuickAccess className={styles.posQuickAccess} />
+        <PosStatusHistory history={statusHistory} />
+      </div>
 
       {/* 알림 센터 */}
       <PosNotificationCenter
@@ -190,17 +228,6 @@ const POS = () => {
       />
     </div>
   );
-};
-
-const dummyData = {
-  storeName: "스타벅스 커피",
-  metrics: {
-    customerRating: 2.0,
-    avgCookTime: "20분",
-    cookTimeAccuracy: "98%",
-    pickupTime: "43초",
-    orderAcceptanceRate: "100%",
-  },
 };
 
 export default POS;

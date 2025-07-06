@@ -4,10 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthProvider } from '../../../contexts/AuthContext';
 import PosStatusControl from '../PosStatusControl';
 import { POS_STATUS, POS_STATUS_LABEL } from '../../../constants/posStatus';
-import * as posAPI from '../../../services/posAPI';
+import posAPI from '../../../services/posAPI';
 
 vi.mock('../../../services/posAPI', () => ({
-  updatePosStatusWithNotification: vi.fn()
+  default: {
+    updatePosStatusWithNotification: vi.fn()
+  }
 }));
 
 vi.mock('../../../contexts/AuthContext', () => ({
