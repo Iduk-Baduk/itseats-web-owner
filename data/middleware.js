@@ -152,7 +152,7 @@ module.exports = (req, res, next) => {
   // 주문 시뮬레이션 API
   if (req.method === 'POST' && req.path === '/api/simulation/start') {
     const { storeId } = req.body;
-    if (!storeId) {
+    if (!storeId || typeof storeId !== 'string' || storeId.trim() === '') {
       res.status(400).json({ message: '매장 ID가 필요합니다.' });
       return;
     }
