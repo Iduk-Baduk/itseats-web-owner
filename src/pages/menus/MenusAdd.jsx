@@ -39,6 +39,7 @@ export default function MenusAdd() {
   const [optionGroups, setOptionGroups] = useState([]);
   const [groupOpenStates, setGroupOpenStates] = useState({});
   const [isEditMode] = useState(!!id);
+  const [actualMenuId, setActualMenuId] = useState(null);
 
   useEffect(() => {
     if (isEditMode) {
@@ -58,6 +59,7 @@ export default function MenusAdd() {
             throw new Error('메뉴를 찾을 수 없습니다.');
           }
 
+          setActualMenuId(menuToEdit.id);
           console.log("Found menu to edit:", menuToEdit);
           setMenuData({
             menuGroupName: menuToEdit.menuGroupName || "",
@@ -157,16 +159,11 @@ export default function MenusAdd() {
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        // 전체 메뉴 목록을 가져와서 실제 ID를 찾습니다
-        const menusResponse = await menuAPI.getMenus();
-        const menuToEdit = menusResponse.find(menu => String(menu.menuId) === String(id));
-        
-        if (!menuToEdit) {
-          throw new Error('메뉴를 찾을 수 없습니다.');
+        if (!actualMenuId) {
+          throw new Error('메뉴 ID가 없습니다.');
         }
-
-        console.log("Updating menu with ID:", menuToEdit.id, "Payload:", payload);
-        await menuAPI.updateMenu(menuToEdit.id, payload);
+        console.log("Updating menu with ID:", actualMenuId, "Payload:", payload);
+        await menuAPI.updateMenu(actualMenuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
         await menuAPI.addMenu(payload);
@@ -184,15 +181,11 @@ export default function MenusAdd() {
     if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
     
     try {
-      // 전체 메뉴 목록을 가져와서 실제 ID를 찾습니다
-      const menusResponse = await menuAPI.getMenus();
-      const menuToEdit = menusResponse.find(menu => String(menu.menuId) === String(id));
-      
-      if (!menuToEdit) {
-        throw new Error('메뉴를 찾을 수 없습니다.');
+      if (!actualMenuId) {
+        throw new Error('메뉴 ID가 없습니다.');
       }
 
-      await menuAPI.deleteMenu(menuToEdit.id);
+      await menuAPI.deleteMenu(actualMenuId);
       alert("메뉴가 성공적으로 삭제되었습니다.");
       navigate("/menus");
     } catch (error) {
