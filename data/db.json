@@ -21018,6 +21018,48 @@
       ],
       "totalAmount": 10500,
       "createdAt": "2025-07-06T10:22:13.865Z"
+    },
+    {
+      "id": "order-1751798343408",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "4359",
+          "name": "12",
+          "quantity": 2,
+          "price": 22
+        },
+        {
+          "menuId": "93cd",
+          "name": "아메리카노",
+          "quantity": 3,
+          "price": 6000
+        },
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        }
+      ],
+      "totalAmount": 6026,
+      "createdAt": "2025-07-06T10:39:03.408Z"
+    },
+    {
+      "id": "order-1751798373409",
+      "storeId": "store001",
+      "status": "PENDING",
+      "items": [
+        {
+          "menuId": "2048",
+          "name": "1",
+          "quantity": 2,
+          "price": 4
+        }
+      ],
+      "totalAmount": 4,
+      "createdAt": "2025-07-06T10:39:33.409Z"
     }
   ],
   "daily_stats": [
@@ -21103,8 +21145,188 @@
   ],
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-07-06T10:36:25.921Z",
+    "lastUpdated": "2025-07-06T10:39:44.634Z",
     "statusHistory": [
+      {
+        "id": "mcrjj0fu-vv30m8",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:39:44.634Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjj0ev-nee669",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:39:44.599Z",
+        "reason": "재료 부족",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "123",
+        "estimatedRevenueLoss": 11,
+        "affectedOrderCount": 222,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjiu7z-fuccgz",
+        "status": "BREAK",
+        "timestamp": "2025-07-06T10:39:36.575Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjiu6s-bfu5vw",
+        "status": "BREAK",
+        "timestamp": "2025-07-06T10:39:36.532Z",
+        "reason": "임시 휴게",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "123",
+        "estimatedRevenueLoss": 111,
+        "affectedOrderCount": 111,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjip5o-mxguxl",
+        "status": "OPEN",
+        "timestamp": "2025-07-06T10:39:30.012Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjip4t-ulk8xa",
+        "status": "OPEN",
+        "timestamp": "2025-07-06T10:39:29.981Z",
+        "reason": "임시 영업 재개",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "123",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjih6c-lm6wdo",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:39:19.668Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjih4v-3lnyms",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:39:19.615Z",
+        "reason": "긴급 상황",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "1",
+        "estimatedRevenueLoss": 23,
+        "affectedOrderCount": 23123,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrji3yq-dj6ohd",
+        "status": "OPEN",
+        "timestamp": "2025-07-06T10:39:02.546Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrji3xw-q6b104",
+        "status": "OPEN",
+        "timestamp": "2025-07-06T10:39:02.516Z",
+        "reason": "정상 영업 시작",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjhxqx-h86aoj",
+        "status": "PREPARING",
+        "timestamp": "2025-07-06T10:38:54.489Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjhxpw-h94z2n",
+        "status": "PREPARING",
+        "timestamp": "2025-07-06T10:38:54.452Z",
+        "reason": "개점 준비",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "mcrjer41-mo3zq4",
         "status": "CLOSED",
@@ -22930,6 +23152,66 @@
     },
     "notifications": [
       {
+        "id": "mcrjj0fi-u488or",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (재료 부족)",
+        "timestamp": "2025-07-06T10:39:44.622Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjj0ff-9cq3zs"
+      },
+      {
+        "id": "mcrjiu7l-oibn2r",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 BREAK(으)로 변경되었습니다. (임시 휴게)",
+        "timestamp": "2025-07-06T10:39:36.561Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjiu7f-78q6a7"
+      },
+      {
+        "id": "mcrjip5c-lotsjc",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 OPEN(으)로 변경되었습니다. (임시 영업 재개)",
+        "timestamp": "2025-07-06T10:39:30.000Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjip57-ncby6f"
+      },
+      {
+        "id": "mcrjih5x-kajb7y",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (긴급 상황)",
+        "timestamp": "2025-07-06T10:39:19.653Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjih5s-etobgb"
+      },
+      {
+        "id": "mcrji3yh-glerxi",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 OPEN(으)로 변경되었습니다. (정상 영업 시작)",
+        "timestamp": "2025-07-06T10:39:02.537Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrji3yd-nuvzbq"
+      },
+      {
+        "id": "mcrjhxqm-wz5iul",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 PREPARING(으)로 변경되었습니다. (개점 준비)",
+        "timestamp": "2025-07-06T10:38:54.478Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjhxqh-c1fi2k"
+      },
+      {
         "id": "mcrjer3q-2gupwp",
         "type": "STATUS_CHANGE",
         "title": "매장 상태 변경",
@@ -23863,7 +24145,7 @@
         "id": "mco51svt-owudpl",
         "type": "STATUS_CHANGE",
         "title": "매장 상태 변경",
-        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 ���태 변경: CLOSED)",
         "timestamp": "2025-07-04T01:31:08.537Z",
         "isRead": false,
         "severity": "INFO",
@@ -23923,7 +24205,7 @@
         "id": "mco3n386-gn03rn",
         "type": "STATUS_CHANGE",
         "title": "매장 상태 변경",
-        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상태 변경: CLOSED)",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (자동 상��� 변경: CLOSED)",
         "timestamp": "2025-07-04T00:51:42.486Z",
         "isRead": false,
         "severity": "INFO",

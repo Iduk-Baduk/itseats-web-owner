@@ -11,7 +11,7 @@ const Toast = ({ message, type = 'info', onClose, duration = 3000 }) => {
   }, [duration, onClose]);
 
   return (
-    <div className={`${styles.toast} ${styles[type]}`}>
+    <div className={`${styles.toast} ${styles[type]} ${styles.visible}`}>
       <span className={styles.message}>{message}</span>
       <button className={styles.closeButton} onClick={onClose}>
         ×
