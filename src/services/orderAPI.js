@@ -159,7 +159,7 @@ export const fetchDailyStats = async (storeId) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   // 모든 주문 데이터 조회
-  const response = await apiClient.get(`/orders?storeId=${storeId}`);
+  const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
   const orders = response.data;
 
   // 오늘의 주문만 필터링
@@ -220,7 +220,7 @@ export const fetchTopMenus = async (storeId) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   // 모든 주문 데이터 조회
-  const response = await apiClient.get(`/orders?storeId=${storeId}`);
+  const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
   const orders = response.data;
 
   // 오늘의 완료된 주문만 필터링

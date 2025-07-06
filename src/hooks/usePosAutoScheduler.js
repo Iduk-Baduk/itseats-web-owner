@@ -71,12 +71,14 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
 
         const currentStatus = determineCurrentStatus(settings);
         if (currentStatus) {
-          await autoUpdatePosStatus(currentStatus);
           await posAPI.updatePosStatusWithNotification(settings.posId, {
             status: currentStatus,
             reason: `자동 상태 변경: ${currentStatus}`,
             category: 'AUTO',
           });
+          stableOnStatusChange(currentStatus);
+          markProcessedToday();
+          toast.success(`POS 상태가 ${POS_STATUS_LABEL[currentStatus]}로 자동 변경되었습니다.`);
         }
 
         const delay = getNextStatusChangeDelay(settings);
