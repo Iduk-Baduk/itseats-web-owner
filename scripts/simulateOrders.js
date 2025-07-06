@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import MENUS from '../data/menus.js';
 
 const STORE_ID = 'store001';  // 시뮬레이션할 매장 ID
@@ -38,7 +39,7 @@ function generateRandomOrder() {
   }
 
   return {
-    id: `order-${Date.now()}`,
+    id: `order-${uuidv4().slice(0, 8)}`,
     storeId: STORE_ID,
     status: 'PENDING',
     items,
