@@ -103,7 +103,9 @@ export const orderAPI = {
 
   // 주간 통계 조회
   getWeeklyStats: withOrderErrorHandling(async (storeId, startDate) => {
-    const params = startDate ? { startDate: startDate.toISOString().split('T')[0] } : {};
+    const params = (startDate && startDate instanceof Date && !isNaN(startDate))
+      ? { startDate: startDate.toISOString().split('T')[0] }
+      : {};
     const response = await apiClient.get(API_ENDPOINTS.ORDERS.STATS.WEEKLY(storeId), { params });
     return response.data;
   }, 'GET_WEEKLY_STATS'),
