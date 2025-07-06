@@ -79,8 +79,8 @@ module.exports = (req, res, next) => {
           const orders = ordersCollection.filter({ storeId: storeId }).value();
           res.json(orders);
         } catch (error) {
-          console.error('Failed to fetch orders:', error);
-          res.status(500).json({ error: '주문 목록 조회에 실패했습니다.' });
+          console.error('주문 목록 조회 중 오류:', error);
+          res.status(500).json({ error: '서버 오류가 발생했습니다.' });
         }
         return;
       }
@@ -101,8 +101,8 @@ module.exports = (req, res, next) => {
             res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
           }
         } catch (error) {
-          console.error('Failed to fetch order:', error);
-          res.status(500).json({ error: '주문 조회에 실패했습니다.' });
+          console.error('주문 조회 중 오류:', error);
+          res.status(500).json({ error: '서버 오류가 발생했습니다.' });
         }
         return;
       } else if (req.method === 'PATCH') {
@@ -122,8 +122,8 @@ module.exports = (req, res, next) => {
             res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
           }
         } catch (error) {
-          console.error('Failed to update order:', error);
-          res.status(500).json({ error: '주문 업데이트에 실패했습니다.' });
+          console.error('주문 업데이트 중 오류:', error);
+          res.status(500).json({ error: '서버 오류가 발생했습니다.' });
         }
         return;
       }
@@ -180,8 +180,8 @@ module.exports = (req, res, next) => {
       const newOrder = generateRandomOrder(storeId);
       ordersCollection.push(newOrder).write();
     } catch (error) {
-      console.error('Failed to create order:', error);
-      res.status(500).json({ error: '주문 생성에 실패했습니다.' });
+      console.error('주문 생성 중 오류:', error);
+      res.status(500).json({ error: '서버 오류가 발생했습니다.' });
       return;
     }
 
