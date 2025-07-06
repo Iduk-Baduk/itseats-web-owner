@@ -21103,8 +21103,38 @@
   ],
   "pos": {
     "currentStatus": "CLOSED",
-    "lastUpdated": "2025-07-06T10:33:28.002Z",
+    "lastUpdated": "2025-07-06T10:36:25.921Z",
     "statusHistory": [
+      {
+        "id": "mcrjer41-mo3zq4",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:36:25.921Z",
+        "reason": "수동 상태 변경",
+        "userId": "system",
+        "userName": "시스템",
+        "notes": "",
+        "estimatedRevenueLoss": 0,
+        "affectedOrderCount": 0,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
+      {
+        "id": "mcrjer2r-g9kpeg",
+        "status": "CLOSED",
+        "timestamp": "2025-07-06T10:36:25.875Z",
+        "reason": "재료 부족",
+        "userId": "admin001",
+        "userName": "관리자",
+        "notes": "1",
+        "estimatedRevenueLoss": 123,
+        "affectedOrderCount": 11,
+        "category": "MANUAL",
+        "requiresApproval": false,
+        "approvedBy": null,
+        "approvedAt": null
+      },
       {
         "id": "mcrjaxtu-zvi45t",
         "status": "CLOSED",
@@ -22899,6 +22929,16 @@
       "updatedAt": "2025-07-06T10:33:19.902Z"
     },
     "notifications": [
+      {
+        "id": "mcrjer3q-2gupwp",
+        "type": "STATUS_CHANGE",
+        "title": "매장 상태 변경",
+        "message": "매장 상태가 CLOSED(으)로 변경되었습니다. (재료 부족)",
+        "timestamp": "2025-07-06T10:36:25.910Z",
+        "isRead": false,
+        "severity": "INFO",
+        "relatedStatusChangeId": "mcrjer3l-a0j4p2"
+      },
       {
         "id": "mcrjaxuq-wsw2lf",
         "type": "STATUS_CHANGE",

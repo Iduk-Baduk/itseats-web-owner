@@ -59,6 +59,20 @@ export default function PosLayout() {
     }
   }, [currentUser]);
 
+  // 상태 변경 핸들러 (자식 컴포넌트에서 사용)
+  const handleStatusChange = async (newStatus) => {
+    try {
+      setPosStatus(newStatus);
+      setIsReceivingOrders(newStatus === POS_STATUS.OPEN);
+      
+      // 로컬 스토리지에 저장
+      localStorage.setItem('posStatus', newStatus);
+      localStorage.setItem('isReceivingOrders', JSON.stringify(newStatus === POS_STATUS.OPEN));
+    } catch (err) {
+      console.error('Failed to update POS status:', err);
+    }
+  };
+
   // 주문 접수 상태와 모달 표시 상태 관리
   const handleToggle = async () => {
     if (isReceivingOrders) {
@@ -129,7 +143,7 @@ export default function PosLayout() {
   return (
     <>
       <PosHeader isReceivingOrders={isReceivingOrders} onToggle={handleToggle} />
-      <Outlet context={{ posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading }} />
+      <Outlet context={{ posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading, handleStatusChange }} />
       {showPauseModal && (
         <PosSelectModal
           title="주문 일시 정지"

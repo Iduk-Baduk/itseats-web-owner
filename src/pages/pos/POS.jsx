@@ -16,7 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const POS = () => {
   const { currentUser } = useAuth();
-  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading } = useOutletContext();
+  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading, handleStatusChange: layoutHandleStatusChange } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [settings, setSettings] = useState({
@@ -65,9 +65,8 @@ const POS = () => {
         category: 'MANUAL'
       });
       
-      // 로컬 상태 업데이트
-      setPosStatus(newStatus);
-      setIsReceivingOrders(newStatus === POS_STATUS.OPEN);
+      // PosLayout의 상태 업데이트 함수 호출
+      layoutHandleStatusChange(newStatus);
       
       // 히스토리 새로고침
       const historyData = await POS_API.getPosStatusHistory();
@@ -82,7 +81,7 @@ const POS = () => {
       setError('상태 변경에 실패했습니다.');
       console.error('Failed to update POS status:', err);
     }
-  }, [loadMetrics, setPosStatus, setIsReceivingOrders, currentUser]);
+  }, [loadMetrics, layoutHandleStatusChange, currentUser]);
 
   // 알림 로드
   const loadNotifications = async () => {
