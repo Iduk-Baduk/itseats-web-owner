@@ -1,7 +1,6 @@
 import { API_ENDPOINTS } from "../config/api";
 import apiClient from "./apiClient";
 import { handleError } from "../utils/errorHandler";
-import { useAuth } from "../contexts/AuthContext";
 import { ORDER_STATUS } from '../constants/orderTypes';
 
 // 에러 처리 래퍼
