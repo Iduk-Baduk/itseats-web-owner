@@ -37,7 +37,8 @@ export default function PosLayout() {
     const loadPosStatus = async () => {
       try {
         setIsStatusLoading(true);
-        const status = await posAPI.getPosStatus(currentUser?.posId);
+        const statusResponse = await posAPI.getPosStatus(currentUser?.posId);
+        const status = statusResponse.status;
         setPosStatus(status);
         setIsReceivingOrders(status === POS_STATUS.OPEN);
         

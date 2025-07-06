@@ -327,6 +327,13 @@ const posAPI = {
     return response.data.settings;
   }, 'getPosAutoSettings'),
 
+  // POS 설정 업데이트
+  updatePosSettings: withPosErrorHandling(async (newSettings) => {
+    return updatePosData(currentData => 
+      updateSettings(currentData, newSettings, 'settings')
+    );
+  }, 'updatePosSettings'),
+
   // POS 분석 데이터 조회
   getPosAnalytics: withPosErrorHandling(async () => {
     const response = await retryApiCall(() => apiClient.get('/pos_analytics'), MAX_RETRIES, RETRY_DELAY);
@@ -362,8 +369,8 @@ const posAPI = {
 
   // 알림 목록 조회
   getNotifications: withPosErrorHandling(async () => {
-    const response = await retryApiCall(() => apiClient.get('/pos_notifications'), MAX_RETRIES, RETRY_DELAY);
-    return response.data;
+    const response = await apiClient.get('/pos');
+    return response.data.notifications || [];
   }, 'getNotifications'),
 
   // 알림 읽음 처리

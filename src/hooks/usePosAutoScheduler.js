@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import posAPI from '../services/posAPI';
 import { retryApiCall } from '../utils/errorHandler';
@@ -16,6 +16,27 @@ import {
  */
 const usePosAutoScheduler = (settings, onStatusChange) => {
   const stableOnStatusChange = useCallback(onStatusChange, []);
+  const timeoutIdRef = useRef(null);
+  const lastProcessedDateRef = useRef(null);
+
+  /**
+   * 오늘 날짜에 이미 자동 상태 변경이 처리되었는지 확인
+   * @returns {boolean} 처리 여부
+   */
+  const hasProcessedToday = () => {
+    const today = new Date().toDateString();
+    const lastProcessed = localStorage.getItem('lastAutoStatusChangeDate');
+    return lastProcessed === today;
+  };
+
+  /**
+   * 오늘 날짜에 자동 상태 변경 처리 완료 표시
+   */
+  const markProcessedToday = () => {
+    const today = new Date().toDateString();
+    localStorage.setItem('lastAutoStatusChangeDate', today);
+    lastProcessedDateRef.current = today;
+  };
 
   /**
    * POS 상태 자동 업데이트
@@ -25,6 +46,7 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
     try {
       await posAPI.updatePosStatus(status);
       stableOnStatusChange(status);
+      markProcessedToday();
       toast.success(`POS 상태가 ${POS_STATUS_LABEL[status]}로 자동 변경되었습니다.`);
     } catch (error) {
       console.error('Failed to auto-update POS status:', error);
@@ -33,13 +55,23 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
   }, [stableOnStatusChange]);
 
   useEffect(() => {
-    let timeoutId = null;
+    // 기존 타이머 정리
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
 
     const scheduleNextUpdate = async () => {
       try {
+        // 오늘 이미 처리되었으면 스킵
+        if (hasProcessedToday()) {
+          console.log('오늘 이미 자동 상태 변경이 처리되었습니다.');
+          return;
+        }
+
         const currentStatus = determineCurrentStatus(settings);
         if (currentStatus) {
-          stableOnStatusChange(currentStatus);
+          await autoUpdatePosStatus(currentStatus);
           await posAPI.updatePosStatusWithNotification(settings.posId, {
             status: currentStatus,
             reason: `자동 상태 변경: ${currentStatus}`,
@@ -49,7 +81,7 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
 
         const delay = getNextStatusChangeDelay(settings);
         if (delay > 0) {
-          timeoutId = setTimeout(scheduleNextUpdate, delay);
+          timeoutIdRef.current = setTimeout(scheduleNextUpdate, delay);
         }
       } catch (error) {
         console.error('Failed to auto-update POS status:', error);
@@ -61,11 +93,12 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
     }
 
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
       }
     };
-  }, [settings, stableOnStatusChange]);
+  }, [settings, stableOnStatusChange, autoUpdatePosStatus]);
 
   return {
     runScheduler: useCallback(() => {
@@ -73,7 +106,13 @@ const usePosAutoScheduler = (settings, onStatusChange) => {
       if (nextStatus) {
         stableOnStatusChange(nextStatus);
       }
-    }, [settings, stableOnStatusChange])
+    }, [settings, stableOnStatusChange]),
+    
+    resetDailyProcessing: useCallback(() => {
+      localStorage.removeItem('lastAutoStatusChangeDate');
+      lastProcessedDateRef.current = null;
+      console.log('일일 자동 상태 변경 처리 기록이 초기화되었습니다.');
+    }, [])
   };
 };
 

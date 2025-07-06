@@ -121,6 +121,19 @@ module.exports = (req, res, next) => {
       return;
     }
 
+    // 매장 상태 확인
+    const posData = req.app.db.get('pos').value();
+    const currentStatus = posData?.currentStatus || 'CLOSED';
+    
+    // 영업중이 아닐 때는 주문 생성하지 않음
+    if (currentStatus !== 'OPEN') {
+      res.status(403).json({ 
+        message: '매장이 영업중이 아닙니다.', 
+        currentStatus: currentStatus 
+      });
+      return;
+    }
+
     // 새로운 주문 생성
     const newOrder = generateRandomOrder(storeId);
     const orders = req.app.db.get('orders');
@@ -131,6 +144,22 @@ module.exports = (req, res, next) => {
 
     res.json(newOrder);
     return;
+  }
+
+  // 직접 주문 생성 API (POST /orders)
+  if (req.method === 'POST' && req.path === '/orders') {
+    // 매장 상태 확인
+    const posData = req.app.db.get('pos').value();
+    const currentStatus = posData?.currentStatus || 'CLOSED';
+    
+    // 영업중이 아닐 때는 주문 생성하지 않음
+    if (currentStatus !== 'OPEN') {
+      res.status(403).json({ 
+        message: '매장이 영업중이 아닙니다.', 
+        currentStatus: currentStatus 
+      });
+      return;
+    }
   }
 
   // API 응답 지연 시뮬레이션

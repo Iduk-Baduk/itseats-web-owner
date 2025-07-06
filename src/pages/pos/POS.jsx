@@ -85,7 +85,7 @@ const POS = () => {
   };
 
   // 자동화 스케줄러 적용
-  usePosAutoScheduler(settings, handleStatusChange);
+  const { resetDailyProcessing } = usePosAutoScheduler(settings, handleStatusChange);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -195,6 +195,12 @@ const POS = () => {
         <PosStatusControl
           currentStatus={posStatus}
           onStatusChange={handleStatusChange}
+        />
+
+        <PosAutoSettings
+          settings={settings}
+          onSettingsChange={handleSettingsChange}
+          onResetDailyProcessing={resetDailyProcessing}
         />
 
         <PosMetricItem
