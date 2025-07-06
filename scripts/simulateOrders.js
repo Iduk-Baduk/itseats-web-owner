@@ -44,7 +44,7 @@ function generateRandomOrder() {
     status: 'PENDING',
     items,
     totalAmount,
-    createdAt: new Date().toISOString()
+    orderTime: new Date().toISOString()
   };
 }
 
