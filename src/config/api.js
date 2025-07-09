@@ -1,3 +1,5 @@
+import { add } from "date-fns";
+
 const getEnvVar = (key, defaultValue) => {
   if (typeof import.meta !== 'undefined' && import.meta.env) {
     return import.meta.env[key] || defaultValue;
@@ -15,6 +17,10 @@ export const API_ENDPOINTS = {
   MEMBERS: {
     LOGIN: () => '/login', // POST (로그인)
     ME: () => '/owner/members/me', // GET (내 정보 조회)
+  },
+  // 가맹점 관련
+  STORES: {
+    ADD: () => '/owner/store-regist', // POST (가맹점 추가)
   },
   // 매장 메뉴 관련
   MENUS: {
