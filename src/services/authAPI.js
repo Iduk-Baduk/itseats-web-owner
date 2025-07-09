@@ -71,13 +71,13 @@ export const login = async ({ username, password }) => {
 export const getCurrentUser = async () => {
   const response = await apiClient.get(API_ENDPOINTS.MEMBERS.ME());
   return {
-    userId: response.memberId,
-    userName: response.username,
-    name: response.name,
-    email: response.email,
-    phone: response.phone,
-    storeId: response.stores[0]?.storeId || null,
-    storeName: response.stores[0]?.storeName || null,
+    userId: response.data.memberId,
+    userName: response.data.username,
+    name: response.data.name,
+    email: response.data.email,
+    phone: response.data.phone,
+    storeId: response.data.stores[0]?.storeId || null,
+    storeName: response.data.stores[0]?.storeName || null,
   };
 };
 
