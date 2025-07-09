@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
   MEMBERS: {
     LOGIN: () => '/login', // POST (로그인)
     ME: () => '/owner/members/me', // GET (내 정보 조회)
+    SIGN_UP: () => '/owner/members/sign-up', // POST (회원가입)
   },
   // 가맹점 관련
   STORES: {

@@ -6,7 +6,7 @@ import { saveToken, clearToken } from '../utils/tokenUtils';
 // 회원가입 API
 export const register = async (form) => {
   try {
-    const response = await apiClient.post('/owner/members/sign-up', form);
+    const response = await apiClient.post(API_ENDPOINTS.MEMBERS.SIGN_UP(), form);
 
     return {
       success: true,

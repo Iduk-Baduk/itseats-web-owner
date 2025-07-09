@@ -74,7 +74,7 @@ export default function Header({
               d="M256 144c-19.72 0-37.55 7.39-50.22 20.82s-19 32-17.57 51.93C191.11 256 221.52 288 256 288s64.83-32 67.79-71.24c1.48-19.74-4.8-38.14-17.68-51.82C293.39 151.44 275.59 144 256 144"
             />
           </svg>
-          <span className={styles.nickname}>{currentUser.nickname}</span>
+          <span className={styles.nickname}>{currentUser?.nickname || '사용자'}</span>
         </button>
         {menuOpen && (
           <div className={styles.flyout}>
