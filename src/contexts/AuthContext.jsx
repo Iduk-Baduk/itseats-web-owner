@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import AuthAPI from '../services/authAPI';
+import { STORAGE_KEYS } from '../utils/logger';
 import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -17,13 +19,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // 로컬 스토리지에서 사용자 정보 복원
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
     if (storedUser) {
       try {
         setCurrentUser(JSON.parse(storedUser));
       } catch (error) {
         console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
       }
     }
     setLoading(false);
@@ -31,10 +33,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      // TODO: 실제 API 호출로 대체
-      const response = await mockLoginAPI(credentials);
+      const response = await AuthAPI.login(credentials);
       setCurrentUser(response.user);
-      localStorage.setItem('currentUser', JSON.stringify(response.user));
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
       return response.user;
     } catch (error) {
       toast.error(error.message);
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     toast.success('로그아웃되었습니다.');
   };
 
@@ -64,23 +65,6 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// TODO: 실제 API로 대체
-const mockLoginAPI = async (credentials) => {
-  // 임시 검증 로직
-  if (credentials.username === 'admin' && credentials.password === 'password') {
-    return {
-      user: {
-        userId: 'admin001',
-        userName: '관리자',
-        role: 'ADMIN',
-        storeId: 'store001',
-        storeName: '테스트 매장'
-      }
-    };
-  }
-  throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
 };
 
 export default AuthContext; 
