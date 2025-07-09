@@ -13,7 +13,7 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
 
   const emailRegEx =
     /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/i;
-  const passwordRegEx = /^[A-Za-z0-9]{8,20}$/;
+  const passwordRegEx = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/;
 
   const handleChange = (index, value) => {
     const newValues = [...values];
@@ -30,7 +30,7 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
 
     if (field.info === "password") {
       setPasswordError(
-        passwordRegEx.test(value) ? "" : "비밀번호는 8~20자의 영문·숫자 조합이어야 합니다."
+        passwordRegEx.test(value) ? "" : "비밀번호는 최소 8자리, 영문, 숫자, 특수문자를 포함해야 합니다."
       );
       // 입력값이 바뀌면 확인칸 일치도 다시 확인
       const confirmIndex = data.findIndex((f) => f.info === "passwordConfirm");

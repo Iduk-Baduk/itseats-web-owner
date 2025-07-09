@@ -2,6 +2,32 @@ import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
 import { saveToken, clearToken } from '../utils/tokenUtils';
 
+// 회원가입 API
+export const register = async (form) => {
+  try {
+    const response = await apiClient.post('/owner/members/sign-up', form);
+
+    return {
+      success: true,
+      user: {
+        id: response.data.memberId,
+        username: form.username,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        storeId: null,
+        storeName: null,
+      },
+      message: '회원가입이 완료되었습니다.'
+    };
+  } catch (error) {
+    if (error.response) {
+      error.message = JSON.stringify(error.response.data) || '회원가입에 실패했습니다.';
+    }
+    throw error;
+  }
+};
+
 // 로그인 API
 export const login = async ({ username, password }) => {
   try {
@@ -17,7 +43,7 @@ export const login = async ({ username, password }) => {
     saveToken(accessToken, expiresIn);
 
     const currentMember = await apiClient.get(API_ENDPOINTS.MEMBERS.ME());
-  
+
     return {
       success: true,
       user: {
@@ -66,6 +92,7 @@ export const logout = () => {
 };
 
 const AuthAPI = {
+  register,
   login,
   getCurrentUser,
   logout,

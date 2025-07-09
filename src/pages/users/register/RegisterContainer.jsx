@@ -1,12 +1,19 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import RegisterStepOneUserInfo from "./RegisterStepOneUserInfo";
 import RegisterStepTwoStoreInfo from "./RegisterStepTwoStoreInfo";
 import RegisterStepThreeBizInfo from "./RegisterStepThreeBizInfo";
 import RegisterSubmitPage from "./RegisterCompleted";
 import { USER_INFO, STORE_INFO, BUSINESS_REGISTRATION } from "../../../constants/formFields";
+import { useAuth } from "../../../contexts/AuthContext";
+import AuthAPI from "../../../services/authAPI";
+import toast from "react-hot-toast";
 
 export default function RegisterContainer() {
-  const [step, setStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const { login } = useAuth();
+
+  const [step, setStep] = useState(Number.parseInt(searchParams.get("step")) || 1);
   const [formData, setFormData] = useState({
     userInfo: {},
     storeInfo: {},
@@ -24,6 +31,18 @@ export default function RegisterContainer() {
     return result;
   };
 
+  async function handleOwnerSignup(userInfo) {
+    try {
+      const response = await AuthAPI.register(userInfo);
+      if (response.success) {
+        await login({ username: userInfo.username, password: userInfo.password });
+        goNext();
+      }
+    } catch (error) {
+      toast.error("회원가입에 실패했습니다.");
+    }
+  }
+
   return (
     <>
       {step === 1 && (
@@ -35,7 +54,7 @@ export default function RegisterContainer() {
               ...prev,
               userInfo: mapValuesToInfo(values, USER_INFO),
             }));
-            goNext();
+            handleOwnerSignup(mapValuesToInfo(values, USER_INFO));
           }}
         />
       )}

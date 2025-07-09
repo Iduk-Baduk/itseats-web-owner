@@ -52,27 +52,13 @@ apiClient.interceptors.response.use(
       return Promise.reject(networkError);
     }
 
-    // 통합 에러 처리
-    const processedError = processError(error);
-    
     // 인증 에러 처리
-    if (processedError.statusCode === 401 || processedError.statusCode === 403) {
+    if (error.statusCode === 401 || error.statusCode === 403) {
       clearToken();
       window.location.href = '/login';
     }
     
-    // 500 에러 시 사용자 친화적 메시지
-    if (processedError.statusCode === 500) {
-      processedError.message = '서버 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-    }
-    
-    // 처리된 에러 정보로 새로운 에러 생성
-    const enhancedError = new Error(processedError.message);
-    enhancedError.type = processedError.type;
-    enhancedError.statusCode = processedError.statusCode;
-    enhancedError.originalError = processedError.originalError;
-    
-    return Promise.reject(enhancedError);
+    return error;
   }
 );
 

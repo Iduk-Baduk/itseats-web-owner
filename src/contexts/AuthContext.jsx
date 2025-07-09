@@ -36,6 +36,12 @@ export const AuthProvider = ({ children }) => {
       const response = await AuthAPI.login(credentials);
       setCurrentUser(response.user);
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
+
+      if (response.user.storeId === null) {
+        toast.error('등록된 매장이 없습니다. 매장을 등록해주세요.');
+        window.location.href = '/register?step=2'; // 매장 등록 페이지로 리다이렉트
+      }
+
       return response.user;
     } catch (error) {
       toast.error(error.message);
