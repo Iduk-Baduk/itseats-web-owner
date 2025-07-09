@@ -53,12 +53,12 @@ apiClient.interceptors.response.use(
     }
 
     // 인증 에러 처리
-    if (error.statusCode === 401 || error.statusCode === 403) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       clearToken();
       window.location.href = '/login';
     }
     
-    return error;
+    return Promise.reject(error);
   }
 );
 

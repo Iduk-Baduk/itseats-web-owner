@@ -205,7 +205,7 @@ export default function MenusAdd() {
   return (
     <div className={styles.container}>
       <Header
-        nickname="홍길동"
+        nickname=""
         showBackButton={true}
         onLeftClick={() => navigate("/menus")}
       />

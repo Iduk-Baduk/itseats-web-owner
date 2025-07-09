@@ -5,7 +5,7 @@ import Stepper from "../../../components/register/Stepper";
 
 import styles from "./RegisterStepOneUserInfo.module.css";
 
-export default function RegisterStepOneUserInfo({ step, data, onNext }) {
+export default function RegisterStepOneUserInfo({ step, data, onNext, isLoading }) {
   const [values, setValues] = useState(Array(data.length).fill(""));
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -83,7 +83,7 @@ export default function RegisterStepOneUserInfo({ step, data, onNext }) {
           )}
         </>
       ))}
-      <Button onClick={() => onNext(values)} disabled={!allFilled || !allValid}>
+      <Button onClick={() => onNext(values)} disabled={!allFilled || !allValid || isLoading}>
         다음
       </Button>
     </div>

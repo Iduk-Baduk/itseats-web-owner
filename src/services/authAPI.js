@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
+import { STORAGE_KEYS } from '../utils/logger';
 import { saveToken, clearToken } from '../utils/tokenUtils';
 
 // 회원가입 API
@@ -68,20 +69,16 @@ export const login = async ({ username, password }) => {
 
 // 내 정보 조회 API
 export const getCurrentUser = async () => {
-  try {
-    const response = await apiClient.get(API_ENDPOINTS.MEMBERS.ME());
-    return {
-      userId: response.data.memberId,
-      userName: response.data.username,
-      name: response.data.name,
-      email: response.data.email,
-      phone: response.data.phone,
-      storeId: response.data.stores[0]?.storeId || null,
-      storeName: response.data.stores[0]?.storeName || null,
-    };
-  } catch (error) {
-    throw error;
-  }
+  const response = await apiClient.get(API_ENDPOINTS.MEMBERS.ME());
+  return {
+    userId: response.memberId,
+    userName: response.username,
+    name: response.name,
+    email: response.email,
+    phone: response.phone,
+    storeId: response.stores[0]?.storeId || null,
+    storeName: response.stores[0]?.storeName || null,
+  };
 };
 
 // 로그아웃
