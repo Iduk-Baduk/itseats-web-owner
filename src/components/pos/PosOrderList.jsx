@@ -6,7 +6,6 @@ import { ORDER_STATUS, ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, ORDER_FILTERS } f
 import { orderAPI } from '../../services/orderAPI';
 import { PosOrderDetailModal } from './PosOrderDetailModal';
 import { useToast } from '../../contexts/ToastContext';
-import apiClient from '../../services/apiClient';
 
 export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
   const [orders, setOrders] = useState([]);
@@ -23,7 +22,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       setLoading(true);
       const response = await orderAPI.getOrders(storeId);
       const newOrders = response.data.orders || [];
-      
+
       // 새로운 주문 확인
       const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.id));
       const newPendingOrders = newOrders.filter(
@@ -178,7 +177,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
   // 주문 상태별 버튼 렌더링
   const getOrderActions = (order) => {
     switch (order.status) {
-      case ORDER_STATUS.PENDING:
+      case ORDER_STATUS.WAITING:
         return (
           <>
             <Button onClick={() => handleOrderAction(order.orderId || order.id, 'accept')} variant="primary">수락</Button>
@@ -229,12 +228,12 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
         <div className={styles.orderList}>
           {filteredOrders.map((order) => (
             <div 
-              key={`order-${order.orderId}-${order.status}`} 
+              key={`order-${order.orderNumber}-${order.status}`} 
               className={styles.orderCard}
               onClick={() => setSelectedOrderId(order.orderId)}
             >
               <div className={styles.orderHeader}>
-                <span className={styles.orderId}>주문 #{order.orderId}</span>
+                <span className={styles.orderId}>주문 {order.orderNumber}</span>
                 <span 
                   className={styles.status}
                   style={{ backgroundColor: ORDER_STATUS_COLOR[order.status] }}
@@ -244,9 +243,9 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
               </div>
               
               <div className={styles.orderItems}>
-                {order.items.map((item, index) => (
-                  <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
-                    <span>{item.name}</span>
+                {order.menuItems.map((item, index) => (
+                  <div key={`${order.orderId}-${item.menuName}-${item.quantity}-${index}`} className={styles.item}>
+                    <span>{item.menuName}</span>
                     <span>x {item.quantity}</span>
                   </div>
                 ))}

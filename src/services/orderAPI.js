@@ -18,22 +18,42 @@ export const orderAPI = {
   // 주문 목록 조회
   getOrders: withOrderErrorHandling(async (storeId) => {
     const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
-    // id를 orderId로 매핑
     const orders = Array.isArray(response.data) ? response.data : [];
     return { 
       data: { 
-        orders: orders.map(order => ({
-      ...order,
-      orderId: order.id
-        }))
-      } 
+        orders
+      }
     };
   }, 'GET_ORDERS'),
 
   // 주문 상세 조회
   getOrderDetail: withOrderErrorHandling(async (orderId) => {
     const response = await apiClient.get(API_ENDPOINTS.ORDERS.DETAIL(orderId));
-    return { data: { ...response.data, orderId: response.data.id } };
+    const rawOrder = response.data;
+
+    // 옵션 문자열을 JSON으로 파싱
+    const menuItems = rawOrder.menuItems.map((item) => {
+      let parsedOptions = [];
+      try {
+        // options는 문자열 배열로 되어 있음 → 하나의 JSON 문자열로 이어붙인 뒤 파싱
+        const optionString = item.options?.join(', ');
+        parsedOptions = JSON.parse(optionString);
+      } catch (e) {
+        console.error('옵션 파싱 오류:', e);
+      }
+
+      return {
+        ...item,
+        options: parsedOptions,
+      };
+    });
+
+    const order = {
+      ...rawOrder,
+      menuItems,
+    };
+
+    return order;
   }, 'GET_ORDER_DETAIL'),
 
   // 주문 상태 변경 (통합 메서드)
@@ -216,43 +236,44 @@ export const fetchTopMenus = async (storeId) => {
     throw new Error('매장 ID가 필요합니다.');
   }
 
-  // 오늘 날짜의 시작과 끝
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // // 오늘 날짜의 시작과 끝
+  // const today = new Date();
+  // today.setHours(0, 0, 0, 0);
+  // const tomorrow = new Date(today);
+  // tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // 모든 주문 데이터 조회
-  const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
-  const orders = response.data;
+  // // 모든 주문 데이터 조회
+  // const response = await apiClient.get(API_ENDPOINTS.ORDERS.LIST(storeId));
+  // const orders = response.data;
 
-  // 오늘의 완료된 주문만 필터링
-  const completedOrders = orders.filter(order => {
-    const orderDate = new Date(order.orderTime);
-    return orderDate >= today && orderDate < tomorrow && order.status === 'READY';
-  });
+  // // 오늘의 완료된 주문만 필터링
+  // const completedOrders = orders.filter(order => {
+  //   const orderDate = new Date(order.orderTime);
+  //   return orderDate >= today && orderDate < tomorrow && order.status === 'READY';
+  // });
 
-  // 메뉴별 주문 횟수 집계
-  const menuCounts = {};
-  completedOrders.forEach(order => {
-    order.items.forEach(item => {
-      const menuId = item.menuId;
-      const menuName = item.name;
-      if (!menuCounts[menuId]) {
-        menuCounts[menuId] = {
-          id: menuId,
-          name: menuName,
-          orderCount: 0
-        };
-      }
-      menuCounts[menuId].orderCount += item.quantity;
-    });
-  });
+  // // 메뉴별 주문 횟수 집계
+  // const menuCounts = {};
+  // completedOrders.forEach(order => {
+  //   order.items.forEach(item => {
+  //     const menuId = item.menuId;
+  //     const menuName = item.name;
+  //     if (!menuCounts[menuId]) {
+  //       menuCounts[menuId] = {
+  //         id: menuId,
+  //         name: menuName,
+  //         orderCount: 0
+  //       };
+  //     }
+  //     menuCounts[menuId].orderCount += item.quantity;
+  //   });
+  // });
 
-  // 상위 5개 메뉴 추출
-  const topMenus = Object.values(menuCounts)
-    .sort((a, b) => b.orderCount - a.orderCount)
-    .slice(0, 5);
+  // // 상위 5개 메뉴 추출
+  // const topMenus = Object.values(menuCounts)
+  //   .sort((a, b) => b.orderCount - a.orderCount)
+  //   .slice(0, 5);
 
-  return topMenus;
+  // return topMenus;
+  return [];
 }; 

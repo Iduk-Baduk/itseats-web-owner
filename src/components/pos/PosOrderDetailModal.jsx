@@ -17,7 +17,8 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
     try {
       setLoading(true);
       const response = await orderAPI.getOrderDetail(orderId);
-      setOrder(response.data);
+      console.log('Fetched order detail:', response);
+      setOrder(response);
       setError(null);
     } catch (err) {
       setError('주문 정보를 불러오는데 실패했습니다.');
@@ -102,33 +103,38 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
           <div className={styles.orderInfo}>
             <div className={styles.infoRow}>
               <span>주문 번호:</span>
-              <span>#{order.orderId}</span>
+              <span>&nbsp;{order.orderNumber}</span>
             </div>
             <div className={styles.infoRow}>
               <span>주문 상태:</span>
-              <span>{ORDER_STATUS_LABEL[order.status]}</span>
+              <span>{ORDER_STATUS_LABEL[order.orderStatus]}</span>
             </div>
             <div className={styles.infoRow}>
               <span>주문 시간:</span>
-              <span>{new Date(order.createdAt).toLocaleString()}</span>
+              <span>{new Date(order.orderTime).toLocaleString()}</span>
             </div>
           </div>
 
           <div className={styles.itemList}>
             <h4>주문 항목</h4>
-            {order.items.map((item, index) => (
+            {order.menuItems.map((item, index) => (
               <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
                 <div className={styles.itemInfo}>
-                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemName}>{item.menuName}</span>
                   <span className={styles.itemQuantity}>x {item.quantity}</span>
                 </div>
-                {item.options?.map((option, optIndex) => (
-                  <div key={`${order.orderId}-${item.name}-${option.name}-${option.value}`} className={styles.itemOption}>
-                    - {option.name}: {option.value}
+                {item.options?.map((optionGroup, ogIndex) => (
+                  <div key={`${order.orderId}-${item.menuName}-${optionGroup.optionGroupName}-${ogIndex}`} className={styles.itemOption}>
+                    <div>{optionGroup.optionGroupName}</div>
+                    {optionGroup.options.map((option, optIndex) => (
+                      <div key={`${order.orderId}-${item.menuName}-${optionGroup.optionGroupName}-${option.optionName}-${optIndex}`}>
+                        - {option.optionName} ({option.optionPrice.toLocaleString()}원)
+                      </div>
+                    ))}
                   </div>
                 ))}
                 <div className={styles.itemPrice}>
-                  {(item.price * item.quantity).toLocaleString()}원
+                  {(item.menuPrice).toLocaleString()}원
                 </div>
               </div>
             ))}
@@ -136,7 +142,7 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
 
           <div className={styles.totalPrice}>
             <span>총 결제 금액</span>
-            <span>{order.totalAmount.toLocaleString()}원</span>
+            <span>{order.totalPrice.toLocaleString()}원</span>
           </div>
 
           {order.status === ORDER_STATUS.PENDING && (
