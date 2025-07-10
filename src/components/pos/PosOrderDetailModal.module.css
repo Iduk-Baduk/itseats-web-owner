@@ -232,11 +232,6 @@
 .infoRow {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.infoRow:last-child {
-  margin-bottom: 0;
 }
 
 .itemList {
@@ -244,7 +239,7 @@
 }
 
 .itemList h4 {
-  margin: 0 0 16px 0;
+  margin: 0 3px 16px;
   color: #333;
 }
 

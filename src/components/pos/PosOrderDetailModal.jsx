@@ -121,11 +121,11 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
             </div>
             <div className={styles.infoRow}>
               <span>주문 상태:</span>
-              <span>{ORDER_STATUS_LABEL[order.orderStatus]}</span>
+              <span>&nbsp;{ORDER_STATUS_LABEL[order.orderStatus]}</span>
             </div>
             <div className={styles.infoRow}>
               <span>주문 시간:</span>
-              <span>{new Date(order.orderTime).toLocaleString()}</span>
+              <span>&nbsp;{new Date(order.orderTime).toLocaleString()}</span>
             </div>
           </div>
 
