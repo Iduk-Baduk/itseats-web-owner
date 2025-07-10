@@ -36,11 +36,6 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
       let response;
       switch (action) {
         case 'accept':
-          if (!cookTime) {
-            alert('예상 조리 시간을 입력해주세요.');
-            return;
-          }
-          await orderAPI.setCookTime(orderId, parseInt(cookTime));
           response = await orderAPI.acceptOrder(orderId);
           break;
         case 'reject':
@@ -48,7 +43,15 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
             alert('거절 사유를 입력해주세요.');
             return;
           }
-          response = await orderAPI.rejectOrder({ orderId, reason: rejectReason });
+          response = await orderAPI.rejectOrder(orderId, rejectReason);
+          break;
+        case 'startCooking':
+          if (!cookTime) {
+            alert('예상 조리 시간을 입력해주세요.');
+            return;
+          }
+          response = await orderAPI.startCooking(orderId, parseInt(cookTime));
+          console.log('조리 시작 응답:', response);
           break;
         case 'ready':
           response = await orderAPI.markOrderAsReady(orderId);
@@ -57,7 +60,13 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
           throw new Error('Invalid action');
       }
 
-      if (response.data.success) {
+      if (response?.data?.success) {
+        onClose();
+      } else if (response?.deliveryEta) {
+        addToast({
+          message: `설정한 예상 조리 완료 시간: ${response.deliveryEta}`,
+          type: 'info'
+        });
         onClose();
       }
     } catch (err) {
@@ -153,12 +162,6 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
           {order.orderStatus === ORDER_STATUS.WAITING && (
             <div className={styles.actions}>
               <div className={styles.inputGroup}>
-                <TextInput
-                  type="number"
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
-                  placeholder="예상 조리 시간 (분)"
-                />
                 <Button 
                   onClick={() => handleOrderAction('accept')}
                   variant="primary"
@@ -177,6 +180,25 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
                   variant="danger"
                 >
                   주문 거절
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {order.orderStatus === ORDER_STATUS.ACCEPTED && (
+            <div className={styles.actions}>
+              <div className={styles.inputGroup}>
+                <TextInput
+                  type="number"
+                  value={cookTime}
+                  onChange={(e) => setCookTime(e.target.value)}
+                  placeholder="예상 조리 시간 (분)"
+                />
+                <Button 
+                  onClick={() => handleOrderAction('startCooking')}
+                  variant="primary"
+                >
+                  조리 시작
                 </Button>
               </div>
             </div>

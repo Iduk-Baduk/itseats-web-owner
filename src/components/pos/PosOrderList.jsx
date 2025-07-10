@@ -51,7 +51,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
   // 필터링된 주문 목록
   const filteredOrders = orders.filter(order => {
     // 배달완료된 주문은 항상 숨김처리
-    if (order.status === ORDER_STATUS.COMPLETED) {
+    if (order.orderStatus === ORDER_STATUS.COMPLETED) {
       return false;
     }
 
@@ -70,7 +70,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
     }
 
     // 필터가 ALL이면 배달완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
-    return filter === 'ALL' || order.status === filter;
+    return filter === 'ALL' || order.orderStatus === filter;
   });
 
   // 주문 상태별 개수 계산 (오늘 날짜 기준)
@@ -125,9 +125,8 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
           setSelectedOrderId(orderId); // 거절 사유 입력을 위해 모달 열기
           return;
         case 'startCooking':
-          response = await orderAPI.startCooking(orderId);
-          successMessage = '조리가 시작되었습니다.';
-          break;
+          setSelectedOrderId(orderId); // 조리 예상 시간 입력을 위해 모달 열기
+          return;
         case 'ready':
           response = await orderAPI.markOrderAsReady(orderId);
           successMessage = '조리가 완료되었습니다.';
@@ -213,7 +212,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
         <ComboBox
           options={ORDER_FILTERS}
           value={filter}
-          onChange={(value) => setFilter(value)}
+          onChange={(e) => setFilter(e.target.value)}
           className={styles.filter}
         />
       </div>
@@ -236,7 +235,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
                   className={styles.status}
                   style={{ backgroundColor: ORDER_STATUS_COLOR[order.orderStatus] }}
                 >
-                  {ORDER_STATUS_LABEL[order.status]}
+                  {ORDER_STATUS_LABEL[order.orderStatus]}
                 </span>
               </div>
               

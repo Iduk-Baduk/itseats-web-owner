@@ -75,11 +75,17 @@ export const orderAPI = {
 
   // 주문 수락
   acceptOrder: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.ACCEPTED);
+    // 주문 수락
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.ACCEPT(orderId));
+    if (response.data.success) {
+      return response;
+    } else {
+      throw new Error('주문 수락에 실패했습니다.');
+    }
   },
 
   // 주문 거절
-  rejectOrder: async ({ orderId, reason }) => {
+  rejectOrder: async (orderId, reason) => {
     const response = await apiClient.put(API_ENDPOINTS.ORDERS.REJECT(orderId), { reason });
 
     if (response.data.success) {
@@ -89,21 +95,20 @@ export const orderAPI = {
     }
   },
 
+  // 조리 시작 (예상 조리 시간 설정 후 상태 변경)
+  startCooking: async (orderId, cookTimeMinutes) => {
+    if (!cookTimeMinutes || cookTimeMinutes <= 0) {
+      throw new Error('유효한 조리 시간을 입력해주세요.');
+    }
+    // 예상 조리 시간 설정
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.COOKTIME(orderId), { cookTime: cookTimeMinutes });
+    return response.data;
+  },
+
   // 조리 완료 처리
   markOrderAsReady: async (orderId) => {
     return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.READY);
   },
-
-  // 예상 조리 시간 설정
-  setCookTime: withOrderErrorHandling(async (orderId, cookTimeMinutes) => {
-    if (!cookTimeMinutes || cookTimeMinutes <= 0) {
-      throw new Error('유효한 조리 시간을 입력해주세요.');
-    }
-    const response = await apiClient.post(API_ENDPOINTS.ORDERS.COOKTIME(orderId), { 
-      cookTimeMinutes 
-    });
-    return response.data;
-  }, 'SET_COOK_TIME'),
 
   // 주문 일시정지
   pauseOrders: withOrderErrorHandling(async (storeId, pauseDurationMinutes) => {
