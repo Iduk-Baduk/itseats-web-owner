@@ -50,8 +50,9 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
   // 필터링된 주문 목록
   const filteredOrders = orders.filter(order => {
-    // 배달완료된 주문은 항상 숨김처리
-    if (order.orderStatus === ORDER_STATUS.COMPLETED) {
+    // 주문완료 주문만 보는 경우가 아니면 주문완료된 주문은 항상 숨김처리
+    if (filter !== ORDER_STATUS.COMPLETED &&
+        order.orderStatus === ORDER_STATUS.COMPLETED) {
       return false;
     }
 
@@ -69,7 +70,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       return false;
     }
 
-    // 필터가 ALL이면 배달완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
+    // 필터가 ALL이면 주문완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
     return filter === 'ALL' || order.orderStatus === filter;
   });
 
@@ -131,10 +132,6 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
           response = await orderAPI.markOrderAsReady(orderId);
           successMessage = '조리가 완료되었습니다.';
           break;
-        case 'startDelivery':
-          response = await orderAPI.startDelivery(orderId);
-          successMessage = '배달이 시작되었습니다.';
-          break;
         default:
           throw new Error('Invalid action');
       }
@@ -188,10 +185,9 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       case ORDER_STATUS.COOKED:
         return <p>배차 대기 중</p>;
       case ORDER_STATUS.RIDER_READY:
+        return <p>라이더 이동 중</p>;
       case ORDER_STATUS.ARRIVED:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'startDelivery')} variant="primary">음식전달 완료</Button>
-        );
+        return <p>라이더 도착</p>;
       case ORDER_STATUS.DELIVERING:
         return <p>배달 중</p>;
       case ORDER_STATUS.DELIVERED:
