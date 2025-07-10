@@ -4,19 +4,20 @@ export const USER_INFO = [
     placeholder: "사업자등록번호 (숫자만 입력)",
     type: "number",
   },
-  { info: "userName", placeholder: "아이디", type: "text" },
+  { info: "username", placeholder: "아이디", type: "text" },
   { info: "email", placeholder: "이메일", type: "email" },
   { info: "password", placeholder: "비밀번호", type: "password" },
   { info: "passwordConfirm", placeholder: "비밀번호 확인", type: "password" },
   { info: "name", placeholder: "이름", type: "text" },
-  { info: "phone", placeholder: "휴대폰번호 (숫자만 입력)", type: "number" },
+  { info: "nickname", placeholder: "닉네임", type: "text" },
+  { info: "phone", placeholder: "휴대폰번호 (010-0000-0000)", type: "text" },
 ];
 
 export const STORE_INFO = [
   { info: "storeName", placeholder: "상호", type: "text" },
-  { info: "storeTel", placeholder: "매장 전화번호 (숫자만 입력)", type: "number" },
+  { info: "storeTel", placeholder: "매장 전화번호 (숫자만 입력)", type: "text" },
   { info: "storeManagerName", placeholder: "매장 담당자 이름", type: "text" },
-  { info: "storeManagerPhone", placeholder: "담당자 연락처 (숫자만 입력)", type: "number" },
+  { info: "storeManagerPhone", placeholder: "담당자 연락처 (숫자만 입력)", type: "text" },
   { info: "storeAddress", placeholder: "주소 검색", type: "text" },
   { info: "storeAddressDetail", placeholder: "상세주소", type: "text" },
   {

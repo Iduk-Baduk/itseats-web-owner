@@ -42,7 +42,6 @@ export default function Menus() {
   return (
     <div className={styles.container}>
       <Header
-        nickname="홍길동"
         showBackButton={true}
         onLeftClick={() => {
           console.log("뒤로가기 클릭됨");
