@@ -79,8 +79,14 @@ export const orderAPI = {
   },
 
   // 주문 거절
-  rejectOrder: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.REJECTED);
+  rejectOrder: async ({ orderId, reason }) => {
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.REJECT(orderId), { reason });
+
+    if (response.data.success) {
+      return response;
+    } else {
+      throw new Error('주문 거절에 실패했습니다.');
+    }
   },
 
   // 조리 완료 처리

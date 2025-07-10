@@ -4,8 +4,11 @@ import { orderAPI } from '../../services/orderAPI';
 import { ORDER_STATUS, ORDER_STATUS_LABEL } from '../../constants/orderTypes';
 import Button from '../basic/Button';
 import TextInput from '../basic/TextInput';
+import { useToast } from '../../contexts/ToastContext';
 
 export const PosOrderDetailModal = ({ orderId, onClose }) => {
+  const { addToast } = useToast();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +20,6 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
     try {
       setLoading(true);
       const response = await orderAPI.getOrderDetail(orderId);
-      console.log('Fetched order detail:', response);
       setOrder(response);
       setError(null);
     } catch (err) {
@@ -46,7 +48,7 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
             alert('거절 사유를 입력해주세요.');
             return;
           }
-          response = await orderAPI.rejectOrder(orderId, rejectReason);
+          response = await orderAPI.rejectOrder({ orderId, reason: rejectReason });
           break;
         case 'ready':
           response = await orderAPI.markOrderAsReady(orderId);
@@ -60,7 +62,10 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
       }
     } catch (err) {
       console.error('Failed to process order:', err);
-      alert('주문 처리 중 오류가 발생했습니다.');
+      addToast({
+        message: '주문 처리 중 오류가 발생했습니다.',
+        type: 'error'
+      });
     }
   };
 

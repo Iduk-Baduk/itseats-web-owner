@@ -34,8 +34,8 @@ export const API_ENDPOINTS = {
   ORDERS: {
     LIST: (storeId) => `/owner/${storeId}/orders`,  // GET (주문 목록 조회)
     DETAIL: (orderId) => `/owner/orders/${orderId}`, // GET (주문 상세 조회)
-    ACCEPT: (orderId) => `/orders/${orderId}/accept`, // POST (주문 수락)
-    REJECT: (orderId) => `/orders/${orderId}/reject`, // POST (주문 거절)
+    ACCEPT: (orderId) => `/owner/orders/${orderId}/accept`, // POST (주문 수락)
+    REJECT: (orderId) => `/owner/orders/${orderId}/reject`, // POST (주문 거절)
     READY: (orderId) => `/orders/${orderId}/ready`, // POST (조리 완료)
     COOKTIME: (orderId) => `/orders/${orderId}/cooktime`, // POST (예상 조리시간 설정)
     PAUSE: (storeId) => `/orders/${storeId}/pause`, // POST (주문 일시정지)

@@ -119,13 +119,11 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
       switch (action) {
         case 'accept':
-          response = await orderAPI.acceptOrder(orderId);
-          successMessage = '주문이 수락되었습니다.';
-          break;
+          setSelectedOrderId(orderId); // 예상 조리 시간 입력을 위해 모달 열기
+          return;
         case 'reject':
-          response = await orderAPI.rejectOrder(orderId);
-          successMessage = '주문이 거절되었습니다.';
-          break;
+          setSelectedOrderId(orderId); // 거절 사유 입력을 위해 모달 열기
+          return;
         case 'startCooking':
           response = await orderAPI.startCooking(orderId);
           successMessage = '조리가 시작되었습니다.';
@@ -264,7 +262,10 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       {selectedOrderId && (
         <PosOrderDetailModal
           orderId={selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
+          onClose={() => {
+            setSelectedOrderId(null);
+            fetchOrders();
+          }}
         />
       )}
     </div>
