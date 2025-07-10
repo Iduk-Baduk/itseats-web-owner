@@ -335,8 +335,8 @@ const posAPI = {
   }, 'updatePosSettings'),
 
   // POS 분석 데이터 조회
-  getPosAnalytics: withPosErrorHandling(async () => {
-    const response = await retryApiCall(() => apiClient.get('/pos_analytics'), MAX_RETRIES, RETRY_DELAY);
+  getPosAnalytics: withPosErrorHandling(async ({ storeId }) => {
+    const response = await retryApiCall(() => apiClient.get(`/owner/${storeId}/dashboard`), MAX_RETRIES, RETRY_DELAY);
     return response.data;
   }, 'getPosAnalytics'),
 
