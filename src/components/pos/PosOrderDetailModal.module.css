@@ -191,7 +191,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 8px 20px;
   border-bottom: 1px solid #eee;
 }
 
@@ -204,10 +204,12 @@
 .closeButton {
   background: none;
   border: none;
+  width: 40px;
+  height: 40px;
   font-size: 24px;
   color: #666;
   cursor: pointer;
-  padding: 0;
+  padding: 6px 8px 10px;
   line-height: 1;
 }
 

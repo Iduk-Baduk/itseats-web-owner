@@ -107,7 +107,13 @@ export const orderAPI = {
 
   // 조리 완료 처리
   markOrderAsReady: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.READY);
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.READY(orderId));
+
+    if (response.data.success) {
+      return response;
+    } else {
+      throw new Error('조리 완료에 실패했습니다.');
+    }
   },
 
   // 주문 일시정지
