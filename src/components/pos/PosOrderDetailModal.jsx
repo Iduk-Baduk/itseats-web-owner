@@ -116,7 +116,7 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
           </div>
 
           <div className={styles.itemList}>
-            <h4>주문 항목</h4>
+            <h4>주문 메뉴</h4>
             {order.menuItems.map((item, index) => (
               <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
                 <div className={styles.itemInfo}>
@@ -145,7 +145,7 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
             <span>{order.totalPrice.toLocaleString()}원</span>
           </div>
 
-          {order.status === ORDER_STATUS.PENDING && (
+          {order.orderStatus === ORDER_STATUS.WAITING && (
             <div className={styles.actions}>
               <div className={styles.inputGroup}>
                 <TextInput
@@ -174,18 +174,6 @@ export const PosOrderDetailModal = ({ orderId, onClose }) => {
                   주문 거절
                 </Button>
               </div>
-            </div>
-          )}
-
-          {order.status === ORDER_STATUS.ACCEPTED && (
-            <div className={styles.actions}>
-              <Button 
-                onClick={() => handleOrderAction('ready')}
-                variant="success"
-                fullWidth
-              >
-                조리 완료
-              </Button>
             </div>
           )}
         </div>

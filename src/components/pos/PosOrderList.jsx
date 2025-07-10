@@ -126,21 +126,17 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
           response = await orderAPI.rejectOrder(orderId);
           successMessage = '주문이 거절되었습니다.';
           break;
+        case 'startCooking':
+          response = await orderAPI.startCooking(orderId);
+          successMessage = '조리가 시작되었습니다.';
+          break;
         case 'ready':
           response = await orderAPI.markOrderAsReady(orderId);
           successMessage = '조리가 완료되었습니다.';
           break;
-        case 'requestDelivery':
-          response = await orderAPI.requestDelivery(orderId);
-          successMessage = '배차가 신청되었습니다.';
-          break;
-        case 'assignDelivery':
-          response = await orderAPI.assignDelivery(orderId);
-          successMessage = '배차가 완료되었습니다.';
-          break;
-        case 'completeDelivery':
-          response = await orderAPI.completeDelivery(orderId);
-          successMessage = '배달이 완료되었습니다.';
+        case 'startDelivery':
+          response = await orderAPI.startDelivery(orderId);
+          successMessage = '배달이 시작되었습니다.';
           break;
         default:
           throw new Error('Invalid action');
@@ -176,33 +172,37 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
   // 주문 상태별 버튼 렌더링
   const getOrderActions = (order) => {
-    switch (order.status) {
+    switch (order.orderStatus) {
       case ORDER_STATUS.WAITING:
         return (
-          <>
+          <div className={styles.actionsFlex}>
             <Button onClick={() => handleOrderAction(order.orderId || order.id, 'accept')} variant="primary">수락</Button>
             <Button onClick={() => handleOrderAction(order.orderId || order.id, 'reject')} variant="danger">거절</Button>
-          </>
+          </div>
         );
       case ORDER_STATUS.ACCEPTED:
         return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'startCooking')} variant="primary">조리시작</Button>
+        );
+      case ORDER_STATUS.COOKING:
+        return (
           <Button onClick={() => handleOrderAction(order.orderId || order.id, 'ready')} variant="primary">조리완료</Button>
         );
-      case ORDER_STATUS.READY:
+      case ORDER_STATUS.COOKED:
+        return <p>배차 대기 중</p>;
+      case ORDER_STATUS.RIDER_READY:
+      case ORDER_STATUS.ARRIVED:
         return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'requestDelivery')} variant="primary">배차신청</Button>
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'startDelivery')} variant="primary">음식전달 완료</Button>
         );
-      case ORDER_STATUS.DELIVERY_REQUESTED:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'assignDelivery')} variant="primary">배차완료</Button>
-        );
-      case ORDER_STATUS.DELIVERY_ASSIGNED:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'completeDelivery')} variant="success">배달완료</Button>
-        );
+      case ORDER_STATUS.DELIVERING:
+        return <p>배달 중</p>;
+      case ORDER_STATUS.DELIVERED:
+        return <p>배달 완료</p>;
       case ORDER_STATUS.COMPLETED:
+        return <p>주문 완료</p>;
       case ORDER_STATUS.REJECTED:
-        return null; // 완료/거절된 주문은 액션 버튼 없음
+        return <p>주문 거절됨</p>;
       default:
         return null;
     }
@@ -236,7 +236,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
                 <span className={styles.orderId}>주문 {order.orderNumber}</span>
                 <span 
                   className={styles.status}
-                  style={{ backgroundColor: ORDER_STATUS_COLOR[order.status] }}
+                  style={{ backgroundColor: ORDER_STATUS_COLOR[order.orderStatus] }}
                 >
                   {ORDER_STATUS_LABEL[order.status]}
                 </span>
