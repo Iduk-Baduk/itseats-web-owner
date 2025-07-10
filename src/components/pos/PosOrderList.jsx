@@ -6,7 +6,6 @@ import { ORDER_STATUS, ORDER_STATUS_COLOR, ORDER_STATUS_LABEL, ORDER_FILTERS } f
 import { orderAPI } from '../../services/orderAPI';
 import { PosOrderDetailModal } from './PosOrderDetailModal';
 import { useToast } from '../../contexts/ToastContext';
-import apiClient from '../../services/apiClient';
 
 export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
   const [orders, setOrders] = useState([]);
@@ -23,7 +22,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       setLoading(true);
       const response = await orderAPI.getOrders(storeId);
       const newOrders = response.data.orders || [];
-      
+
       // 새로운 주문 확인
       const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.id));
       const newPendingOrders = newOrders.filter(
@@ -51,8 +50,9 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
   // 필터링된 주문 목록
   const filteredOrders = orders.filter(order => {
-    // 배달완료된 주문은 항상 숨김처리
-    if (order.status === ORDER_STATUS.COMPLETED) {
+    // 주문완료 주문만 보는 경우가 아니면 주문완료된 주문은 항상 숨김처리
+    if (filter !== ORDER_STATUS.COMPLETED &&
+        order.orderStatus === ORDER_STATUS.COMPLETED) {
       return false;
     }
 
@@ -70,8 +70,8 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       return false;
     }
 
-    // 필터가 ALL이면 배달완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
-    return filter === 'ALL' || order.status === filter;
+    // 필터가 ALL이면 주문완료를 제외한 모든 주문 표시, 아니면 해당 상태의 주문만 표시
+    return filter === 'ALL' || order.orderStatus === filter;
   });
 
   // 주문 상태별 개수 계산 (오늘 날짜 기준)
@@ -120,28 +120,17 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
       switch (action) {
         case 'accept':
-          response = await orderAPI.acceptOrder(orderId);
-          successMessage = '주문이 수락되었습니다.';
-          break;
+          setSelectedOrderId(orderId); // 예상 조리 시간 입력을 위해 모달 열기
+          return;
         case 'reject':
-          response = await orderAPI.rejectOrder(orderId);
-          successMessage = '주문이 거절되었습니다.';
-          break;
+          setSelectedOrderId(orderId); // 거절 사유 입력을 위해 모달 열기
+          return;
+        case 'startCooking':
+          setSelectedOrderId(orderId); // 조리 예상 시간 입력을 위해 모달 열기
+          return;
         case 'ready':
           response = await orderAPI.markOrderAsReady(orderId);
           successMessage = '조리가 완료되었습니다.';
-          break;
-        case 'requestDelivery':
-          response = await orderAPI.requestDelivery(orderId);
-          successMessage = '배차가 신청되었습니다.';
-          break;
-        case 'assignDelivery':
-          response = await orderAPI.assignDelivery(orderId);
-          successMessage = '배차가 완료되었습니다.';
-          break;
-        case 'completeDelivery':
-          response = await orderAPI.completeDelivery(orderId);
-          successMessage = '배달이 완료되었습니다.';
           break;
         default:
           throw new Error('Invalid action');
@@ -177,33 +166,36 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
 
   // 주문 상태별 버튼 렌더링
   const getOrderActions = (order) => {
-    switch (order.status) {
-      case ORDER_STATUS.PENDING:
+    switch (order.orderStatus) {
+      case ORDER_STATUS.WAITING:
         return (
-          <>
+          <div className={styles.actionsFlex}>
             <Button onClick={() => handleOrderAction(order.orderId || order.id, 'accept')} variant="primary">수락</Button>
             <Button onClick={() => handleOrderAction(order.orderId || order.id, 'reject')} variant="danger">거절</Button>
-          </>
+          </div>
         );
       case ORDER_STATUS.ACCEPTED:
         return (
+          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'startCooking')} variant="primary">조리시작</Button>
+        );
+      case ORDER_STATUS.COOKING:
+        return (
           <Button onClick={() => handleOrderAction(order.orderId || order.id, 'ready')} variant="primary">조리완료</Button>
         );
-      case ORDER_STATUS.READY:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'requestDelivery')} variant="primary">배차신청</Button>
-        );
-      case ORDER_STATUS.DELIVERY_REQUESTED:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'assignDelivery')} variant="primary">배차완료</Button>
-        );
-      case ORDER_STATUS.DELIVERY_ASSIGNED:
-        return (
-          <Button onClick={() => handleOrderAction(order.orderId || order.id, 'completeDelivery')} variant="success">배달완료</Button>
-        );
+      case ORDER_STATUS.COOKED:
+        return <p>배차 대기 중</p>;
+      case ORDER_STATUS.RIDER_READY:
+        return <p>라이더 이동 중</p>;
+      case ORDER_STATUS.ARRIVED:
+        return <p>라이더 도착</p>;
+      case ORDER_STATUS.DELIVERING:
+        return <p>배달 중</p>;
+      case ORDER_STATUS.DELIVERED:
+        return <p>배달 완료</p>;
       case ORDER_STATUS.COMPLETED:
+        return <p>주문 완료</p>;
       case ORDER_STATUS.REJECTED:
-        return null; // 완료/거절된 주문은 액션 버튼 없음
+        return <p>주문 거절됨</p>;
       default:
         return null;
     }
@@ -216,7 +208,7 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
         <ComboBox
           options={ORDER_FILTERS}
           value={filter}
-          onChange={(value) => setFilter(value)}
+          onChange={(e) => setFilter(e.target.value)}
           className={styles.filter}
         />
       </div>
@@ -229,24 +221,24 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
         <div className={styles.orderList}>
           {filteredOrders.map((order) => (
             <div 
-              key={`order-${order.orderId}-${order.status}`} 
+              key={`order-${order.orderNumber}-${order.status}`} 
               className={styles.orderCard}
               onClick={() => setSelectedOrderId(order.orderId)}
             >
               <div className={styles.orderHeader}>
-                <span className={styles.orderId}>주문 #{order.orderId}</span>
+                <span className={styles.orderId}>주문 {order.orderNumber}</span>
                 <span 
                   className={styles.status}
-                  style={{ backgroundColor: ORDER_STATUS_COLOR[order.status] }}
+                  style={{ backgroundColor: ORDER_STATUS_COLOR[order.orderStatus] }}
                 >
-                  {ORDER_STATUS_LABEL[order.status]}
+                  {ORDER_STATUS_LABEL[order.orderStatus]}
                 </span>
               </div>
               
               <div className={styles.orderItems}>
-                {order.items.map((item, index) => (
-                  <div key={`${order.orderId}-${item.name}-${item.quantity}-${index}`} className={styles.item}>
-                    <span>{item.name}</span>
+                {order.menuItems.map((item, index) => (
+                  <div key={`${order.orderId}-${item.menuName}-${item.quantity}-${index}`} className={styles.item}>
+                    <span>{item.menuName}</span>
                     <span>x {item.quantity}</span>
                   </div>
                 ))}
@@ -265,7 +257,10 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       {selectedOrderId && (
         <PosOrderDetailModal
           orderId={selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
+          onClose={() => {
+            setSelectedOrderId(null);
+            fetchOrders();
+          }}
         />
       )}
     </div>

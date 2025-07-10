@@ -39,14 +39,9 @@ const POS = () => {
   // 메트릭 데이터 로드
   const loadMetrics = useCallback(async () => {
     try {
-      const analytics = await POS_API.getPosAnalytics();
-      setMetrics(analytics.metrics || {
-        customerRating: 0,
-        avgCookTime: "0분",
-        cookTimeAccuracy: "0%",
-        pickupTime: "0초",
-        orderAcceptanceRate: "0%"
-      });
+      const analytics = await POS_API.getPosAnalytics({ storeId: currentUser?.storeId });
+      if (analytics)
+        setMetrics(analytics);
     } catch (err) {
       console.error('Failed to load metrics:', err);
     }

@@ -224,15 +224,15 @@ const updateSettings = (currentData, newSettings, settingsKey = 'settings') => (
 const posAPI = {
   // POS 상태 조회 (타임스탬프 형식 검증 개선)
   getPosStatus: withPosErrorHandling(async () => {
-    const response = await apiClient.get('/pos');
+    // const response = await apiClient.get('/pos');
     
-    // 마이그레이션이 필요한 경우에만 실행
-    const needsMigration = await checkTimestampMigrationNeeded();
-    if (needsMigration) {
-      await fixDatabaseTimestamps();
-    }
+    // // 마이그레이션이 필요한 경우에만 실행
+    // const needsMigration = await checkTimestampMigrationNeeded();
+    // if (needsMigration) {
+    //   await fixDatabaseTimestamps();
+    // }
     
-    return { status: response.data.currentStatus };
+    // return { status: response.data.currentStatus };
   }, 'getPosStatus'),
 
   // POS 상태 업데이트 (확장된 메타데이터 포함)
@@ -335,8 +335,8 @@ const posAPI = {
   }, 'updatePosSettings'),
 
   // POS 분석 데이터 조회
-  getPosAnalytics: withPosErrorHandling(async () => {
-    const response = await retryApiCall(() => apiClient.get('/pos_analytics'), MAX_RETRIES, RETRY_DELAY);
+  getPosAnalytics: withPosErrorHandling(async ({ storeId }) => {
+    const response = await retryApiCall(() => apiClient.get(`/owner/${storeId}/dashboard`), MAX_RETRIES, RETRY_DELAY);
     return response.data;
   }, 'getPosAnalytics'),
 

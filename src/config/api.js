@@ -32,14 +32,14 @@ export const API_ENDPOINTS = {
   OWNER: `/owner`,
   // 주문 관련
   ORDERS: {
-    LIST: (storeId) => `/orders?storeId=${storeId}`,  // GET (주문 목록 조회)
-    DETAIL: (orderId) => `/orders/${orderId}`, // GET (주문 상세 조회)
-    ACCEPT: (orderId) => `/orders/${orderId}/accept`, // POST (주문 수락)
-    REJECT: (orderId) => `/orders/${orderId}/reject`, // POST (주문 거절)
-    READY: (orderId) => `/orders/${orderId}/ready`, // POST (조리 완료)
-    COOKTIME: (orderId) => `/orders/${orderId}/cooktime`, // POST (예상 조리시간 설정)
-    PAUSE: (storeId) => `/orders/${storeId}/pause`, // POST (주문 일시정지)
-    START: (storeId) => `/orders/${storeId}/start`, // POST (주문 재개)
+    LIST: (storeId) => `/owner/${storeId}/orders`,  // GET (주문 목록 조회)
+    DETAIL: (orderId) => `/owner/orders/${orderId}`, // GET (주문 상세 조회)
+    ACCEPT: (orderId) => `/owner/orders/${orderId}/accept`, // PUT (주문 수락)
+    REJECT: (orderId) => `/owner/orders/${orderId}/reject`, // PUT (주문 거절)
+    COOKTIME: (orderId) => `/owner/orders/${orderId}/cooktime`, // PUT (예상 조리시간 설정, 조리 시작)
+    READY: (orderId) => `/owner/orders/${orderId}/ready`, // POST (조리 완료)
+    PAUSE: (storeId) => `/owner/orders/${storeId}/pause`, // POST (주문 일시정지)
+    START: (storeId) => `/owner/orders/${storeId}/start`, // POST (주문 재개)
     // 통계 관련
     STATS: {
       DAILY: (storeId) => `/daily_stats/${storeId}`, // GET (일간 통계)
