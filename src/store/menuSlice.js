@@ -4,14 +4,16 @@ import { getGroupNames } from "../utils/groupMenus";
 
 export const fetchMenuByIdAsync = createAsyncThunk(
   "menu/fetchMenuById",
-  async () => {
-    const [menuResponse, statsResponse] = await Promise.all([
-      menuAPI.getMenus(),
-      menuAPI.getMenuStats()
-    ]);
+  async (storeId) => {
+    const response = await menuAPI.getMenusByStoreId(storeId);
     return {
-      menus: menuResponse,
-      stats: statsResponse
+      menus: response.menus || [],
+      stats: {
+        totalMenus: response.totalMenuCount,
+        activeMenus: response.orderableMenuCount,
+        outOfStockMenus: response.outOfStockTodayCount,
+        hiddenMenus: response.hiddenMenuCount
+      }
     };
   }
 );

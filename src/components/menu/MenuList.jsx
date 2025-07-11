@@ -1,11 +1,15 @@
 import { useState } from "react";
 import styles from "./MenuList.module.css";
-import { groupMenusByCategory } from "../../utils/groupMenus";
-import { useSelector } from "react-redux";
 
-const MenuItem = ({ item, selectedMenuId, onMenuClick, menuStatuses, onStatusChange }) => {
+const MenuItem = ({
+  item,
+  selectedMenuId,
+  onMenuClick,
+  menuStatuses,
+  onStatusChange,
+}) => {
   const handleClick = (e) => {
-    if (e.target.tagName.toLowerCase() === 'select') {
+    if (e.target.tagName.toLowerCase() === "select") {
       return;
     }
     onMenuClick(item.menuId || item.id);
@@ -13,10 +17,20 @@ const MenuItem = ({ item, selectedMenuId, onMenuClick, menuStatuses, onStatusCha
 
   return (
     <li
-      className={`${styles.menuItem} ${selectedMenuId === (item.menuId || item.id) ? styles.selected : ''}`}
+      className={`${styles.menuItem} ${
+        selectedMenuId === (item.menuId || item.id) ? styles.selected : ""
+      }`}
       onClick={handleClick}
     >
-      <div className={styles.imageBox}></div>
+      <div className={styles.imageBox}>
+        {item.images[0] && (
+          <img
+            src={item.images[0]}
+            alt={item.menuName}
+            className={styles.menuImage}
+          />
+        )}
+      </div>
       <span className={styles.menuName}>{item.menuName}</span>
       <select
         className={styles.statusSelect}
@@ -37,10 +51,10 @@ const MenuItem = ({ item, selectedMenuId, onMenuClick, menuStatuses, onStatusCha
 export default function MenuList({ menu, onMenuSelect }) {
   const [selectedMenuId, setSelectedMenuId] = useState(null);
   const [menuStatuses, setMenuStatuses] = useState({});
-  const groupNames = useSelector((state) => state.menu.groupNames);
+  const groupNames = [...new Set(menu.menus.map(item => item.menuGroupName))];
 
   const handleStatusChange = (menuId, status) => {
-    setMenuStatuses(prev => ({ ...prev, [menuId]: status }));
+    setMenuStatuses((prev) => ({ ...prev, [menuId]: status }));
   };
 
   const handleMenuClick = (menuId) => {
@@ -50,32 +64,30 @@ export default function MenuList({ menu, onMenuSelect }) {
     onMenuSelect(newSelectedId);
   };
 
-  const groupedMenus = menu.menus && Array.isArray(menu.menus) && menu.menus.length > 0 
-    ? groupMenusByCategory(menu.menus) 
-    : {};
-
   return (
     <div>
       {menu.menus && Array.isArray(menu.menus) && menu.menus.length > 0 ? (
-        groupNames.map((groupName) => (
-          groupedMenus[groupName] && (
-            <div key={`group-${groupName}`}>
-              <h2 className={styles.groupTitle}>{groupName}</h2>
-              <ul className={styles.menuList}>
-                {groupedMenus[groupName].map((item) => (
-                  <MenuItem
-                    key={`menu-${item.menuId || item.id}`}
-                    item={item}
-                    selectedMenuId={selectedMenuId}
-                    onMenuClick={handleMenuClick}
-                    menuStatuses={menuStatuses}
-                    onStatusChange={handleStatusChange}
-                  />
-                ))}
-              </ul>
-            </div>
-          )
-        ))
+        groupNames.map(
+          (groupName) => (
+              <div key={`group-${groupName}`}>
+                <h2 className={styles.groupTitle}>{groupName}</h2>
+                <ul className={styles.menuList}>
+                  {menu.menus
+                    .filter((item) => item.menuGroupName === groupName)
+                    .map((item) => (
+                      <MenuItem
+                      key={`menu-${item.menuId || item.id}`}
+                      item={item}
+                      selectedMenuId={selectedMenuId}
+                      onMenuClick={handleMenuClick}
+                      menuStatuses={menuStatuses}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                </ul>
+              </div>
+            )
+        )
       ) : (
         <div>메뉴가 없습니다.</div>
       )}

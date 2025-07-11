@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   },
   // 매장 메뉴 관련
   MENUS: {
+    LIST_BY_STORE: (storeId) => `/owner/${storeId}/menus`, // GET (매장별 메뉴 목록)
     LIST: () => `/menus`,           // GET (목록), POST (생성)
     DETAIL: (id) => `/menus/${id}`, // GET (단일), PATCH (수정), DELETE (삭제)
     STATS: () => `/menuStats`,      // GET (통계)

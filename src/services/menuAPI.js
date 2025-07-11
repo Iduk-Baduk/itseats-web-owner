@@ -13,6 +13,16 @@ const findMenuById = (menus, targetId) => {
 
 // 메뉴 API 서비스
 export const menuAPI = {
+  getMenusByStoreId: async (storeId) => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.LIST_BY_STORE(String(storeId)), {});
+      return response.data;
+    } catch (e) {
+      console.error("API Error: getMenusByStoreId", e);
+      throw e;
+    }
+  },
+
   getMenus: async () => {
     try {
       const response = await apiClient.get(API_ENDPOINTS.MENUS.LIST());
