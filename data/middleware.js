@@ -194,7 +194,7 @@ module.exports = (req, res, next) => {
   }
 
   // 직접 주문 생성 API (POST /orders)
-  if (req.method === 'POST' && req.path === '/orders') {
+  if (req.method === 'POST' && req.path === '/owner/orders') {
     // 매장 상태 확인
     const posData = req.app.db.get('pos').value();
     const currentStatus = posData?.currentStatus || 'CLOSED';

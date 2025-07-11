@@ -166,17 +166,17 @@ export const orderAPI = {
 
   // 배차 신청
   requestDelivery: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERY_REQUESTED);
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.COOKED);
   },
 
   // 배차 완료
   assignDelivery: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERY_ASSIGNED);
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.RIDER_READY);
   },
 
   // 배달 완료
   completeDelivery: async (orderId) => {
-    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.COMPLETED);
+    return orderAPI.updateOrderStatus(orderId, ORDER_STATUS.DELIVERED);
   }
 };
 
