@@ -8,7 +8,6 @@ import { POS_STATUS } from '../../constants/posStatus';
 import PosStatusBadge from '../../components/pos/PosStatusBadge';
 import PosStatusControl from '../../components/pos/PosStatusControl';
 import { orderAPI } from '../../services/orderAPI';
-import POS_API from '../../services/posAPI';
 
 export const PosOrders = () => {
   const { currentUser: user } = useAuth();

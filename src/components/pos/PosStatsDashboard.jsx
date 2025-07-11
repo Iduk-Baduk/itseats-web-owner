@@ -61,8 +61,11 @@ const PosStatsDashboard = ({ orders = [] }) => {
 
 
 
-    // 총 매출액 계산 (배차완료 이상 상태의 주문만)
+    // 총 매출액 계산 (주문수락 이상 상태의 주문만)
     const completedOrdersData = todayOrders.filter(order => 
+      order.orderStatus === ORDER_STATUS.ACCEPTED ||
+      order.orderStatus === ORDER_STATUS.COOKING ||
+      order.orderStatus === ORDER_STATUS.COOKED ||
       order.orderStatus === ORDER_STATUS.RIDER_READY ||
       order.orderStatus === ORDER_STATUS.ARRIVED ||
       order.orderStatus === ORDER_STATUS.DELIVERING ||
