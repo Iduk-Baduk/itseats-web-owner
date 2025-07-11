@@ -24,9 +24,9 @@ export const PosOrderList = ({ storeId, onOrdersUpdate }) => {
       const newOrders = response.data.orders || [];
 
       // 새로운 주문 확인
-      const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.id));
+      const prevOrderIds = new Set(previousOrdersRef.current.map(order => order.orderId || order.id));
       const newPendingOrders = newOrders.filter(
-        order => order.status === ORDER_STATUS.PENDING && !prevOrderIds.has(order.id)
+        order => order.orderStatus === ORDER_STATUS.WAITING && !prevOrderIds.has(order.orderId || order.id)
       );
 
       // 새로운 주문이 있으면 알림
