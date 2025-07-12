@@ -33,9 +33,9 @@ export const menuAPI = {
     }
   },
 
-  getMenu: async (id) => {
+  getMenu: async (storeId, menuId) => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(String(id)));
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
       return response.data;
     } catch (e) {
       console.error("API Error: getMenu", e);

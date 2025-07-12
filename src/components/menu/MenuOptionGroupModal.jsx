@@ -95,8 +95,8 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
     }
 
     targetGroup.options.push({ 
-      name: optionName, 
-      price: optionPrice === "" ? 0 : Number(optionPrice),
+      optionName: optionName, 
+      optionPrice: optionPrice === "" ? 0 : Number(optionPrice),
       optionStatus: "ONSALE" 
     });
 
@@ -108,7 +108,7 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
 
   const toggleGroup = (index) => {
     const updated = [...optionGroups];
-    updated[index].isOpen = !updated[index].isOpen;
+    updated[index].isOpen = !updated[index]?.isOpen;
     setLocalOptionGroups(updated);
     setOptionGroups(updated);
   };
@@ -176,7 +176,7 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
                 <option value="">옵션 그룹 선택</option>
                 {optionGroups.map((group, index) => (
                   <option key={index} value={index}>
-                    {group.groupName}
+                    {group.optionGroupName}
                   </option>
                 ))}
               </select>
@@ -230,12 +230,12 @@ export default function MenuOptionGroupModal({ onClose, onSave, optionGroups: in
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={optionGroups.map(group => group.groupName)}
+                  items={optionGroups.map(group => group.optionGroupName)}
                   strategy={verticalListSortingStrategy}
                 >
                   {optionGroups.map((group, index) => (
                     <SortableOptionGroup
-                      key={group.groupName}
+                      key={group.optionGroupName}
                       group={group}
                       index={index}
                       onToggle={toggleGroup}

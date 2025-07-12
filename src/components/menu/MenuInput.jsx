@@ -99,8 +99,8 @@ export default function MenuInput({ onChange, selectedState, onSelectState, init
             onChange("menuStatus", e.currentTarget.value);
             onSelectState(e.currentTarget.value);
           }}
-          value="ONSALE"
-          className={`${styles.grayButton} ${selectedState === "ONSALE" ? styles.selected : ""}`}
+          value="ON_SALE"
+          className={`${styles.grayButton} ${selectedState === "ON_SALE" ? styles.selected : ""}`}
         >
           판매중
         </button>

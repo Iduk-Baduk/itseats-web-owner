@@ -90,7 +90,7 @@ function App() {
                 }
               />
               <Route
-                path="/menus/edit/:id"
+                path="/menus/edit/:menuId"
                 element={
                   <ProtectedRoute>
                     <MenusAdd />
