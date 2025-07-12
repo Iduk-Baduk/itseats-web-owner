@@ -4,7 +4,7 @@ import styles from "./Reviews.module.css";
 import TextInput from "../../components/basic/TextInput";
 import UpperTextInput from "../../components/basic/UpperTextInput";
 import RadioButton from "../../components/basic/RadioButton";
-import Checkbox from "../../components/basic/Checkbox";
+import Checkbox from "../../components/basic/CheckBox";
 import ComboBox from "../../components/basic/ComboBox";
 
 export default function Reviews() {
