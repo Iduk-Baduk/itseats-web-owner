@@ -1,0 +1,114 @@
+.container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  min-height: 48px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 상태별 버튼 스타일 */
+.openButton {
+  composes: button;
+  background-color: #2E7D32;
+  color: white;
+}
+
+.openButton:hover {
+  background-color: #1B5E20;
+}
+
+.closeButton {
+  composes: button;
+  background-color: #D32F2F;
+  color: white;
+}
+
+.closeButton:hover {
+  background-color: #B71C1C;
+}
+
+.breakButton {
+  composes: button;
+  background-color: #ED6C02;
+  color: white;
+}
+
+.breakButton:hover {
+  background-color: #E65100;
+}
+
+.preparingButton {
+  composes: button;
+  background-color: #1976D2;
+  color: white;
+}
+
+.preparingButton:hover {
+  background-color: #0D47A1;
+}
+
+/* 태블릿 */
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .button {
+    padding: 12px;
+    font-size: 13px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .button {
+    padding: 10px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+} 

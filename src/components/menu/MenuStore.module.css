@@ -1,0 +1,11 @@
+.storeSelector {
+  margin: 0 1.2rem;
+}
+
+.storeSelector select {
+  margin: 5px 0;
+  width: 100%;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 1rem;
+}

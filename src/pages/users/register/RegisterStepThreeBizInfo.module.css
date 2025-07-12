@@ -1,0 +1,40 @@
+.registerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* ✅ 상단 정렬로 변경 */
+  padding: 2rem 1.5rem;
+  gap: 1rem;
+  max-width: 720px; /* ✅ 더 넓게 */
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* 제목 스타일은 그대로 유지 */
+.registerContainer h1 {
+  color: var(--black-700);
+  font-size: 1.6rem;
+  text-align: left;
+}
+
+.registerContainer h1 b {
+  font-weight: bold;
+}
+
+.textarea {
+  font-size: 1rem;
+  padding: 1rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100px;
+  resize: none;
+  margin-top: 0.5rem;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--focus-color);
+}

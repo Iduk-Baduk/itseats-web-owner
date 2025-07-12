@@ -1,0 +1,75 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 264px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  padding: 0 24px;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.backButtonPlaceholder {
+  width: 40px;
+  height: 24px;
+}
+
+.profileWrapper {
+  position: relative;
+}
+
+.profile {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.nickname {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.flyout {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 120px;
+  padding: 8px 0;
+  z-index: 999;
+}
+
+.menuItem {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background-color: #f5f5f5;
+}

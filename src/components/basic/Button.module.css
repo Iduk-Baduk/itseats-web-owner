@@ -1,0 +1,42 @@
+.button {
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  width: 100%;
+  border: none;
+  height: 3.5rem;
+  border-radius: 5px;
+}
+
+.primary {
+  background-color: var(--theme-color);
+}
+
+.primary:hover {
+  background-color: var(--theme-color-hover);
+}
+
+.danger {
+  background-color: #dc3545;
+}
+
+.danger:hover {
+  background-color: #c82333;
+}
+
+.success {
+  background-color: #28a745;
+}
+
+.success:hover {
+  background-color: #218838;
+}
+
+
+
+.button:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  color: var(--background-color);
+}

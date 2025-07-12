@@ -1,8 +1,8 @@
 ---
 name: "[\U0001F30EFeature] 이슈"
 about: Feature 이슈입니다.
-title: ''
-labels: ''
+title: "[\U0001F30EFeature] 이슈"
+labels: feature
 assignees: ''
 
 ---
@@ -20,4 +20,4 @@ assignees: ''
 ## 📌 참고 사항
 
 작업 완료 예정일
-2025.00 00시 00분
+2025.00.00 00시 00분

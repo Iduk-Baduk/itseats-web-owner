@@ -1,0 +1,58 @@
+.registerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem; /* 양쪽 여백을 상대값으로 설정 */
+  gap: 1.5rem;
+  max-width: 480px; /* 로그인 박스 최대 너비 제한 */
+  margin: 0 auto; /* 중앙 정렬 */
+}
+
+.registerContainer h1 {
+  color: var(--black-700);
+  font-size: 1.6rem;
+  text-align: left;
+}
+
+.registerContainer h1 b {
+  font-weight: bold;
+}
+
+.description {
+  background-color: var(--background-hover-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  text-align: left;
+  padding: 2rem;
+}
+
+.description strong {
+  color: var(--focus-color);
+  font-weight: bold;
+}
+
+@media (max-width: 1261px) {
+  .registerContainer {
+    padding: 0 1rem;
+    gap: 1rem;
+    max-width: 720px;
+  }
+
+  .description {
+    padding: 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+  }
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
