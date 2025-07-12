@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import PosMetricItem from "../../components/pos/PosMetricItem";
 import PosQuickAccess from "../../components/pos/PosQuickAccess";
-import styles from "./POS.module.css";
+import styles from "./Pos.module.css";
 import PosStatusBadge from '../../components/pos/PosStatusBadge';
 import PosStatusControl from '../../components/pos/PosStatusControl';
 import PosAutoSettings from '../../components/pos/PosAutoSettings';
@@ -14,7 +14,7 @@ import usePosAutoScheduler from '../../hooks/usePosAutoScheduler';
 import { POS_STATUS } from '../../constants/posStatus';
 import { useAuth } from '../../contexts/AuthContext';
 
-const POS = () => {
+const Pos = () => {
   const { currentUser } = useAuth();
   const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading, handleStatusChange: layoutHandleStatusChange } = useOutletContext();
   const [isLoading, setIsLoading] = useState(true);
@@ -225,4 +225,4 @@ const POS = () => {
   );
 };
 
-export default POS;
+export default Pos;
