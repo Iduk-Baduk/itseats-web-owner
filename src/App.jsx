@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import PosLayout from "./layouts/PosLayout";
-import Pos from "./pages/pos/Pos";
+import Pos from "./pages/pos/POS";
 import { PosOrders } from "./pages/pos/PosOrders";
 import Sales from "./pages/sales/Sales";
 import Settlements from "./pages/settlements/Settlements";
