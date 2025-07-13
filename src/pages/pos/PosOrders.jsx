@@ -8,11 +8,11 @@ import { POS_STATUS } from '../../constants/posStatus';
 import PosStatusBadge from '../../components/pos/PosStatusBadge';
 import PosStatusControl from '../../components/pos/PosStatusControl';
 import { orderAPI } from '../../services/orderAPI';
-import POS_API from '../../services/posAPI';
 
 export const PosOrders = () => {
   const { currentUser: user } = useAuth();
-  const { posStatus, setPosStatus, setIsReceivingOrders, isStatusLoading } = useOutletContext();
+  const { /*posStatus,*/ setPosStatus, setIsReceivingOrders, isStatusLoading } = useOutletContext();
+  const posStatus = POS_STATUS.OPEN; // 임시로 OPEN 상태로 설정
   const storeId = user?.storeId;
   const [orders, setOrders] = useState([]);
 
@@ -81,15 +81,15 @@ export const PosOrders = () => {
           />
         </div>
       </div>
-      <div className={styles.statsSection}>
-        <PosStatsDashboard orders={orders} />
-      </div>
       <div className={styles.ordersSection}>
         <PosOrderList 
           storeId={storeId} 
           isReceivingOrders={posStatus === POS_STATUS.OPEN}
           onOrdersUpdate={fetchOrders}
         />
+      </div>
+      <div className={styles.statsSection}>
+        <PosStatsDashboard orders={orders} />
       </div>
     </div>
   );

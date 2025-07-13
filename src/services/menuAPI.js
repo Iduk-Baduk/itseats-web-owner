@@ -13,6 +13,16 @@ const findMenuById = (menus, targetId) => {
 
 // 메뉴 API 서비스
 export const menuAPI = {
+  getMenusByStoreId: async (storeId) => {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.LIST_BY_STORE(String(storeId)), {});
+      return response.data;
+    } catch (e) {
+      console.error("API Error: getMenusByStoreId", e);
+      throw e;
+    }
+  },
+
   getMenus: async () => {
     try {
       const response = await apiClient.get(API_ENDPOINTS.MENUS.LIST());
@@ -23,9 +33,9 @@ export const menuAPI = {
     }
   },
 
-  getMenu: async (id) => {
+  getMenu: async (storeId, menuId) => {
     try {
-      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(String(id)));
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
       return response.data;
     } catch (e) {
       console.error("API Error: getMenu", e);
@@ -55,9 +65,15 @@ export const menuAPI = {
     }
   },
 
-  addMenu: async (menuData) => {
+  addMenu: async (storeId, menuData) => {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.MENUS.LIST(), menuData);
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.ADD(storeId), form);
       return response.data;
     } catch (e) {
       console.error("API Error: addMenu", e);
@@ -65,10 +81,17 @@ export const menuAPI = {
     }
   },
 
-  updateMenu: async (id, menuData) => {
+  updateMenu: async (storeId, menuId , menuData) => {
     try {
-      console.log("Updating menu:", { id, menuData }); // 디버깅용 로그
-      const response = await apiClient.patch(API_ENDPOINTS.MENUS.DETAIL(String(id)), menuData);
+      console.log("Updating menu:", { storeId, menuId, menuData }); // 디버깅용 로그
+
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const response = await apiClient.put(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId), form);
       return response.data;
     } catch (e) {
       console.error("API Error: updateMenu", e);
@@ -76,9 +99,29 @@ export const menuAPI = {
     }
   },
 
-  deleteMenu: async (id) => {
+  updateMenuStatus: async (storeId, menuId, status) => {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(String(id)));
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
+      const menuData = response.data;
+
+      menuData.menuStatus = status;
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const updateResponse = await apiClient.put(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId), form);
+      return updateResponse.data;
+    } catch (e) {
+      console.error("API Error: updateMenuStatus", e);
+      throw e;
+    }
+  },
+
+  deleteMenu: async (storeId, menuId) => {
+    try {
+      const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
       return response.data;
     } catch (e) {
       console.error("API Error: deleteMenu", e);

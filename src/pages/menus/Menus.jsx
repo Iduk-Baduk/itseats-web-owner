@@ -10,9 +10,11 @@ import styles from "./Menus.module.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Menus() {
-  const { menu, status, error } = useFetchMenus();
+  const { currentUser } = useAuth();
+  const { menu, stats, status, error } = useFetchMenus(currentUser.storeId);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [menuGroupModal, setMenuGroupModal] = useState(false);
@@ -50,9 +52,9 @@ export default function Menus() {
 
       <h1 className={styles.title}>메뉴 관리</h1>
       {/* 매장 선택 */}
-      <MenuStore menu={menu} />
+      {/* <MenuStore menu={menu} /> */}
       {/* 요약 카드 */}
-      <MenusSummaryCard menu={menu} />
+      <MenusSummaryCard stats={stats} />
       {/* 메뉴 리스트 */}
       <MenuList 
         menu={menu} 

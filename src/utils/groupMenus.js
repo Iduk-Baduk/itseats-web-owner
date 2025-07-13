@@ -8,14 +8,3 @@ export function getGroupNames(menus) {
 
   return Array.from(set);
 }
-
-export const groupMenusByCategory = (menus) => {
-  return menus.reduce((acc, item) => {
-    const group = item.menuGroupName || "기타";
-    if (!acc[group]) {
-      acc[group] = [];
-    }
-    acc[group].push(item);
-    return acc;
-  }, {});
-};

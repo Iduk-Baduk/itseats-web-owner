@@ -10,10 +10,12 @@
 
 .metricsGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  height: 180px;
   margin-bottom: 32px;
-  grid-column: 1 / -1;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 /* 반응형 레이아웃 */
@@ -49,7 +51,8 @@
   border-radius: 8px;
   border: 1px solid #e9ecef;
   grid-column: 2;
-  grid-row: 2;
+  /* grid-row: 2; */
+  grid-row: 1;
 }
 
 .orderStatus h3 {

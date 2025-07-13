@@ -4,15 +4,25 @@ import { getGroupNames } from "../utils/groupMenus";
 
 export const fetchMenuByIdAsync = createAsyncThunk(
   "menu/fetchMenuById",
-  async () => {
-    const [menuResponse, statsResponse] = await Promise.all([
-      menuAPI.getMenus(),
-      menuAPI.getMenuStats()
-    ]);
+  async (storeId) => {
+    const response = await menuAPI.getMenusByStoreId(storeId);
     return {
-      menus: menuResponse,
-      stats: statsResponse
+      menus: response.menus || [],
+      stats: {
+        totalMenus: response.totalMenuCount,
+        activeMenus: response.orderableMenuCount,
+        outOfStockMenus: response.outOfStockTodayCount,
+        hiddenMenus: response.hiddenMenuCount
+      }
     };
+  }
+);
+
+export const fetchMenuDetailByMenuIdAsync = createAsyncThunk(
+  "menu/fetchMenuDetailByMenuId",
+  async ({ storeId, menuId }) => {
+    const response = await menuAPI.getMenu(storeId, menuId);
+    return response;
   }
 );
 
@@ -43,6 +53,7 @@ export const menuSlice = createSlice({
   name: "menu",
   initialState: {
     menu: { menus: [] },
+    menuDetail: {},
     stats: {},
     groupNames: [],
     status: "idle",
@@ -75,6 +86,18 @@ export const menuSlice = createSlice({
         state.groupNames = getGroupNames(action.payload.menus);
       })
       .addCase(fetchMenuByIdAsync.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      // 메뉴 상세 조회
+      .addCase(fetchMenuDetailByMenuIdAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchMenuDetailByMenuIdAsync.fulfilled, (state, action) => {
+        state.menuDetail = action.payload;
+        state.status = "succeeded";
+      })
+      .addCase(fetchMenuDetailByMenuIdAsync.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })

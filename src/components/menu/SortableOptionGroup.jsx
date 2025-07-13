@@ -18,7 +18,7 @@ export default function SortableOptionGroup({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: group.groupName });
+  } = useSortable({ id: group.optionGroupName });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -41,7 +41,7 @@ export default function SortableOptionGroup({
                 className={styles.checkBox}
               />
             </div>
-            <span className={styles.groupName}>{group.groupName}</span>
+            <span className={styles.groupName}>{group.optionGroupName}</span>
           </div>
           <div className={styles.itemActions}>
             <div

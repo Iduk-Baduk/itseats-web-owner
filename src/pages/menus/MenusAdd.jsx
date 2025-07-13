@@ -6,101 +6,60 @@ import { UpArrayIcon, DownArrayIcon } from "../../components/common/Icons";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchMenuByIdAsync } from "../../store/menuSlice";
+import { fetchMenuDetailByMenuIdAsync } from "../../store/menuSlice";
 import { menuAPI } from "../../services/menuAPI";
+import { useAuth } from "../../contexts/AuthContext";
 
 import styles from "./MenusAdd.module.css";
 
-// ID 처리를 위한 헬퍼 함수 재사용
-const getMenuId = (menu) => menu?.id || menu?.menuId;
-
-const findMenuById = (menus, targetId) => {
-  return menus.find(menu => {
-    const menuId = getMenuId(menu);
-    return String(menuId) === String(targetId);
-  });
-};
-
 export default function MenusAdd() {
-  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const groupNames = useSelector((state) => state.menu.groupNames);
+
+  const { currentUser } = useAuth();
+  const storeId = currentUser.storeId;
+  const { menuId } = useParams();
+
   const status = useSelector((state) => state.menu.status);
-  const menus = useSelector((state) => state.menu.menu.menus);
+  const menuDetail = useSelector((state) => state.menu.menuDetail);
   const [menuData, setMenuData] = useState({
     menuGroupName: "",
     menuName: "",
     menuPrice: "",
-    menuStatus: "ONSALE",
+    menuStatus: "ON_SALE",
     menuDescription: "",
   });
   const [optionGroupModal, setOptionGroupModal] = useState(false);
   const [optionGroups, setOptionGroups] = useState([]);
   const [groupOpenStates, setGroupOpenStates] = useState({});
-  const [isEditMode] = useState(!!id);
-  const [actualMenuId, setActualMenuId] = useState(null);
+  const [isEditMode] = useState(!!menuId);
 
   useEffect(() => {
     if (isEditMode) {
-      dispatch(fetchMenuByIdAsync());
+      dispatch(fetchMenuDetailByMenuIdAsync({ storeId, menuId }));
     }
-  }, [dispatch, isEditMode]);
+  }, [dispatch, storeId, menuId, isEditMode]);
 
   useEffect(() => {
-    if (isEditMode) {
-      // 먼저 전체 메뉴 목록을 가져와서 실제 ID를 찾습니다
-      const fetchMenuData = async () => {
-        try {
-          const menusResponse = await menuAPI.getMenus();
-          const menuToEdit = menusResponse.find(menu => String(menu.menuId) === String(id));
-          
-          if (!menuToEdit) {
-            throw new Error('메뉴를 찾을 수 없습니다.');
-          }
-
-          setActualMenuId(menuToEdit.id);
-          console.log("Found menu to edit:", menuToEdit);
-          setMenuData({
-            menuGroupName: menuToEdit.menuGroupName || "",
-            menuName: menuToEdit.menuName || "",
-            menuPrice: menuToEdit.menuPrice || "",
-            menuStatus: menuToEdit.menuStatus || "ONSALE",
-            menuDescription: menuToEdit.menuDescription || "",
-          });
-          
-          if (menuToEdit.optionGroups) {
-            setOptionGroups(menuToEdit.optionGroups.map(group => ({
-              groupName: group.optionGroupName,
-              isRequired: group.isRequired || false,
-              options: group.options ? group.options.map(opt => ({
-                name: opt.optionName,
-                price: opt.optionPrice || 0,
-                optionStatus: opt.optionStatus || "ONSALE",
-              })) : []
-            })));
-          } else {
-            setOptionGroups([]);
-          }
-        } catch (error) {
-          console.error("Failed to fetch menu data:", error);
-          alert("메뉴 데이터를 불러오는데 실패했습니다.");
-          navigate("/menus"); // 실패 시 메뉴 목록으로 이동
-        }
-      };
-
-      fetchMenuData();
+    if (isEditMode && menuDetail) {
+      setMenuData({
+        menuGroupName: menuDetail.menuGroupName || "",
+        menuName: menuDetail.menuName || "",
+        menuPrice: menuDetail.menuPrice ? Number(menuDetail.menuPrice) : 0,
+        menuStatus: menuDetail.menuStatus || "ON_SALE",
+        menuDescription: menuDetail.menuDescription || "",
+        menuPriority: menuDetail.menuPriority || -1,
+      });
+      setOptionGroups(menuDetail.optionGroups || []);
     }
-  }, [isEditMode, id, navigate]);
+  }, [isEditMode, menuDetail]);
 
   const handleMenuInputChange = (field, value) => {
-    console.log("Changing field:", field, "to value:", value);
     setMenuData((prev) => {
       const newData = {
         ...prev,
         [field]: value,
       };
-      console.log("New menu data:", newData);
       return newData;
     });
   };
@@ -143,30 +102,30 @@ export default function MenusAdd() {
         menuPrice: String(menuData.menuPrice),
         menuStatus: menuData.menuStatus,
         menuGroupName: menuData.menuGroupName,
+        menuPriority: menuData.menuPriority,
         optionGroups: optionGroups.map((group) => ({
-          optionGroupName: group.groupName,
-          isRequired: group.isRequired,
+          optionGroupName: group.optionGroupName,
+          isRequired: (group.minSelect > 0),
+          maxSelect: group.maxSelect,
+          minSelect: group.minSelect,
+          priority: group.priority,
           options: group.options.map((opt) => ({
-            optionName: opt.name,
-            optionPrice: String(opt.price),
+            optionName: opt.optionName,
+            optionPrice: String(opt.optionPrice),
             optionStatus: opt.optionStatus,
+            optionPriority: opt.optionPriority,
           })),
         })),
       };
 
-      console.log("Saving menu with payload:", payload);
 
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        if (!actualMenuId) {
-          throw new Error('메뉴 ID가 없습니다.');
-        }
-        console.log("Updating menu with ID:", actualMenuId, "Payload:", payload);
-        await menuAPI.updateMenu(actualMenuId, payload);
+        await menuAPI.updateMenu(storeId, menuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
-        await menuAPI.addMenu(payload);
+        await menuAPI.addMenu(storeId, payload);
         alert("메뉴가 성공적으로 추가되었습니다.");
       }
       
@@ -181,11 +140,7 @@ export default function MenusAdd() {
     if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
     
     try {
-      if (!actualMenuId) {
-        throw new Error('메뉴 ID가 없습니다.');
-      }
-
-      await menuAPI.deleteMenu(actualMenuId);
+      await menuAPI.deleteMenu(storeId, menuId);
       alert("메뉴가 성공적으로 삭제되었습니다.");
       navigate("/menus");
     } catch (error) {
@@ -243,7 +198,7 @@ export default function MenusAdd() {
                       >
                         <span>
                           {group.isRequired ? "필수 " : ""}
-                          {group.groupName}
+                          {group.optionGroupName}
                         </span>
                         <span>{isOpen ? <UpArrayIcon /> : <DownArrayIcon />}</span>
                       </div>
@@ -254,20 +209,27 @@ export default function MenusAdd() {
                             className={styles.optionItem}
                           >
                             <div className={styles.optionItemLeft}>
-                              <span>{option.name}</span>
+                              <span>{option.optionName}</span>
                             </div>
                             <div className={styles.optionItemRight}>
-                              <span>{option.price.toLocaleString()}원</span>
+                              <span>{option.optionPrice.toLocaleString()}원</span>
                               <select
                                 value={option.optionStatus}
                                 className={styles.optionStatus}
                                 onChange={(e) => {
-                                  const updatedGroups = [...optionGroups];
-                                  updatedGroups[groupIndex].options[optionIndex].optionStatus = e.target.value;
-                                  setOptionGroups(updatedGroups);
+                                  setOptionGroups(prev => {
+                                    const updatedGroups = [...prev];
+                                    updatedGroups[groupIndex] = { ...updatedGroups[groupIndex] };
+                                    updatedGroups[groupIndex].options = [...updatedGroups[groupIndex].options];
+                                    updatedGroups[groupIndex].options[optionIndex] = {
+                                      ...updatedGroups[groupIndex].options[optionIndex],
+                                      optionStatus: e.target.value,
+                                    };
+                                    return updatedGroups;
+                                  });
                                 }}
                               >
-                                <option value="ONSALE">판매중</option>
+                                <option value="ON_SALE">판매중</option>
                                 <option value="OUT_OF_STOCK">오늘만 품절</option>
                                 <option value="HIDDEN">메뉴 숨김</option>
                               </select>
