@@ -78,6 +78,7 @@ export const getCurrentUser = async () => {
     phone: response.data.phone,
     storeId: response.data.stores[0]?.storeId || null,
     storeName: response.data.stores[0]?.storeName || null,
+    stores: response.data.stores || [],
   };
 };
 
