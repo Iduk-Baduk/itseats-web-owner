@@ -38,7 +38,7 @@ export default function MenusAdd() {
     if (isEditMode) {
       dispatch(fetchMenuDetailByMenuIdAsync({ storeId, menuId }));
     }
-  }, [dispatch, menuId, isEditMode]);
+  }, [dispatch, storeId, menuId, isEditMode]);
 
   useEffect(() => {
     if (isEditMode && menuDetail) {

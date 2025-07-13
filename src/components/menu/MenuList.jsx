@@ -57,11 +57,14 @@ export default function MenuList({ menu, onMenuSelect }) {
   const groupNames = [...new Set(menu.menus.map(item => item.menuGroupName))];
 
   const handleStatusChange = async (menuId, status) => {
-    setMenuStatuses((prev) => ({ ...prev, [menuId]: status }));
+    const previousStatus = menuStatuses[menuId] || menu.menus.find(m => (m.menuId || m.id) === menuId)?.menuStatus;
     try {
+      setMenuStatuses((prev) => ({ ...prev, [menuId]: status }));
       await menuAPI.updateMenuStatus(currentUser.storeId, menuId, status);
       alert("상태 업데이트에 성공하였습니다.");
     } catch (error) {
+      // 에러 발생 시 이전 상태로 롤백
+      setMenuStatuses((prev) => ({ ...prev, [menuId]: previousStatus }));
       alert("상태 업데이트 중 오류가 발생했습니다.");
     }
   };
