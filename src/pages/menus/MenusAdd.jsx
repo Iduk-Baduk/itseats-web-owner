@@ -125,7 +125,7 @@ export default function MenusAdd() {
         await menuAPI.updateMenu(storeId, menuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
-        await menuAPI.addMenu(payload);
+        await menuAPI.addMenu(storeId, payload);
         alert("메뉴가 성공적으로 추가되었습니다.");
       }
       

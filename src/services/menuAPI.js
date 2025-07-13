@@ -65,9 +65,9 @@ export const menuAPI = {
     }
   },
 
-  addMenu: async (menuData) => {
+  addMenu: async (storeId, menuData) => {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.MENUS.LIST(), menuData);
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.ADD(storeId), menuData);
       return response.data;
     } catch (e) {
       console.error("API Error: addMenu", e);
