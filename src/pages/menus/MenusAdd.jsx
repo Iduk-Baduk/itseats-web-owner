@@ -140,7 +140,7 @@ export default function MenusAdd() {
     if (!window.confirm("메뉴를 삭제하시겠습니까?")) return;
     
     try {
-      await menuAPI.deleteMenu(menuId);
+      await menuAPI.deleteMenu(storeId, menuId);
       alert("메뉴가 성공적으로 삭제되었습니다.");
       navigate("/menus");
     } catch (error) {

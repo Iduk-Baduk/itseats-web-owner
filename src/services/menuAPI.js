@@ -93,9 +93,9 @@ export const menuAPI = {
     }
   },
 
-  deleteMenu: async (id) => {
+  deleteMenu: async (storeId, menuId) => {
     try {
-      const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(String(id)));
+      const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
       return response.data;
     } catch (e) {
       console.error("API Error: deleteMenu", e);
