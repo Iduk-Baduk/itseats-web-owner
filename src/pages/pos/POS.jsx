@@ -93,30 +93,31 @@ const POS = () => {
 
   // 초기 데이터 로드
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setIsLoading(true);
-        await Promise.all([
-          loadMetrics(),
-          loadNotifications(),
-          (async () => {
-            const historyData = await POS_API.getPosStatusHistory();
-            setStatusHistory(historyData.history);
-          })(),
-          (async () => {
-            const settingsData = await POS_API.getPosAutoSettings();
-        setSettings(settingsData);
-          })()
-        ]);
-      } catch (err) {
-        console.error('Failed to load initial data:', err);
-        setError('데이터 로드에 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // const loadInitialData = async () => {
+    //   try {
+    //     setIsLoading(true);
+    //     await Promise.all([
+    //       loadMetrics(),
+    //       loadNotifications(),
+    //       (async () => {
+    //         const historyData = await POS_API.getPosStatusHistory();
+    //         setStatusHistory(historyData.history);
+    //       })(),
+    //       (async () => {
+    //         const settingsData = await POS_API.getPosAutoSettings();
+    //     setSettings(settingsData);
+    //       })()
+    //     ]);
+    //   } catch (err) {
+    //     console.error('Failed to load initial data:', err);
+    //     setError('데이터 로드에 실패했습니다.');
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
 
-    loadInitialData();
+    // loadInitialData();
+    setIsLoading(false);
   }, [loadMetrics]);
 
   const handleSettingsChange = async (newSettings) => {
@@ -188,7 +189,7 @@ const POS = () => {
       <PosQuickAccess className={styles.posQuickAccess} />
 
       <div className={styles.statusSection}>
-        <h2>{currentUser?.storeName || '매장'}</h2>
+        {/* <h2>{currentUser?.storeName || '매장'}</h2>
         {error && <div className={styles.error}>{error}</div>}
         
         <div className={styles.currentStatus}>
@@ -205,7 +206,7 @@ const POS = () => {
           settings={settings}
           onSettingsChange={handleSettingsChange}
           onResetDailyProcessing={resetDailyProcessing}
-        />
+        /> */}
 
       <PosMetricItem
         metricName={currentUser?.storeName || "매장 정보 없음"}
