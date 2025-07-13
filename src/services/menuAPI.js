@@ -67,7 +67,13 @@ export const menuAPI = {
 
   addMenu: async (storeId, menuData) => {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.MENUS.ADD(storeId), menuData);
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const response = await apiClient.post(API_ENDPOINTS.MENUS.ADD(storeId), form);
       return response.data;
     } catch (e) {
       console.error("API Error: addMenu", e);
