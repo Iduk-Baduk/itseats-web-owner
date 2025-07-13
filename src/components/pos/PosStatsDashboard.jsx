@@ -154,7 +154,7 @@ const PosStatsDashboard = ({ orders = [] }) => {
         </div>
       </div>
 
-      <div className={styles.topMenus}>
+      {/* <div className={styles.topMenus}>
         <h3>인기 메뉴 TOP 5</h3>
         <ul className={styles.topMenusList}>
           {stats.topMenus.map((menu, index) => (
@@ -165,7 +165,7 @@ const PosStatsDashboard = ({ orders = [] }) => {
             </li>
           ))}
         </ul>
-      </div>
+      </div> */}
     </div>
   );
 };
