@@ -93,6 +93,26 @@ export const menuAPI = {
     }
   },
 
+  updateMenuStatus: async (storeId, menuId, status) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));
+      const menuData = response.data;
+
+      menuData.menuStatus = status;
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const updateResponse = await apiClient.put(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId), form);
+      return updateResponse.data;
+    } catch (e) {
+      console.error("API Error: updateMenuStatus", e);
+      throw e;
+    }
+  },
+
   deleteMenu: async (storeId, menuId) => {
     try {
       const response = await apiClient.delete(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId));

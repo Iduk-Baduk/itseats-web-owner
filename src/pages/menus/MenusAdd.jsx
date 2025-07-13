@@ -229,7 +229,7 @@ export default function MenusAdd() {
                                   });
                                 }}
                               >
-                                <option value="ONSALE">판매중</option>
+                                <option value="ON_SALE">판매중</option>
                                 <option value="OUT_OF_STOCK">오늘만 품절</option>
                                 <option value="HIDDEN">메뉴 숨김</option>
                               </select>

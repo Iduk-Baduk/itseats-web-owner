@@ -1,5 +1,7 @@
 import { useState } from "react";
 import styles from "./MenuList.module.css";
+import { useAuth } from "../../contexts/AuthContext";
+import { menuAPI } from "../../services/menuAPI";
 
 const MenuItem = ({
   item,
@@ -40,7 +42,7 @@ const MenuItem = ({
           onStatusChange(item.menuId || item.id, e.target.value);
         }}
       >
-        <option value="ONSALE">판매중</option>
+        <option value="ON_SALE">판매중</option>
         <option value="OUT_OF_STOCK">오늘만 품절</option>
         <option value="HIDDEN">메뉴숨김</option>
       </select>
@@ -49,12 +51,19 @@ const MenuItem = ({
 };
 
 export default function MenuList({ menu, onMenuSelect }) {
+  const { currentUser } = useAuth();
   const [selectedMenuId, setSelectedMenuId] = useState(null);
   const [menuStatuses, setMenuStatuses] = useState({});
   const groupNames = [...new Set(menu.menus.map(item => item.menuGroupName))];
 
-  const handleStatusChange = (menuId, status) => {
+  const handleStatusChange = async (menuId, status) => {
     setMenuStatuses((prev) => ({ ...prev, [menuId]: status }));
+    try {
+      await menuAPI.updateMenuStatus(currentUser.storeId, menuId, status);
+      alert("상태 업데이트에 성공하였습니다.");
+    } catch (error) {
+      alert("상태 업데이트 중 오류가 발생했습니다.");
+    }
   };
 
   const handleMenuClick = (menuId) => {
