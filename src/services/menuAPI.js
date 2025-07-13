@@ -75,10 +75,17 @@ export const menuAPI = {
     }
   },
 
-  updateMenu: async (id, menuData) => {
+  updateMenu: async (storeId, menuId , menuData) => {
     try {
-      console.log("Updating menu:", { id, menuData }); // 디버깅용 로그
-      const response = await apiClient.patch(API_ENDPOINTS.MENUS.DETAIL(String(id)), menuData);
+      console.log("Updating menu:", { storeId, menuId, menuData }); // 디버깅용 로그
+
+      const form = new FormData();
+      form.append("request", new Blob(
+        [JSON.stringify(menuData)],
+        { type: "application/json" }
+      ));
+
+      const response = await apiClient.put(API_ENDPOINTS.MENUS.DETAIL(storeId, menuId), form);
       return response.data;
     } catch (e) {
       console.error("API Error: updateMenu", e);

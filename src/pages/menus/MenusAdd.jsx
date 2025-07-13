@@ -48,6 +48,7 @@ export default function MenusAdd() {
         menuPrice: menuDetail.menuPrice ? Number(menuDetail.menuPrice) : 0,
         menuStatus: menuDetail.menuStatus || "ON_SALE",
         menuDescription: menuDetail.menuDescription || "",
+        menuPriority: menuDetail.menuPriority || -1,
       });
       setOptionGroups(menuDetail.optionGroups || []);
     }
@@ -101,30 +102,34 @@ export default function MenusAdd() {
         menuPrice: String(menuData.menuPrice),
         menuStatus: menuData.menuStatus,
         menuGroupName: menuData.menuGroupName,
+        menuPriority: menuData.menuPriority,
         optionGroups: optionGroups.map((group) => ({
           optionGroupName: group.optionGroupName,
-          isRequired: group.isRequired,
+          isRequired: (group.minSelect > 0),
+          maxSelect: group.maxSelect,
+          minSelect: group.minSelect,
+          priority: group.priority,
           options: group.options.map((opt) => ({
             optionName: opt.optionName,
             optionPrice: String(opt.optionPrice),
             optionStatus: opt.optionStatus,
+            optionPriority: opt.optionPriority,
           })),
         })),
       };
 
-      console.log("Saving menu with payload:", payload);
 
       if (!validateMenuData(payload)) return;
 
       if (isEditMode) {
-        await menuAPI.updateMenu(menuId, payload);
+        await menuAPI.updateMenu(storeId, menuId, payload);
         alert("메뉴가 성공적으로 수정되었습니다.");
       } else {
         await menuAPI.addMenu(payload);
         alert("메뉴가 성공적으로 추가되었습니다.");
       }
       
-      // navigate("/menus");
+      navigate("/menus");
     } catch (error) {
       console.error(isEditMode ? "메뉴 수정 실패:" : "메뉴 추가 실패:", error);
       alert(isEditMode ? "메뉴 수정에 실패했습니다." : "메뉴 추가에 실패했습니다. 다시 시도해주세요.");
@@ -212,9 +217,16 @@ export default function MenusAdd() {
                                 value={option.optionStatus}
                                 className={styles.optionStatus}
                                 onChange={(e) => {
-                                  const updatedGroups = [...optionGroups];
-                                  updatedGroups[groupIndex].options[optionIndex].optionStatus = e.target.value;
-                                  setOptionGroups(updatedGroups);
+                                  setOptionGroups(prev => {
+                                    const updatedGroups = [...prev];
+                                    updatedGroups[groupIndex] = { ...updatedGroups[groupIndex] };
+                                    updatedGroups[groupIndex].options = [...updatedGroups[groupIndex].options];
+                                    updatedGroups[groupIndex].options[optionIndex] = {
+                                      ...updatedGroups[groupIndex].options[optionIndex],
+                                      optionStatus: e.target.value,
+                                    };
+                                    return updatedGroups;
+                                  });
                                 }}
                               >
                                 <option value="ONSALE">판매중</option>

@@ -23,7 +23,7 @@ const MenuItem = ({
       onClick={handleClick}
     >
       <div className={styles.imageBox}>
-        {item.images[0] && (
+        {item?.images[0] && (
           <img
             src={item.images[0]}
             alt={item.menuName}
