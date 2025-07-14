@@ -1,0 +1,53 @@
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal h2 {
+  margin-bottom: 12px;
+}
+
+.modal textarea {
+  width: 100%;
+  height: 80px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  resize: none;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.buttons button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.buttons button:first-child {
+  background: #ddd;
+}
+
+.buttons button:last-child {
+  background: #2196f3;
+  color: #fff;
+}
