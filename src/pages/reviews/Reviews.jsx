@@ -4,24 +4,28 @@ import styles from "./Reviews.module.css";
 import ReviewAPI from "../../services/reviewAPI";
 import AuthAPI from "../../services/authAPI";
 import ReviewSummaryCard from "../../components/review/ReviewSummaryCard";
+import ReportModal from "../../components/review/ReportModal";
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
   const today = new Date();
   const oneMonthAgo = new Date(today);
   oneMonthAgo.setMonth(today.getMonth() - 1);
-  const [startDate, setStartDate] = useState(oneMonthAgo.toISOString().split('T') [0]);
-  const [endDate, setEndDate] = useState(today.toISOString().split('T') [0]);
+  const [startDate, setStartDate] = useState(oneMonthAgo.toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
   const [storeId, setStoreId] = useState(null);
 
+  // ✅ 모달용 state
+  const [isReportModalOpen, setReportModalOpen] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState(null);
+
   useEffect(() => {
     const init = async () => {
       try {
         const user = await AuthAPI.getCurrentUser();
-        console.log("✅ 사용자 정보:", user); // ✅ 사용자 정보 확인
         setStores(user.stores || []);
         const firstStoreId = user.storeId;
         setStoreId(firstStoreId);
@@ -42,7 +46,7 @@ export default function Reviews() {
     setError(null);
     try {
       const data = await ReviewAPI.getStoreReviews(id, startDate, endDate);
-      console.log("✅ 리뷰 데이터:", data); // ✅ 리뷰 데이터 확인
+      console.log("✅ 리뷰 데이터:", data);
       setReviews(data.reviews || []);
     } catch (err) {
       console.error("❌ 리뷰 불러오기 실패:", err);
@@ -52,21 +56,12 @@ export default function Reviews() {
     }
   };
 
-  const handleReportReview = async (reviewId) => {
-    console.log("🚨 handleReportReview 호출됨, reviewId:", reviewId); // ✅ 신고 함수 진입 확인
-
-    if (!reviewId) {
-      console.error("❌ reviewId가 undefined!");
-      alert("리뷰 ID가 잘못되었습니다.");
-      return;
-    }
-
-    const reason = prompt("신고 사유를 입력해주세요:");
-    if (!reason) return alert("신고가 취소되었습니다.");
-
+  const handleReportReview = async (reviewId, reason) => {
+    console.log("🚨 신고 처리 중, reviewId:", reviewId, "reason:", reason);
     try {
       await ReviewAPI.reportReview(storeId, reviewId, { reason });
       alert("신고가 접수되었습니다.");
+      await fetchReviews(); // 신고 후 목록 갱신
     } catch (err) {
       console.error("❌ 신고 실패:", err);
       alert(err.response?.data?.message || "신고에 실패했습니다.");
@@ -134,55 +129,57 @@ export default function Reviews() {
               {reviews.length === 0 ? (
                 <div>리뷰가 없습니다.</div>
               ) : (
-                reviews.map((review, index) => {
-                  console.log("👉 map() 안의 review:", review); // ✅ map() 안 review 확인
-
-                  return (
-                    <div key={index} className={styles.reviewCard}>
-                      <div className={styles.left}>
-                        <div className={styles.reviewer}>
-                          {review.reviewer}
-                        </div>
-                        <div className={styles.stars}>
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i}>{i < review.rating ? "★" : "☆"}</span>
-                          ))}
-                        </div>
-                        <div className={styles.date}>
-                          {review.createdAt?.split("T")[0] || "날짜 없음"}
-                        </div>
+                reviews.map((review, index) => (
+                  <div key={index} className={styles.reviewCard}>
+                    <div className={styles.left}>
+                      <div className={styles.reviewer}>
+                        {review.reviewer}
                       </div>
-
-                      <div className={styles.right}>
-                        <div className={styles.rightContent}>
-                          <div className={styles.smallText}>주문 메뉴: {review.menuName}</div>
-                          <div className={styles.smallText}>주문 번호: {review.orderNumber}</div>
-                          <div className={styles.smallText}>{review.content}</div>
-                        </div>
-                        <button
-                          className={styles.reportButton}
-                          onClick={() => {
-                            if (!review.reviewId) {
-                              console.error("❌ reviewId 없음!", review);
-                              alert("리뷰 ID를 불러오지 못했습니다.");
-                              return;
-                            }
-                            handleReportReview(review.reviewId);
-                          }}
-                          disabled={review.reported}
-                        >
-                          {review.reported ? "✅ 신고 완료" : "🚩 신고하기"}
-                        </button>
+                      <div className={styles.stars}>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span key={i}>{i < review.rating ? "★" : "☆"}</span>
+                        ))}
                       </div>
-
+                      <div className={styles.date}>
+                        {review.createdAt?.split("T")[0] || "날짜 없음"}
+                      </div>
                     </div>
-                  );
-                })
+
+                    <div className={styles.right}>
+                      <div className={styles.rightContent}>
+                        <div className={styles.smallText}>주문 메뉴: {review.menuName}</div>
+                        <div className={styles.smallText}>주문 번호: {review.orderNumber}</div>
+                        <div className={styles.smallText}>{review.content}</div>
+                      </div>
+                      <button
+                        className={styles.reportButton}
+                        onClick={() => {
+                          setSelectedReviewId(review.reviewId);
+                          setReportModalOpen(true);
+                        }}
+                        disabled={review.reported}
+                      >
+                        {review.reported ? "✅ 신고 완료" : "🚩 신고하기"}
+                      </button>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </>
         )}
       </div>
+
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        onSubmit={(reason) => {
+          if (selectedReviewId) {
+            handleReportReview(selectedReviewId, reason);
+          }
+          setReportModalOpen(false);
+        }}
+      />
     </>
   );
 }
