@@ -1,13 +1,131 @@
 .container {
-  padding: 80px 40px 0;
+  padding: 100px 30px 0;
 }
 
-.samples {
-  margin: 20px 0;
+.title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
 }
-.samples>*:not(:last-child) {
-  margin-right: 20px;
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 30px;
 }
-.textInput, .comboBox {
-  max-width: 400px;
+
+.dateGroup {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }
+
+.filters select,
+.filters input {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.filters button {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.reviewHeader {
+  display: flex;
+  padding: 10px 0;
+  font-weight: bold;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+.reviewHeader > div:first-child {
+  margin-right: 180px; /* ← 정확히 180px 간격 */
+}
+
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewCard {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding: 12px 0;
+}
+
+.left {
+  flex: 1;
+}
+
+.reviewer {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.stars {
+  color: #f5c518; /* ⭐️ 별 노란색 */
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.date {
+  font-size: 14px;
+  color: #555;
+}
+
+.smallText {
+  font-size: 13px; /* ✅ 리뷰 내용 글씨 작게 */
+  margin-bottom: 4px;
+}
+
+.reviewImage {
+  width: 100px;
+  height: auto;
+  margin: 8px 0;
+  border-radius: 4px;
+}
+
+.error {
+  color: red;
+}
+
+.right {
+  flex: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rightContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.reportButton {
+  padding: 2px 6px;
+  font-size: 12px;
+  background-color: #ffe5e5;
+  color: #d9534f;
+  border: 1px solid #d9534f;
+  border-radius: 4px;
+  cursor: pointer;
+  width: auto;       /* ← 내용만큼만 */
+  flex: none;        /* ← flex 공간 차지 안 함 */
+}
+
+.reportButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reportButton:hover {
+  background-color: #f5c6cb;
+}
+
+
