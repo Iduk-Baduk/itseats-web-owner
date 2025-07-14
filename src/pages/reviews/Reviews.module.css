@@ -119,6 +119,11 @@
   flex: none;        /* ← flex 공간 차지 안 함 */
 }
 
+.reportButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .reportButton:hover {
   background-color: #f5c6cb;
 }

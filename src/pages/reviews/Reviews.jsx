@@ -7,8 +7,11 @@ import ReviewSummaryCard from "../../components/review/ReviewSummaryCard";
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([]);
-  const [startDate, setStartDate] = useState("2025-05-01");
-  const [endDate, setEndDate] = useState("2025-07-15");
+  const today = new Date();
+  const oneMonthAgo = new Date(today);
+  oneMonthAgo.setMonth(today.getMonth() - 1);
+  const [startDate, setStartDate] = useState(oneMonthAgo.toISOString().split('T') [0]);
+  const [endDate, setEndDate] = useState(today.toISOString().split('T') [0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
